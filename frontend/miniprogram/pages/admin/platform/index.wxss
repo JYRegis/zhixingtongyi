@@ -1,0 +1,33 @@
+.platform-page {
+  padding-bottom: 48rpx;
+}
+
+.platform-overview-card,
+.platform-risk-card {
+  margin-top: 20rpx;
+}
+
+.platform-kpi-list {
+  margin-top: 18rpx;
+}
+
+.platform-risk-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20rpx;
+}
+
+.platform-risk-id {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #101828;
+}
+
+.platform-risk-note {
+  margin-top: 18rpx;
+}
+
+.platform-risk-btn {
+  margin-top: 20rpx;
+}

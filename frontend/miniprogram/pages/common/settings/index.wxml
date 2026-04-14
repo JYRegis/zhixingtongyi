@@ -1,34 +1,61 @@
-<view class="settings-page">
-  <view class="settings-hero card">
-    <image wx:if="{{avatarUrl}}" class="settings-avatar settings-avatar--img" src="{{avatarUrl}}" mode="aspectFill" />
-    <view wx:else class="settings-avatar">{{avatarChar}}</view>
-    <view class="settings-nickname">{{nickname}}</view>
-    <view wx:if="{{loggedIn}}" class="settings-role">当前身份：{{roleName}}</view>
-    <view wx:else class="settings-role muted">尚未登录，请先选择身份</view>
-  </view>
-
-  <view class="settings-section-title">账号与资料</view>
-  <view class="settings-list card">
-    <view wx:if="{{!loggedIn}}" class="settings-row settings-row-btn" bindtap="onGoLogin">
-      <text class="settings-row-title">用户登录</text>
-      <text class="settings-row-extra">选择身份进入 →</text>
+<view class="page-shell">
+  <view class="settings-page">
+    <view class="page-hero settings-main-hero">
+      <view class="page-hero-eyebrow">账号中心</view>
+      <view class="page-hero-title">{{heroTitle}}</view>
+      <view class="page-hero-desc">{{heroDesc}}</view>
+      <view class="page-hero-badges">
+        <view wx:for="{{heroBadges}}" wx:key="*this" class="hero-badge">{{item}}</view>
+      </view>
     </view>
-    <block wx:else>
-      <view class="settings-row settings-row-btn" bindtap="onEditLoginProfile">
-        <text class="settings-row-title">头像、昵称与手机</text>
-        <text class="settings-row-extra">与微信授权、本机记录号码 →</text>
-      </view>
-      <view class="settings-row settings-row-btn" bindtap="onGoProfile">
-        <text class="settings-row-title">完善资料</text>
-        <text class="settings-row-extra">学习/支教相关信息 →</text>
-      </view>
-    </block>
-  </view>
 
-  <view wx:if="{{loggedIn}}" class="settings-section-title">退出</view>
-  <view wx:if="{{loggedIn}}" class="settings-list card">
-    <button class="settings-logout-btn" bindtap="onLogout">退出登录</button>
-  </view>
+    <view class="stat-grid">
+      <view wx:for="{{summaryCards}}" wx:key="label" class="stat-grid-item">
+        <view class="stat-card">
+          <view class="stat-label">{{item.label}}</view>
+          <view class="stat-value">{{item.value}}</view>
+          <view class="stat-note">{{item.note}}</view>
+        </view>
+      </view>
+    </view>
 
-  <view class="settings-footnote">登录流程：首页选身份 → 填写手机号与昵称（可选微信头像）。手机号列表保存在本机，换手机后需重新添加。</view>
+    <view class="settings-hero card">
+      <image wx:if="{{avatarUrl}}" class="settings-avatar settings-avatar--img" src="{{avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="settings-avatar">{{avatarChar}}</view>
+      <view class="settings-nickname">{{nickname}}</view>
+      <view wx:if="{{loggedIn}}" class="settings-role">当前身份：{{roleName}}</view>
+      <view wx:else class="settings-role muted">尚未登录，请先选择身份</view>
+    </view>
+
+    <view class="section-header">
+      <view class="section-title">账号与资料</view>
+      <view class="section-desc">这里集中放置登录、头像昵称编辑和资料完善入口。</view>
+    </view>
+    <view class="settings-list card">
+      <view wx:if="{{!loggedIn}}" class="settings-row settings-row-btn" bindtap="onGoLogin">
+        <text class="settings-row-title">用户登录</text>
+        <text class="settings-row-extra">选择身份进入 →</text>
+      </view>
+      <block wx:else>
+        <view class="settings-row settings-row-btn" bindtap="onEditLoginProfile">
+          <text class="settings-row-title">头像、昵称与手机</text>
+          <text class="settings-row-extra">与微信授权、本机记录号码关联 →</text>
+        </view>
+        <view class="settings-row settings-row-btn" bindtap="onGoProfile">
+          <text class="settings-row-title">完善资料</text>
+          <text class="settings-row-extra">前往角色资料页继续补充信息 →</text>
+        </view>
+      </block>
+    </view>
+
+    <view wx:if="{{loggedIn}}" class="section-header">
+      <view class="section-title">退出</view>
+      <view class="section-desc">退出后会清除当前登录状态。</view>
+    </view>
+    <view wx:if="{{loggedIn}}" class="settings-list card">
+      <button class="settings-logout-btn" bindtap="onLogout">退出登录</button>
+    </view>
+
+    <view class="settings-footnote">登录流程：首页选身份 → 填写手机号与昵称（可选微信头像）。手机号列表保存在本机，换手机后需重新添加。</view>
+  </view>
 </view>

@@ -9,7 +9,7 @@ const ROLE = {
   ADMIN_PLATFORM: "admin_level_1"
 };
 
-/** 登录后在各页顶部展示的简短身份 */
+/** 各页顶部的简短身份名称 */
 const ROLE_DISPLAY_NAME = {
   student: "乡村学员",
   teacher: "支教志愿者",

@@ -1,69 +1,109 @@
-<view class="container">
-  <view class="card">
-    <view class="title">匹配中心</view>
-    <view class="desc">按科目、时间与需求权重展示推荐志愿者，并支持申请处理与解绑入口。</view>
-    <view class="chip-row">
-      <view class="chip">角色：{{role}}</view>
-      <view class="chip">持续匹配开关（后续接入）</view>
+<view class="page-shell">
+  <view class="container match-page">
+    <view class="page-hero">
+      <view class="page-hero-eyebrow">{{heroEyebrow}}</view>
+      <view class="page-hero-title">{{heroTitle}}</view>
+      <view class="page-hero-desc">{{heroDesc}}</view>
+      <view class="page-hero-badges">
+        <view wx:for="{{heroBadges}}" wx:key="*this" class="hero-badge">{{item}}</view>
+      </view>
     </view>
-  </view>
 
-  <!-- 学校老师：必须先选定代哪位学员，再展示推荐与申请 -->
-  <block wx:if="{{role === 'admin_level_2'}}">
-    <view wx:if="{{!actingStudent}}" class="card match-proxy-card">
-      <view class="title" style="font-size: 32rpx;">请先选择学员</view>
-      <view class="desc">您是学校老师代管模式：发起匹配前须明确「替哪一位学生」操作。</view>
-      <view class="section-title" style="margin-top: 20rpx;">本班 / 所辖学员</view>
-      <view
-        wx:for="{{proxyStudents}}"
-        wx:key="id"
-        class="match-proxy-row"
-        data-id="{{item.id}}"
-        bindtap="onPickProxyStudent"
-      >
+    <view class="card match-overview-card">
+      <view class="match-overview-top">
         <view>
-          <text class="match-proxy-name">{{item.name}}</text>
-          <text class="match-proxy-grade">（{{item.grade}}）</text>
+          <view class="match-overview-title">当前角色：{{roleName}}</view>
+          <view class="match-overview-desc">{{actingHint}}</view>
         </view>
-        <view class="match-proxy-meta">
-          <text class="badge {{item.binding === '已绑定' ? 'badge-success' : 'badge-warning'}}">{{item.binding}}</text>
-          <text class="badge {{item.progress === '结对中' ? 'badge-success' : 'badge-warning'}}" style="margin-left: 8rpx;">{{item.progress}}</text>
+        <view class="badge badge-success">{{selectedCountText}}</view>
+      </view>
+      <view class="surface-note match-overview-note">{{actingSummary}}</view>
+    </view>
+
+    <block wx:if="{{role === 'admin_level_2'}}">
+      <view wx:if="{{!actingStudent}}" class="card match-proxy-card">
+        <view class="section-title">请先选择学员</view>
+        <view class="section-desc">您正在使用学校老师代操作模式。选择学员后，系统会将下方推荐结果和申请动作都绑定到该学生。</view>
+        <view class="match-proxy-list">
+          <view
+            wx:for="{{proxyStudents}}"
+            wx:key="id"
+            class="match-proxy-row"
+            data-id="{{item.id}}"
+            bindtap="onPickProxyStudent"
+          >
+            <view class="match-proxy-head">
+              <view>
+                <text class="match-proxy-name">{{item.name}}</text>
+                <text class="match-proxy-grade">（{{item.grade}}）</text>
+              </view>
+              <view class="match-proxy-meta">
+                <text class="badge {{item.binding === '已绑定' ? 'badge-success' : 'badge-warning'}}">{{item.binding}}</text>
+                <text class="badge {{item.progress === '结对中' ? 'badge-success' : 'badge-warning'}}">{{item.progress}}</text>
+              </view>
+            </view>
+            <view class="match-proxy-foot">
+              <view class="desc">编号 {{item.id}} · 点击进入代操作模式</view>
+              <view class="match-link-text">选择学员</view>
+            </view>
+          </view>
         </view>
-        <view class="desc" style="margin-top: 8rpx;">编号 {{item.id}} · 点此选择</view>
       </view>
-    </view>
 
-    <view wx:else class="card match-acting-bar">
-      <view class="match-acting-line">
-        <text class="match-acting-label">当前代操作学员</text>
-        <text class="match-acting-name">{{actingStudent.name}}（{{actingStudent.grade}}）</text>
-      </view>
-      <view class="desc">编号 {{actingStudent.id}} · 下方推荐与「发起结对申请」均针对该生。</view>
-      <button class="btn-secondary" style="margin-top: 16rpx;" bindtap="onChangeProxyStudent">更换学员</button>
-    </view>
-  </block>
-
-  <view wx:if="{{role !== 'admin_level_2' || actingStudent}}" class="card" style="margin-top: 20rpx;">
-    <view class="list-row">
-      <text>筛选科目</text>
-      <picker mode="selector" range="{{subjectOptions}}" bindchange="onSubjectChange">
-        <text>{{filterSubject}}</text>
-      </picker>
-    </view>
-    <view class="actions">
-      <button class="btn-secondary" bindtap="toRequests">申请处理</button>
-      <button class="btn-secondary" bindtap="toUnbind">解绑申请</button>
-    </view>
-  </view>
-
-  <block wx:if="{{role !== 'admin_level_2' || actingStudent}}">
-    <block wx:for="{{renderList}}" wx:key="id">
-      <view class="card" style="margin-top: 20rpx;">
-        <view>{{item.teacher}} · {{item.subject}}</view>
-        <view class="desc">可授课时间：{{item.time}}</view>
-        <view class="desc">匹配分：{{item.score}} · 风格：{{item.style}}</view>
-        <button class="btn-primary" data-id="{{item.id}}" bindtap="onApply">发起结对申请</button>
+      <view wx:else class="card match-acting-bar">
+        <view class="match-acting-line">
+          <text class="match-acting-label">当前代操作学员</text>
+          <text class="match-acting-name">{{actingStudent.name}}（{{actingStudent.grade}}）</text>
+        </view>
+        <view class="desc">编号 {{actingStudent.id}} · 下方推荐与「发起结对申请」均针对该生，请在提交前再次确认信息。</view>
+        <button class="btn-secondary match-change-btn" bindtap="onChangeProxyStudent">更换学员</button>
       </view>
     </block>
-  </block>
+
+    <view wx:if="{{role !== 'admin_level_2' || actingStudent}}" class="card match-filter-card">
+      <view class="section-title">筛选与流程入口</view>
+      <view class="section-desc">先按学科查看推荐结果，再进入申请处理或解绑流程，便于有序完成查看与申请。</view>
+      <view class="match-filter-row">
+        <view class="match-filter-label">筛选科目</view>
+        <picker mode="selector" range="{{subjectOptions}}" value="{{selectedSubjectIndex}}" bindchange="onSubjectChange">
+          <view class="match-filter-value">{{filterSubject}}</view>
+        </picker>
+      </view>
+      <view class="actions">
+        <button class="btn-secondary" bindtap="toRequests">申请处理</button>
+        <button class="btn-secondary" bindtap="toUnbind">解绑申请</button>
+      </view>
+    </view>
+
+    <view wx:if="{{role !== 'admin_level_2' || actingStudent}}" class="section-header">
+      <view class="section-title">推荐教师</view>
+      <view class="section-desc">根据学科、时间与风格为你推荐匹配度较高的志愿者。</view>
+    </view>
+
+    <block wx:if="{{role !== 'admin_level_2' || actingStudent}}">
+      <block wx:for="{{renderList}}" wx:key="id">
+        <view class="card match-teacher-card {{item.highlight ? 'match-teacher-card--featured' : ''}}">
+          <view class="match-teacher-top">
+            <view>
+              <view class="match-teacher-name">{{item.teacher}}</view>
+              <view class="match-teacher-subject">{{item.subject}} · {{item.style}}</view>
+            </view>
+            <view class="match-score-wrap">
+              <view class="match-score-value">{{item.score}}</view>
+              <view class="match-score-label">匹配分</view>
+            </view>
+          </view>
+          <view class="chip-row match-chip-row">
+            <view class="chip">{{item.scoreTag}}</view>
+            <view class="chip">{{item.time}}</view>
+          </view>
+          <view class="match-teacher-summary">{{item.summary}}</view>
+          <view class="match-teacher-meta">
+            <view class="desc">推荐理由：适配当前学习阶段与授课节奏，适合进一步沟通确认。</view>
+            <button class="btn-primary match-apply-btn" data-id="{{item.id}}" bindtap="onApply">发起结对申请</button>
+          </view>
+        </view>
+      </block>
+    </block>
+  </view>
 </view>

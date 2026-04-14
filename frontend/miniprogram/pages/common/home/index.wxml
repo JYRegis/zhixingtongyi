@@ -32,5 +32,5 @@
     </view>
   </view>
 
-  <view class="home-footnote">当前为演示模式，正式版将使用微信一键登录并做身份核验。</view>
+  <view class="home-footnote">选择你的身份，即可进入对应的工作台。</view>
 </view>

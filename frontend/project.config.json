@@ -46,7 +46,7 @@
   },
   "appid": "wxbd4c9add97038750",
   "projectname": "zhixingtongyi",
-  "libVersion": "2.20.1",
+  "libVersion": "3.15.2",
   "condition": {
     "search": {
       "list": []

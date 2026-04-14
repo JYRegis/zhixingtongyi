@@ -1,0 +1,31 @@
+.meeting-page {
+  padding-bottom: 48rpx;
+}
+
+.meeting-next-card,
+.meeting-history-card {
+  margin-top: 20rpx;
+}
+
+.meeting-next-tag {
+  display: inline-block;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  background: #eef4ff;
+  color: #175cd3;
+  font-size: 22rpx;
+}
+
+.meeting-next-title {
+  margin-top: 18rpx;
+  margin-bottom: 12rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #101828;
+}
+
+.meeting-history-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #101828;
+}

@@ -1,24 +1,60 @@
-<view class="container">
-  <view class="card">
-    <view class="title">工作台</view>
-    <view class="desc">当前身份：{{roleName}}</view>
-    <view class="chip-row">
-      <view class="chip">常用入口</view>
-      <view class="chip">资料在「设置」</view>
+<view class="page-shell">
+  <view class="container workbench-page">
+    <view class="page-hero workbench-hero">
+      <view class="page-hero-eyebrow">{{heroEyebrow}}</view>
+      <view class="page-hero-title">{{heroTitle}}</view>
+      <view class="page-hero-desc">{{heroDesc}}</view>
+      <view class="chip-row workbench-hero-meta">
+        <view class="hero-badge">当前身份：{{roleName}}</view>
+        <view class="hero-badge">欢迎你，{{nickname}}</view>
+      </view>
+      <view class="page-hero-badges">
+        <view wx:for="{{heroBadges}}" wx:key="*this" class="hero-badge">{{item}}</view>
+      </view>
+    </view>
+
+    <view class="stat-grid">
+      <view wx:for="{{summaryCards}}" wx:key="label" class="stat-grid-item">
+        <view class="stat-card">
+          <view class="stat-label">{{item.label}}</view>
+          <view class="stat-value">{{item.value}}</view>
+          <view class="stat-note">{{item.note}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="surface-note">功能入口与工作待办已按角色汇总在下方，可随时查看和使用。</view>
+
+    <view class="section-header">
+      <view class="section-title">我的待办</view>
+      <view class="section-desc">{{sectionDesc}}</view>
+    </view>
+
+    <view wx:if="{{!isLoggedIn}}" class="card empty-state workbench-empty">
+      <view class="empty-title">还没有登录信息</view>
+      <view class="empty-desc">请先返回首页选择角色，进入对应工作台后即可查看匹配、聊天、会议与管理入口。</view>
+      <button class="btn-primary workbench-login-btn" bindtap="onGoLogin">去选择身份</button>
+    </view>
+
+    <view wx:else class="workbench-menu-list">
+      <view
+        wx:for="{{menuList}}"
+        wx:key="title"
+        class="card workbench-menu-card {{item.featured ? 'workbench-menu-card--featured' : ''}}"
+        data-action="{{item.action}}"
+        bindtap="onTapMenu"
+      >
+        <view class="workbench-menu-top">
+          <view class="workbench-menu-mark">{{item.mark}}</view>
+          <view class="badge {{item.featured ? 'badge-success' : 'badge-warning'}}">{{item.badge}}</view>
+        </view>
+        <view class="workbench-menu-title">{{item.title}}</view>
+        <view class="workbench-menu-desc">{{item.desc}}</view>
+        <view class="workbench-menu-foot">
+          <view class="workbench-menu-tip">{{item.tip}}</view>
+          <view class="workbench-menu-arrow">进入</view>
+        </view>
+      </view>
     </view>
   </view>
-
-  <view class="section-title">我的待办</view>
-  <view
-    wx:for="{{menuList}}"
-    wx:key="title"
-    class="card"
-    style="margin-top: 20rpx;"
-    data-action="{{item.action}}"
-    bindtap="onTapMenu"
-  >
-    <view class="title" style="font-size: 32rpx;">{{item.title}}</view>
-    <view class="desc">{{item.desc}}</view>
-  </view>
-
 </view>

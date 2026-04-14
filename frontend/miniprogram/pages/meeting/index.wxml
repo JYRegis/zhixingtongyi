@@ -1,29 +1,41 @@
-<view class="container">
-  <view class="card">
-    <view class="title">会议安排</view>
-    <view class="desc">会议开始前 15 分钟可触发订阅消息提醒，当前角色：{{role}}。</view>
-  </view>
-
-  <view class="card" style="margin-top: 20rpx;">
-    <view>{{nextMeeting.title}}</view>
-    <view class="desc">开始时间：{{nextMeeting.startTime}}</view>
-    <view class="desc">会议链接：{{nextMeeting.roomLink}}</view>
-    <view class="actions">
-      <button class="btn-primary" bindtap="onCopyLink">复制会议链接</button>
-      <button class="btn-secondary" bindtap="onSubscribeNotice">订阅提醒</button>
-    </view>
-  </view>
-
-  <view class="section-title">历史会议</view>
-  <view class="card">
-    <block wx:for="{{history}}" wx:key="id">
-      <view class="list-row">
-        <view>
-          <view>{{item.title}}</view>
-          <view class="desc">{{item.startTime}}</view>
-        </view>
-        <view class="badge badge-success">{{item.status}}</view>
+<view class="page-shell">
+  <view class="container meeting-page">
+    <view class="page-hero">
+      <view class="page-hero-eyebrow">课程排期</view>
+      <view class="page-hero-title">会议安排与课程提醒</view>
+      <view class="page-hero-desc">集中查看下一场会议、历史课程与复制链接，便于快速安排课程。</view>
+      <view class="page-hero-badges">
+        <view class="hero-badge">当前身份：{{roleName}}</view>
+        <view class="hero-badge">课前提醒</view>
+        <view class="hero-badge">链接一键复制</view>
       </view>
-    </block>
+    </view>
+
+    <view class="card meeting-next-card">
+      <view class="meeting-next-tag">下一场课程</view>
+      <view class="meeting-next-title">{{nextMeeting.title}}</view>
+      <view class="desc">开始时间：{{nextMeeting.startTime}}</view>
+      <view class="desc">会议链接：{{nextMeeting.roomLink}}</view>
+      <view class="actions">
+        <button class="btn-primary" bindtap="onCopyLink">复制会议链接</button>
+        <button class="btn-secondary" bindtap="onSubscribeNotice">订阅提醒</button>
+      </view>
+    </view>
+
+    <view class="section-header">
+      <view class="section-title">历史会议</view>
+      <view class="section-desc">已完成的会议记录保留在这里，方便回顾课程节奏。</view>
+    </view>
+    <view class="card meeting-history-card">
+      <block wx:for="{{history}}" wx:key="id">
+        <view class="list-row">
+          <view>
+            <view class="meeting-history-title">{{item.title}}</view>
+            <view class="desc">{{item.startTime}}</view>
+          </view>
+          <view class="badge badge-success">{{item.status}}</view>
+        </view>
+      </block>
+    </view>
   </view>
 </view>

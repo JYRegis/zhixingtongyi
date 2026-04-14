@@ -1,13 +1,19 @@
 const { loadThread, saveThread } = require("../../../utils/chatPartners");
+const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
 
 Page({
   data: {
     partnerId: "",
     partnerName: "",
     role: "",
+    roleName: "",
+    myAvatarUrl: "",
+    myAvatarChar: "我",
     inputFocused: false,
     message: "",
+    canSend: false,
     messages: [],
+    welcomeHint: "",
     scrollInto: ""
   },
   onLoad(query) {
@@ -32,7 +38,20 @@ Page({
     this.reloadMessages();
   },
   onShow() {
-    this.setData({ role: getApp().globalData.role || "student" });
+    const app = getApp();
+    const role = app.globalData.role || "";
+    const userInfo = app.globalData.userInfo || {};
+    const nickname = (userInfo.nickname || "").trim();
+    this.setData({
+      role,
+      roleName: ROLE_DISPLAY_NAME[role] || "学员",
+      myAvatarUrl: (userInfo.avatarUrl || "").trim(),
+      myAvatarChar: nickname ? nickname.charAt(0) : "我",
+      welcomeHint:
+        role === "teacher"
+          ? "可在这里和学员同步课程安排、作业反馈与会前提醒。"
+          : "可在这里与志愿者确认课程安排、反馈学习进展。"
+    });
     if (this.partnerId) {
       this.reloadMessages();
     }
@@ -41,7 +60,17 @@ Page({
     if (!this.partnerId) {
       return;
     }
-    const messages = loadThread(this.partnerId);
+    const raw = loadThread(this.partnerId);
+    const messages = raw.map(function (m) {
+      return {
+        id: m.id,
+        from: m.from,
+        text: m.text,
+        time: m.time,
+        isSelf: m.isSelf,
+        avatarChar: (m.from || "").charAt(0) || "?"
+      };
+    });
     const last = messages.length ? messages[messages.length - 1] : null;
     this.setData({
       messages,
@@ -55,7 +84,11 @@ Page({
     this.setData({ inputFocused: false });
   },
   onInput(e) {
-    this.setData({ message: e.detail.value });
+    const message = e.detail.value;
+    this.setData({
+      message,
+      canSend: !!message.trim()
+    });
   },
   onSend() {
     const text = this.data.message.trim();
@@ -75,19 +108,22 @@ Page({
     this.setData({
       messages: next,
       message: "",
+      canSend: false,
       scrollInto: `msg-${id}`
     });
   },
   onMockImage() {
-    wx.showToast({
-      title: "图片上传待接入",
-      icon: "none"
-    });
+    wx.showToast({ title: "图片功能即将上线", icon: "none" });
   },
   onMockVoice() {
-    wx.showToast({
-      title: "语音录制待接入",
-      icon: "none"
+    wx.showToast({ title: "语音功能即将上线", icon: "none" });
+  },
+  onMoreAction() {
+    wx.showActionSheet({
+      itemList: ["拍照", "相册", "文件"],
+      success: function () {
+        wx.showToast({ title: "更多功能即将上线", icon: "none" });
+      }
     });
   }
 });

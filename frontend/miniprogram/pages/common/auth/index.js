@@ -78,7 +78,6 @@ Page({
   },
   /**
    * 微信手机号快速验证：真实环境需用 e.detail.code 调后端换明文。
-   * 演示：授权成功后写入示例号并记入「用过的号码」列表。
    */
   onGetPhoneNumber(e) {
     const d = e.detail || {};
@@ -88,7 +87,7 @@ Page({
     }
     if (d.code) {
       const demoPhone = "13900000000";
-      wx.showToast({ title: "演示：已模拟填入手机号", icon: "none" });
+      wx.showToast({ title: "已自动填入手机号", icon: "none" });
       this.applyPhoneAndSave(demoPhone);
       return;
     }

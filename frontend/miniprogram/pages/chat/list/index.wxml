@@ -1,31 +1,43 @@
-<view class="chat-list-page">
-  <view class="card chat-list-intro">
-    <view class="title">已结对</view>
-    <view class="desc">仅展示已结对成功的对象；点进某一栏即可单独聊天。当前身份：{{role || '未登录'}}。</view>
-  </view>
-
-  <block wx:if="{{pairs.length}}">
-    <view class="section-title">会话列表</view>
-    <view
-      wx:for="{{pairs}}"
-      wx:key="partnerId"
-      class="card chat-pair-card"
-      data-id="{{item.partnerId}}"
-      data-name="{{item.name}}"
-      bindtap="onOpenRoom"
-    >
-      <view class="chat-pair-top">
-        <text class="chat-pair-name">{{item.name}}</text>
-        <text class="chat-pair-time">{{item.lastTime}}</text>
+<view class="page-shell">
+  <view class="chat-list-page">
+    <view class="page-hero chat-list-hero">
+      <view class="page-hero-eyebrow">会话中心</view>
+      <view class="page-hero-title">已结对聊天列表</view>
+      <view class="page-hero-desc">这里汇总你当前可直接进入的会话，点进某位对象即可开始聊天。</view>
+      <view class="page-hero-badges">
+        <view class="hero-badge">当前身份：{{roleName}}</view>
+        <view class="hero-badge">消息本机保存</view>
+        <view class="hero-badge">支持文字沟通</view>
       </view>
-      <view class="chat-pair-tag">{{item.tag}}</view>
-      <view class="chat-pair-preview">{{item.lastPreview}}</view>
     </view>
-  </block>
 
-  <view wx:else class="card chat-empty">
-    <view class="title" style="font-size: 30rpx;">暂无会话</view>
-    <view class="desc">{{emptyHint}}</view>
-    <button wx:if="{{role !== 'admin_level_1'}}" class="btn-primary" style="margin-top: 24rpx;" bindtap="toMatch">去匹配</button>
+    <block wx:if="{{pairs.length}}">
+      <view class="section-header">
+        <view class="section-title">会话列表</view>
+        <view class="section-desc">优先从最近沟通对象开始浏览，便于快速进入聊天、课程安排与反馈场景。</view>
+      </view>
+      <view
+        wx:for="{{pairs}}"
+        wx:key="partnerId"
+        class="card chat-pair-card"
+        data-id="{{item.partnerId}}"
+        data-name="{{item.name}}"
+        bindtap="onOpenRoom"
+      >
+        <view class="chat-pair-top">
+          <text class="chat-pair-name">{{item.name}}</text>
+          <text class="chat-pair-time">{{item.lastTime}}</text>
+        </view>
+        <view class="chat-pair-tag">{{item.tag}}</view>
+        <view class="chat-pair-preview">{{item.lastPreview}}</view>
+        <view class="chat-pair-action">点击进入聊天</view>
+      </view>
+    </block>
+
+    <view wx:else class="card chat-empty">
+      <view class="empty-title">暂无会话</view>
+      <view class="empty-desc">{{emptyHint}}</view>
+      <button wx:if="{{role !== 'admin_level_1'}}" class="btn-primary chat-empty-btn" bindtap="toMatch">去匹配</button>
+    </view>
   </view>
 </view>

@@ -1,0 +1,45 @@
+.region-page {
+  padding-bottom: 48rpx;
+}
+
+.region-actions-card,
+.region-acting-card,
+.region-student-card {
+  margin-top: 20rpx;
+}
+
+.region-student-card {
+  transition: border-color 0.2s ease;
+}
+
+.region-student-card--active {
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 14rpx 36rpx rgba(37, 99, 235, 0.12);
+}
+
+.region-student-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20rpx;
+}
+
+.region-student-name {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #101828;
+}
+
+.region-student-action {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #175cd3;
+}
+
+.region-chip-row {
+  margin-top: 18rpx;
+}
+
+.region-student-badges {
+  margin-top: 18rpx;
+}

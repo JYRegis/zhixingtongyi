@@ -30,19 +30,27 @@
     "list": [
       {
         "pagePath": "pages/common/workbench/index",
-        "text": "工作台"
+        "text": "工作台",
+        "iconPath": "images/tabbar/workbench.png",
+        "selectedIconPath": "images/tabbar/workbench-active.png"
       },
       {
         "pagePath": "pages/match/center/index",
-        "text": "匹配"
+        "text": "匹配",
+        "iconPath": "images/tabbar/match.png",
+        "selectedIconPath": "images/tabbar/match-active.png"
       },
       {
         "pagePath": "pages/chat/list/index",
-        "text": "聊天"
+        "text": "聊天",
+        "iconPath": "images/tabbar/chat.png",
+        "selectedIconPath": "images/tabbar/chat-active.png"
       },
       {
         "pagePath": "pages/common/settings/index",
-        "text": "设置"
+        "text": "设置",
+        "iconPath": "images/tabbar/settings.png",
+        "selectedIconPath": "images/tabbar/settings-active.png"
       }
     ]
   },

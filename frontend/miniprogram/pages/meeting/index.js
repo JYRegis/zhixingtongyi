@@ -1,6 +1,9 @@
+const { ROLE_DISPLAY_NAME } = require("../../utils/roleLabels");
+
 Page({
   data: {
     role: "",
+    roleName: "学员",
     nextMeeting: {
       title: "数学辅导第 3 次",
       startTime: "2025-06-03 19:00",
@@ -13,8 +16,13 @@ Page({
   },
   onShow() {
     this.setData({
-      role: getApp().globalData.role || "student"
+      role: getApp().globalData.role || "",
+      roleName: ROLE_DISPLAY_NAME[getApp().globalData.role || ""] || "学员"
     });
+  },
+  onPullDownRefresh() {
+    this.onShow();
+    wx.stopPullDownRefresh();
   },
   onCopyLink() {
     wx.setClipboardData({
@@ -24,7 +32,7 @@ Page({
   },
   onSubscribeNotice() {
     wx.showToast({
-      title: "订阅提醒待接入",
+      title: "订阅提醒功能即将上线",
       icon: "none"
     });
   }

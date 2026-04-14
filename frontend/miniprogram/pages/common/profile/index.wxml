@@ -1,58 +1,61 @@
-<view class="container">
-  <view class="card">
-    <view class="title">信息录入</view>
-    <view class="desc">当前身份：{{roleLabel}}。下面只显示和您身份相关的填写项。</view>
-  </view>
+<view class="page-shell">
+  <view class="container profile-page">
+    <view class="page-hero">
+      <view class="page-hero-eyebrow">{{heroEyebrow}}</view>
+      <view class="page-hero-title">{{heroTitle}}</view>
+      <view class="page-hero-desc">{{heroDesc}}</view>
+      <view class="page-hero-badges">
+        <view wx:for="{{heroBadges}}" wx:key="*this" class="hero-badge">{{item}}</view>
+      </view>
+    </view>
 
-  <view class="card" style="margin-top: 20rpx;">
-    <view wx:if="{{fieldVisible.name}}" class="field">
-      <text class="field-label">姓名</text>
-      <input class="field-input" placeholder="请输入姓名" data-field="name" bindinput="onInput" />
+    <view class="stat-grid">
+      <view wx:for="{{summaryCards}}" wx:key="label" class="stat-grid-item">
+        <view class="stat-card">
+          <view class="stat-label">{{item.label}}</view>
+          <view class="stat-value">{{item.value}}</view>
+          <view class="stat-note">{{item.note}}</view>
+        </view>
+      </view>
     </view>
-    <view wx:if="{{fieldVisible.school}}" class="field">
-      <text class="field-label">学校</text>
-      <input class="field-input" placeholder="请输入学校" data-field="school" bindinput="onInput" />
+
+    <view class="surface-note">{{focusNote}}</view>
+
+    <block wx:for="{{sections}}" wx:key="key">
+      <view class="section-header">
+        <view class="section-title">{{item.title}}</view>
+        <view class="section-desc">{{item.desc}}</view>
+      </view>
+      <view class="card profile-section-card">
+        <block wx:for="{{item.fields}}" wx:key="key" wx:for-item="field">
+          <view class="field profile-field">
+            <text class="field-label">{{field.label}}</text>
+            <input
+              wx:if="{{field.type === 'input'}}"
+              class="field-input profile-field-input"
+              placeholder="{{field.placeholder}}"
+              value="{{field.value}}"
+              data-field="{{field.key}}"
+              bindinput="onInput"
+            />
+            <textarea
+              wx:else
+              class="field-textarea profile-field-textarea"
+              placeholder="{{field.placeholder}}"
+              value="{{field.value}}"
+              data-field="{{field.key}}"
+              bindinput="onInput"
+            />
+            <view class="profile-field-hint">{{field.hint}}</view>
+          </view>
+        </block>
+      </view>
+    </block>
+
+    <view class="card profile-submit-card">
+      <view class="title profile-submit-title">保存当前资料</view>
+      <view class="desc">提交后资料将保存到你的个人档案中。</view>
+      <button class="btn-primary profile-submit-btn" bindtap="onSubmit">提交资料</button>
     </view>
-    <view wx:if="{{fieldVisible.grade}}" class="field">
-      <text class="field-label">年级</text>
-      <input class="field-input" placeholder="请输入年级" data-field="grade" bindinput="onInput" />
-    </view>
-    <view wx:if="{{fieldVisible.subjects}}" class="field">
-      <text class="field-label">擅长/需求科目</text>
-      <input class="field-input" placeholder="如：数学,英语" data-field="subjects" bindinput="onInput" />
-    </view>
-    <view wx:if="{{fieldVisible.personality}}" class="field">
-      <text class="field-label">性格描述</text>
-      <textarea class="field-textarea" placeholder="请输入性格与特长描述" data-field="personality" bindinput="onInput" />
-    </view>
-    <view wx:if="{{fieldVisible.availableTime}}" class="field">
-      <text class="field-label">可授课时间</text>
-      <input class="field-input" placeholder="如：周六 19:00-21:00" data-field="availableTime" bindinput="onInput" />
-    </view>
-    <view wx:if="{{fieldVisible.guardianContact}}" class="field">
-      <text class="field-label">监护人联系方式</text>
-      <input class="field-input" placeholder="用于紧急联系" data-field="guardianContact" bindinput="onInput" />
-    </view>
-    <view wx:if="{{fieldVisible.learningGoal}}" class="field">
-      <text class="field-label">学习目标</text>
-      <textarea class="field-textarea" placeholder="请输入阶段学习目标" data-field="learningGoal" bindinput="onInput" />
-    </view>
-    <view wx:if="{{fieldVisible.region}}" class="field">
-      <text class="field-label">管辖区域</text>
-      <input class="field-input" placeholder="如：云龙县龙兴村" data-field="region" bindinput="onInput" />
-    </view>
-    <view wx:if="{{fieldVisible.managedStudents}}" class="field">
-      <text class="field-label">代管学员范围</text>
-      <textarea class="field-textarea" placeholder="填写代管年级或班级" data-field="managedStudents" bindinput="onInput" />
-    </view>
-    <view wx:if="{{fieldVisible.organization}}" class="field">
-      <text class="field-label">所属机构</text>
-      <input class="field-input" placeholder="请输入平台运营单位" data-field="organization" bindinput="onInput" />
-    </view>
-    <view wx:if="{{fieldVisible.permissionNote}}" class="field">
-      <text class="field-label">权限备注</text>
-      <textarea class="field-textarea" placeholder="记录授权与审批说明" data-field="permissionNote" bindinput="onInput" />
-    </view>
-    <button class="btn-primary" bindtap="onSubmit">提交资料</button>
   </view>
 </view>

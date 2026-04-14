@@ -5,7 +5,12 @@
   box-sizing: border-box;
 }
 
+.settings-main-hero {
+  margin-bottom: 12rpx;
+}
+
 .settings-hero {
+  margin-top: 20rpx;
   text-align: center;
   padding: 40rpx 32rpx 36rpx;
 }
@@ -45,14 +50,8 @@
   color: #98a2b3;
 }
 
-.settings-section-title {
-  font-size: 26rpx;
-  font-weight: 600;
-  color: #344054;
-  margin: 28rpx 8rpx 12rpx;
-}
-
 .settings-list {
+  margin-top: 16rpx;
   padding: 0;
   overflow: hidden;
 }
