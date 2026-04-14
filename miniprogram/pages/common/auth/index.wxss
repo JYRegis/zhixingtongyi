@@ -1,0 +1,154 @@
+.auth-page {
+  padding: 32rpx;
+  padding-bottom: 64rpx;
+  box-sizing: border-box;
+}
+
+.auth-hero-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #101828;
+}
+
+.auth-hero-desc {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #667085;
+  line-height: 1.5;
+}
+
+.auth-section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #344054;
+  margin: 28rpx 8rpx 12rpx;
+}
+
+.auth-card {
+  padding: 24rpx;
+}
+
+.auth-sub {
+  font-size: 24rpx;
+  color: #667085;
+  margin-bottom: 16rpx;
+}
+
+.auth-phone-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 20rpx;
+  border-radius: 12rpx;
+  border: 2rpx solid #eaecf0;
+  margin-bottom: 16rpx;
+  background: #fafafa;
+}
+
+.auth-phone-item--on {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.auth-phone-num {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #101828;
+  letter-spacing: 2rpx;
+}
+
+.auth-phone-tag {
+  font-size: 24rpx;
+  color: #3b82f6;
+}
+
+.auth-wx-btn {
+  margin-top: 8rpx;
+  width: 100%;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #ffffff;
+  background: #07c160;
+  border: none;
+  line-height: 88rpx;
+  height: 88rpx;
+}
+
+.auth-wx-btn::after {
+  border: none;
+}
+
+.auth-hint {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #98a2b3;
+  line-height: 1.45;
+}
+
+.auth-row-link {
+  margin-top: 20rpx;
+  font-size: 26rpx;
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.auth-phone-input {
+  margin-top: 16rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 16rpx;
+  box-sizing: border-box;
+}
+
+.auth-avatar-btn {
+  width: 160rpx;
+  height: 160rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2rpx solid #eaecf0;
+  background: #f9fafb;
+}
+
+.auth-avatar-btn::after {
+  border: none;
+}
+
+.auth-avatar-img {
+  width: 100%;
+  height: 100%;
+}
+
+.auth-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #667085;
+  padding: 16rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.auth-nick-input {
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 16rpx;
+  box-sizing: border-box;
+}
+
+.auth-submit {
+  margin-top: 40rpx;
+  width: 100%;
+}
+
+.auth-foot {
+  margin-top: 24rpx;
+  text-align: center;
+  font-size: 22rpx;
+  color: #98a2b3;
+}

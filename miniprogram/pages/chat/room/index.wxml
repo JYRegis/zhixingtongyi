@@ -1,0 +1,37 @@
+<view class="container">
+  <view class="card">
+    <view class="title">与 {{partnerName}} 聊天</view>
+    <view class="desc">仅已结对双方可用；记录暂存在本机演示。当前身份：{{role}}。</view>
+  </view>
+
+  <scroll-view
+    scroll-y
+    class="chat-list"
+    scroll-into-view="{{scrollInto}}"
+    scroll-with-animation
+  >
+    <block wx:for="{{messages}}" wx:key="id">
+      <view id="msg-{{item.id}}" class="chat-row {{item.isSelf ? 'chat-row-self' : 'chat-row-other'}}">
+        <view class="chat-meta">{{item.from}} · {{item.time}}</view>
+        <view class="chat-bubble {{item.isSelf ? 'bubble-self' : 'bubble-other'}}">{{item.text}}</view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <view class="card" style="margin-top: 20rpx;">
+    <input
+      class="field-input chat-input"
+      type="text"
+      placeholder="{{(inputFocused || message) ? '' : '输入消息...'}}"
+      value="{{message}}"
+      bindfocus="onInputFocus"
+      bindblur="onInputBlur"
+      bindinput="onInput"
+    />
+    <view class="actions">
+      <button class="btn-secondary" bindtap="onMockVoice">语音</button>
+      <button class="btn-secondary" bindtap="onMockImage">图片</button>
+      <button class="btn-primary" bindtap="onSend">发送</button>
+    </view>
+  </view>
+</view>

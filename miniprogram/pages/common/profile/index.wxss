@@ -1,0 +1,10 @@
+/**
+ * 资料页：全局 .field-input 对 input 同时设了 padding，在部分机型上单行文字会视觉上靠上。
+ * textarea 仍用 app.wxss 的 padding，此处只收紧单行 input 的纵向 padding，用行高对齐可视区域。
+ */
+.field-input {
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 16rpx;
+  box-sizing: border-box;
+}

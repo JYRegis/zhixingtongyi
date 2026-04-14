@@ -1,0 +1,52 @@
+<view class="container">
+  <view class="card">
+    <view class="title">解绑申请</view>
+    <view class="desc">结对后解除关系需一方发起、另一方确认，确保双方知情。</view>
+  </view>
+
+  <view class="section-title">当前结对信息</view>
+  <view class="card">
+    <view class="list-row">
+      <text>结对对象</text>
+      <text>{{pairInfo.partnerName}}</text>
+    </view>
+    <view class="list-row">
+      <text>科目</text>
+      <text>{{pairInfo.subject}}</text>
+    </view>
+    <view class="list-row">
+      <text>结对开始时间</text>
+      <text>{{pairInfo.startDate}}</text>
+    </view>
+    <view class="list-row">
+      <text>状态</text>
+      <text class="badge badge-success">{{pairInfo.status}}</text>
+    </view>
+  </view>
+
+  <view class="section-title">发起解绑</view>
+  <view class="card">
+    <view class="field">
+      <text class="field-label">解绑原因</text>
+      <textarea class="field-textarea" value="{{reason}}" placeholder="请填写原因，便于双方沟通确认。" bindinput="onReasonInput" />
+    </view>
+    <button class="btn-primary" bindtap="onSubmitApply">提交解绑申请</button>
+  </view>
+
+  <view class="section-title">待处理申请</view>
+  <view class="card">
+    <view class="list-row">
+      <text>申请编号</text>
+      <text>#{{pendingRequest.id}}</text>
+    </view>
+    <view class="list-row">
+      <text>发起方</text>
+      <text>{{pendingRequest.from}}</text>
+    </view>
+    <view class="desc" style="margin-top: 12rpx;">{{pendingRequest.reason}}</view>
+    <view class="actions">
+      <button class="btn-primary" bindtap="onAgree">同意解绑</button>
+      <button class="btn-secondary" bindtap="onReject">暂不同意</button>
+    </view>
+  </view>
+</view>

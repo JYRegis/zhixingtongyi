@@ -1,0 +1,56 @@
+<view class="container">
+  <view class="card">
+    <view class="title">申请处理</view>
+    <view class="desc">志愿者端处理学员申请。拒绝时必须填写理由并回传给学员/代管老师。</view>
+  </view>
+
+  <view wx:if="{{pendingList.length === 0}}" class="card" style="margin-top: 20rpx;">
+    <view class="desc" style="text-align: center;">暂无待处理的结对申请。</view>
+  </view>
+
+  <block wx:for="{{pendingList}}" wx:key="id">
+    <view class="card" style="margin-top: 20rpx;">
+      <view class="list-row">
+        <text>申请编号</text>
+        <text>#{{item.id}}</text>
+      </view>
+      <view class="list-row">
+        <text>学员</text>
+        <text>{{item.studentName}}</text>
+      </view>
+      <view class="list-row">
+        <text>科目</text>
+        <text>{{item.subject}}</text>
+      </view>
+      <view class="list-row">
+        <text>期望时间</text>
+        <text>{{item.preferredTime}}</text>
+      </view>
+      <view class="list-row">
+        <text>紧急度</text>
+        <text class="badge badge-warning">{{item.urgentLevel}}</text>
+      </view>
+      <view class="actions">
+        <button class="btn-primary" data-id="{{item.id}}" bindtap="onAccept">接受</button>
+        <button class="btn-secondary" data-id="{{item.id}}" bindtap="onOpenReject">拒绝</button>
+      </view>
+    </view>
+  </block>
+
+  <view wx:if="{{activeRejectId}}" class="card" style="margin-top: 20rpx;">
+    <view class="title" style="font-size: 30rpx;">拒绝申请 #{{activeRejectId}}</view>
+    <view class="field">
+      <text class="field-label">拒绝理由（必填）</text>
+      <textarea
+        class="field-textarea"
+        placeholder="例如：当前时间冲突，无法保障固定陪伴频率。"
+        value="{{rejectReason}}"
+        bindinput="onInputReason"
+      />
+    </view>
+    <view class="actions">
+      <button class="btn-secondary" bindtap="onCancelReject">取消</button>
+      <button class="btn-primary" bindtap="onRejectConfirm">确认拒绝</button>
+    </view>
+  </view>
+</view>

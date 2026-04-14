@@ -1,0 +1,54 @@
+.match-proxy-card {
+  margin-top: 20rpx;
+}
+
+.match-proxy-row {
+  margin-top: 16rpx;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  border: 2rpx solid #eaecf0;
+  background: #fafafa;
+}
+
+.match-proxy-row:active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.match-proxy-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #101828;
+}
+
+.match-proxy-grade {
+  font-size: 26rpx;
+  color: #667085;
+}
+
+.match-proxy-meta {
+  margin-top: 8rpx;
+}
+
+.match-acting-bar {
+  margin-top: 20rpx;
+  border-left: 8rpx solid #d97706;
+}
+
+.match-acting-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12rpx;
+}
+
+.match-acting-label {
+  font-size: 24rpx;
+  color: #667085;
+}
+
+.match-acting-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #101828;
+}

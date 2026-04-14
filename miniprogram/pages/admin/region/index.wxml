@@ -1,0 +1,43 @@
+<view class="container">
+  <view class="card">
+    <view class="title">区域管理看板</view>
+    <view class="desc">管辖区域：{{regionName}}</view>
+    <view class="chip-row">
+      <view class="chip">学员身份审核</view>
+      <view class="chip">代管账号</view>
+      <view class="chip">进度跟踪</view>
+    </view>
+  </view>
+
+  <view class="actions">
+    <button class="btn-primary" bindtap="onCreateAccount">新增学员账号</button>
+    <button class="btn-secondary" bindtap="onReviewIdentity">发起身份审核</button>
+  </view>
+
+  <view class="section-title">学员列表</view>
+  <block wx:for="{{students}}" wx:key="id">
+    <view class="card" style="margin-top: 16rpx;" data-id="{{item.id}}" bindtap="onSelectStudent">
+      <view class="list-row">
+        <text>姓名</text>
+        <text>{{item.name}}（{{item.grade}}）</text>
+      </view>
+      <view class="list-row">
+        <text>编号</text>
+        <text>{{item.id}}</text>
+      </view>
+      <view class="list-row">
+        <text>绑定状态</text>
+        <text class="badge {{item.binding === '已绑定' ? 'badge-success' : 'badge-warning'}}">{{item.binding}}</text>
+      </view>
+      <view class="list-row">
+        <text>结对状态</text>
+        <text class="badge {{item.progress === '结对中' ? 'badge-success' : 'badge-warning'}}">{{item.progress}}</text>
+      </view>
+    </view>
+  </block>
+
+  <view wx:if="{{actingStudent}}" class="card" style="margin-top: 20rpx;">
+    <view class="title" style="font-size: 30rpx;">当前代操作学员</view>
+    <view class="desc">{{actingStudent.name}}（{{actingStudent.grade}}）· 编号 {{actingStudent.id}}。与「匹配」Tab 共用此选择，便于代发起结对。</view>
+  </view>
+</view>

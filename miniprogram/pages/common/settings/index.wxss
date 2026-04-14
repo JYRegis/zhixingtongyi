@@ -1,0 +1,116 @@
+.settings-page {
+  padding: 32rpx;
+  padding-bottom: 48rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.settings-hero {
+  text-align: center;
+  padding: 40rpx 32rpx 36rpx;
+}
+
+.settings-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  margin: 0 auto 20rpx;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+  color: #ffffff;
+  font-size: 48rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-avatar--img {
+  display: block;
+  background: #eaecf0;
+}
+
+.settings-nickname {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #101828;
+}
+
+.settings-role {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #475467;
+}
+
+.settings-role.muted {
+  color: #98a2b3;
+}
+
+.settings-section-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #344054;
+  margin: 28rpx 8rpx 12rpx;
+}
+
+.settings-list {
+  padding: 0;
+  overflow: hidden;
+}
+
+.settings-row {
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid #eaecf0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8rpx;
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
+.settings-row-btn:active {
+  background: #f9fafb;
+}
+
+.settings-row-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #101828;
+}
+
+.settings-row-extra {
+  font-size: 24rpx;
+  color: #3b82f6;
+}
+
+.settings-row-extra.muted {
+  color: #98a2b3;
+}
+
+.settings-logout-btn {
+  margin: 0;
+  width: 100%;
+  border-radius: 0;
+  background: #ffffff;
+  color: #b42318;
+  font-size: 30rpx;
+  font-weight: 500;
+  border: none;
+  line-height: 96rpx;
+  height: 96rpx;
+}
+
+.settings-logout-btn::after {
+  border: none;
+}
+
+.settings-footnote {
+  margin-top: 40rpx;
+  padding: 0 16rpx;
+  font-size: 22rpx;
+  color: #98a2b3;
+  line-height: 1.55;
+  text-align: center;
+}

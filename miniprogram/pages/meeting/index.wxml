@@ -1,0 +1,29 @@
+<view class="container">
+  <view class="card">
+    <view class="title">会议安排</view>
+    <view class="desc">会议开始前 15 分钟可触发订阅消息提醒，当前角色：{{role}}。</view>
+  </view>
+
+  <view class="card" style="margin-top: 20rpx;">
+    <view>{{nextMeeting.title}}</view>
+    <view class="desc">开始时间：{{nextMeeting.startTime}}</view>
+    <view class="desc">会议链接：{{nextMeeting.roomLink}}</view>
+    <view class="actions">
+      <button class="btn-primary" bindtap="onCopyLink">复制会议链接</button>
+      <button class="btn-secondary" bindtap="onSubscribeNotice">订阅提醒</button>
+    </view>
+  </view>
+
+  <view class="section-title">历史会议</view>
+  <view class="card">
+    <block wx:for="{{history}}" wx:key="id">
+      <view class="list-row">
+        <view>
+          <view>{{item.title}}</view>
+          <view class="desc">{{item.startTime}}</view>
+        </view>
+        <view class="badge badge-success">{{item.status}}</view>
+      </view>
+    </block>
+  </view>
+</view>

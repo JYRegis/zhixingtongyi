@@ -1,0 +1,52 @@
+{
+  "pages": [
+    "pages/common/home/index",
+    "pages/common/auth/index",
+    "pages/common/workbench/index",
+    "pages/common/settings/index",
+    "pages/common/profile/index",
+    "pages/common/template/index",
+    "pages/match/center/index",
+    "pages/match/requests/index",
+    "pages/match/unbind/index",
+    "pages/chat/list/index",
+    "pages/chat/room/index",
+    "pages/meeting/index",
+    "pages/admin/region/index",
+    "pages/admin/platform/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "知行同驿",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f7fa"
+  },
+  "tabBar": {
+    "color": "#667085",
+    "selectedColor": "#3b82f6",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/common/workbench/index",
+        "text": "工作台"
+      },
+      {
+        "pagePath": "pages/match/center/index",
+        "text": "匹配"
+      },
+      {
+        "pagePath": "pages/chat/list/index",
+        "text": "聊天"
+      },
+      {
+        "pagePath": "pages/common/settings/index",
+        "text": "设置"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

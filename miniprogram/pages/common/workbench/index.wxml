@@ -1,0 +1,24 @@
+<view class="container">
+  <view class="card">
+    <view class="title">工作台</view>
+    <view class="desc">当前身份：{{roleName}}</view>
+    <view class="chip-row">
+      <view class="chip">常用入口</view>
+      <view class="chip">资料在「设置」</view>
+    </view>
+  </view>
+
+  <view class="section-title">我的待办</view>
+  <view
+    wx:for="{{menuList}}"
+    wx:key="title"
+    class="card"
+    style="margin-top: 20rpx;"
+    data-action="{{item.action}}"
+    bindtap="onTapMenu"
+  >
+    <view class="title" style="font-size: 32rpx;">{{item.title}}</view>
+    <view class="desc">{{item.desc}}</view>
+  </view>
+
+</view>

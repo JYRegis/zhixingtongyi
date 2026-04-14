@@ -1,0 +1,31 @@
+<view class="chat-list-page">
+  <view class="card chat-list-intro">
+    <view class="title">已结对</view>
+    <view class="desc">仅展示已结对成功的对象；点进某一栏即可单独聊天。当前身份：{{role || '未登录'}}。</view>
+  </view>
+
+  <block wx:if="{{pairs.length}}">
+    <view class="section-title">会话列表</view>
+    <view
+      wx:for="{{pairs}}"
+      wx:key="partnerId"
+      class="card chat-pair-card"
+      data-id="{{item.partnerId}}"
+      data-name="{{item.name}}"
+      bindtap="onOpenRoom"
+    >
+      <view class="chat-pair-top">
+        <text class="chat-pair-name">{{item.name}}</text>
+        <text class="chat-pair-time">{{item.lastTime}}</text>
+      </view>
+      <view class="chat-pair-tag">{{item.tag}}</view>
+      <view class="chat-pair-preview">{{item.lastPreview}}</view>
+    </view>
+  </block>
+
+  <view wx:else class="card chat-empty">
+    <view class="title" style="font-size: 30rpx;">暂无会话</view>
+    <view class="desc">{{emptyHint}}</view>
+    <button wx:if="{{role !== 'admin_level_1'}}" class="btn-primary" style="margin-top: 24rpx;" bindtap="toMatch">去匹配</button>
+  </view>
+</view>

@@ -1,0 +1,145 @@
+page {
+  background: #f5f7fa;
+  color: #101828;
+  font-size: 28rpx;
+  min-height: 100%;
+}
+
+.container {
+  padding: 32rpx;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 18rpx rgba(16, 24, 40, 0.06);
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+}
+
+.desc {
+  color: #667085;
+  line-height: 1.6;
+}
+
+.btn-primary {
+  margin-top: 24rpx;
+  border-radius: 12rpx;
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.btn-secondary {
+  margin-top: 16rpx;
+  border-radius: 12rpx;
+  color: #175cd3;
+  background: #eff6ff;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  margin: 20rpx 0 12rpx;
+}
+
+.list-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #eaecf0;
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.chip {
+  background: #eef4ff;
+  color: #175cd3;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  margin-left: 8rpx;
+}
+
+.badge-warning {
+  color: #b54708;
+  background: #fffaeb;
+}
+
+.badge-success {
+  color: #067647;
+  background: #ecfdf3;
+}
+
+.badge-danger {
+  color: #b42318;
+  background: #fef3f2;
+}
+
+.field {
+  margin-top: 16rpx;
+}
+
+.field-label {
+  display: block;
+  font-size: 24rpx;
+  color: #344054;
+  margin-bottom: 8rpx;
+}
+
+.field-input,
+.field-textarea {
+  width: 100%;
+  border: 1rpx solid #d0d5dd;
+  background: #ffffff;
+  border-radius: 10rpx;
+  padding: 16rpx;
+  box-sizing: border-box;
+}
+
+.field-textarea {
+  min-height: 180rpx;
+}
+
+.actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.actions button {
+  flex: 1;
+}
+
+button {
+  background: initial;
+}
+
+button:focus {
+  outline: 0;
+}
+
+button::after {
+  border: none;
+}

@@ -1,0 +1,36 @@
+<view class="home-page">
+  <view class="home-hero">
+    <view class="home-brand">
+      <text class="home-brand-mark">驿</text>
+    </view>
+    <view class="home-title">知行同驿</view>
+    <view class="home-subtitle">连接城市志愿者与乡村孩子的云支教平台</view>
+    <view class="home-badge-row">
+      <text class="home-badge">结对学习</text>
+      <text class="home-badge">线上陪伴</text>
+      <text class="home-badge">安全沟通</text>
+    </view>
+  </view>
+
+  <view class="home-section">
+    <view class="home-section-title">请先选择您的身份</view>
+    <view class="home-section-desc">点选最符合您的一句即可进入，用词尽量好懂</view>
+  </view>
+
+  <view class="home-cards">
+    <view
+      wx:for="{{cards}}"
+      wx:key="value"
+      class="home-card"
+      style="border-left-color: {{item.accent}};"
+      data-role="{{item.value}}"
+      bindtap="onChooseRole"
+    >
+      <view class="home-card-iam">{{item.iam}}</view>
+      <view class="home-card-hint">{{item.hint}}</view>
+      <view class="home-card-go" style="color: {{item.accent}};">进入 →</view>
+    </view>
+  </view>
+
+  <view class="home-footnote">当前为演示模式，正式版将使用微信一键登录并做身份核验。</view>
+</view>

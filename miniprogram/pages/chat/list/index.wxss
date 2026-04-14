@@ -1,0 +1,61 @@
+.chat-list-page {
+  padding: 32rpx;
+  padding-bottom: 48rpx;
+  box-sizing: border-box;
+}
+
+.chat-list-intro {
+  margin-bottom: 8rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #344054;
+  margin: 24rpx 8rpx 12rpx;
+}
+
+.chat-pair-card {
+  margin-top: 16rpx;
+  padding: 24rpx;
+}
+
+.chat-pair-card:active {
+  background: #f9fafb;
+}
+
+.chat-pair-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-pair-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #101828;
+}
+
+.chat-pair-time {
+  font-size: 24rpx;
+  color: #98a2b3;
+}
+
+.chat-pair-tag {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #175cd3;
+}
+
+.chat-pair-preview {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #667085;
+  line-height: 1.45;
+}
+
+.chat-empty {
+  margin-top: 24rpx;
+  text-align: center;
+  padding: 40rpx 24rpx;
+}
