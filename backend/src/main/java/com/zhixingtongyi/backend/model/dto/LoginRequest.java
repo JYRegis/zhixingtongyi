@@ -1,0 +1,16 @@
+package com.zhixingtongyi.backend.model.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class LoginRequest {
+    @NotBlank(message = "用户名不能为空")
+    @Size(min = 4, max = 20, message = "用户名长度必须在 4 到 20 个字符之间")
+    private String username;
+
+    @NotBlank(message = "密码不能为空")
+    @Size(min = 6, message = "密码至少需要 6 位")
+    private String password;
+}
