@@ -19,3 +19,4 @@ Thumbs.db
 ### Docker volumes (local bind mounts, if any)
 **/.mysql/
 **/.redis/
+420_1749.md
