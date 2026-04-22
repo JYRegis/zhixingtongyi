@@ -2,6 +2,74 @@
   padding-bottom: 48rpx;
 }
 
+.profile-account-card {
+  margin-top: 20rpx;
+}
+
+.profile-account-section-title {
+  margin-bottom: 0;
+}
+
+.profile-account-body {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24rpx;
+  margin-top: 8rpx;
+  padding: 0 0 8rpx;
+}
+
+.profile-account-hero {
+  flex-shrink: 0;
+}
+
+.profile-account-avatar {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+}
+
+.profile-account-avatar--img {
+  display: block;
+  width: 112rpx;
+  height: 112rpx;
+}
+
+.profile-account-avatar--text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #fff;
+  font-size: 44rpx;
+  font-weight: 600;
+}
+
+.profile-account-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-account-nick {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #101828;
+  line-height: 1.4;
+}
+
+.profile-account-phone {
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  color: #667085;
+}
+
+.profile-account-actions {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #eaecf0;
+}
+
 .profile-section-card,
 .profile-submit-card {
   margin-top: 16rpx;
@@ -37,6 +105,86 @@
   font-size: 22rpx;
   line-height: 1.6;
   color: #98a2b3;
+}
+
+.time-pair-sublabel {
+  display: block;
+  font-size: 22rpx;
+  color: #98a2b3;
+  margin: 0 0 10rpx;
+  line-height: 1.4;
+}
+
+.time-pair-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.time-pair-col {
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+
+.time-pair-inner {
+  height: auto !important;
+  min-height: 92rpx;
+  line-height: 1.4 !important;
+  display: flex;
+  align-items: center;
+  font-size: 28rpx;
+  word-break: break-all;
+}
+
+.profile-field-chips {
+  width: 100%;
+}
+
+.profile-chips-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 10rpx;
+}
+
+.profile-chips-row--tight {
+  margin-top: 8rpx;
+}
+
+.profile-chip {
+  padding: 0 20rpx;
+  min-height: 64rpx;
+  line-height: 64rpx;
+  font-size: 26rpx;
+  color: #344054;
+  background: #f2f4f7;
+  border: 1rpx solid #eaecf0;
+  border-radius: 999rpx;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.profile-chip--sm {
+  min-height: 56rpx;
+  line-height: 56rpx;
+  font-size: 24rpx;
+  padding: 0 16rpx;
+}
+
+.profile-chip--on {
+  color: #175cd3;
+  background: #eff8ff;
+  border-color: #b2ddff;
+  font-weight: 500;
+}
+
+/* 未选学校/年级：与 input placeholder 同一 token（form-placeholder-std），需盖过 profile-field-input 行高样式 */
+.profile-page .field-input.profile-field-input.form-placeholder-std {
+  color: #94a3b8;
 }
 
 .profile-submit-title {

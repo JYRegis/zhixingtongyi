@@ -1,0 +1,60 @@
+<view class="page-shell">
+  <view class="container platform-page">
+    <view class="page-hero">
+      <view class="page-hero-title">{{sectionTitle}}</view>
+    </view>
+
+    <view wx:if="{{!pendingList.length}}" class="card">
+      <view class="section-desc">暂无待审</view>
+    </view>
+    <block wx:for="{{pendingList}}" wx:key="id">
+      <view class="card" style="margin-top: 20rpx">
+        <view class="list-row list-row--tappable" data-id="{{item.id}}" bindtap="onViewOnboarding" hover-class="list-row--hover">
+          <text>申请资料</text>
+          <text class="list-row-cta">查看 ›</text>
+        </view>
+        <view class="list-row">
+          <text>类型</text>
+          <text>{{item.typeLabel || item.roleName}}</text>
+        </view>
+        <view class="list-row">
+          <text>学校</text>
+          <text>{{item.schoolName || '—'}}</text>
+        </view>
+        <view class="actions">
+          <button class="btn-primary" data-id="{{item.id}}" catchtap="onReviewApprove">通过</button>
+          <button class="btn-secondary" data-id="{{item.id}}" catchtap="onReviewReject">驳回</button>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>
+
+<view class="l2-approve-pop" wx:if="{{showL2Modal}}" catchtouchmove="noop">
+  <view class="l2-approve-pop__mask" bindtap="onL2ModalMaskTap" />
+  <view class="l2-approve-pop__panel" catchtap="noop">
+    <view class="l2-approve-pop__title">通过并分配管理范围</view>
+    <view class="field" style="margin-top: 24rpx">
+      <text class="field-label">二级类型</text>
+      <picker range="{{scopeOptions}}" range-key="label" value="{{l2ScopeIndex}}" bindchange="onL2ScopeIndexChange">
+        <view class="field-input">{{scopeOptions[l2ScopeIndex] ? scopeOptions[l2ScopeIndex].label : ''}}</view>
+      </picker>
+    </view>
+    <view class="field" wx:if="{{scopeOptions[l2ScopeIndex] && scopeOptions[l2ScopeIndex].value === 'volunteer_side'}}">
+      <text class="field-label">支教点学校</text>
+      <picker range="{{supportSchools}}" range-key="name" value="{{l2SupportIndex}}" bindchange="onL2SupportIndexChange">
+        <view class="field-input">{{supportSchools[l2SupportIndex] ? supportSchools[l2SupportIndex].name : ''}}</view>
+      </picker>
+    </view>
+    <view class="field" wx:if="{{scopeOptions[l2ScopeIndex] && scopeOptions[l2ScopeIndex].value === 'recipient_side'}}">
+      <text class="field-label">受援校</text>
+      <picker range="{{recipientSchools}}" range-key="name" value="{{l2RecipientIndex}}" bindchange="onL2RecipientIndexChange">
+        <view class="field-input">{{recipientSchools[l2RecipientIndex] ? recipientSchools[l2RecipientIndex].name : ''}}</view>
+      </picker>
+    </view>
+    <view class="actions" style="margin-top: 28rpx; flex-wrap: nowrap">
+      <button class="btn-secondary" type="default" style="flex: 1" bindtap="onL2ModalClose">取消</button>
+      <button class="btn-primary" style="flex: 1" bindtap="onL2ModalConfirm">通过并分配</button>
+    </view>
+  </view>
+</view>

@@ -1,32 +1,78 @@
 const { ROLE_DISPLAY_NAME } = require("../../utils/roleLabels");
+const { checkOnboardingOrRedirect } = require("../../utils/onboardingGuard");
+const { mergeFromStorageIntoApp, getByPhone } = require("../../utils/userProfileStore");
+const {
+  getMeetingsForUser,
+  splitNextAndHistory,
+  formatMeetingTime,
+  canCreateMeetingRole
+} = require("../../utils/meetingStore");
+
+const { to } = require("../../utils/nav");
+const { syncCustomTabBar } = require("../../utils/customTabBar");
 
 Page({
   data: {
     role: "",
-    roleName: "学员",
-    nextMeeting: {
-      title: "数学辅导第 3 次",
-      startTime: "2025-06-03 19:00",
-      roomLink: "https://meeting.tencent.com/example"
-    },
-    history: [
-      { id: 1, title: "英语口语练习", startTime: "2025-05-28 19:30", status: "已完成" },
-      { id: 2, title: "数学函数专题", startTime: "2025-05-31 20:00", status: "已完成" }
-    ]
+    roleName: "用户",
+    canCreate: false,
+    nextMeeting: null,
+    history: [],
+    empty: false
   },
   onShow() {
-    this.setData({
-      role: getApp().globalData.role || "",
-      roleName: ROLE_DISPLAY_NAME[getApp().globalData.role || ""] || "学员"
+    checkOnboardingOrRedirect("pages/meeting/index");
+    mergeFromStorageIntoApp();
+    const app0 = getApp();
+    const r = app0.globalData.role || "";
+    const u = app0.globalData.userInfo || {};
+    const p = (u && u.phone && getByPhone(String(u.phone))) || u || {};
+    if (r !== "student" && r !== "teacher") {
+      wx.switchTab({ url: "/pages/common/workbench/index" });
+      return;
+    }
+    const phone = u && u.phone ? String(u.phone) : "";
+    const list = getMeetingsForUser(phone, r, p);
+    const { nextMeeting, history } = splitNextAndHistory(list, Date.now());
+    let next2 = null;
+    if (nextMeeting) {
+      next2 = {
+        ...nextMeeting,
+        startTime: formatMeetingTime(nextMeeting.startTimeMs)
+      };
+    }
+    const his = (history || []).map((h) => {
+      return {
+        ...h,
+        startTime: formatMeetingTime(h.startTimeMs)
+      };
     });
+    const can = canCreateMeetingRole(r);
+    this.setData({
+      role: r,
+      roleName: ROLE_DISPLAY_NAME[r] || "用户",
+      canCreate: can,
+      nextMeeting: next2,
+      history: his,
+      empty: !next2 && (!his || his.length === 0)
+    });
+    syncCustomTabBar();
+  },
+  onCreate() {
+    to("/pages/meeting/create/index");
   },
   onPullDownRefresh() {
     this.onShow();
     wx.stopPullDownRefresh();
   },
   onCopyLink() {
+    const m = this.data.nextMeeting;
+    if (!m || !m.roomLink) {
+      wx.showToast({ title: "暂无可复制链接，请在腾讯会议中复制后于「新建会议」填写", icon: "none" });
+      return;
+    }
     wx.setClipboardData({
-      data: this.data.nextMeeting.roomLink,
+      data: String(m.roomLink),
       success: () => wx.showToast({ title: "链接已复制", icon: "success" })
     });
   },

@@ -1,5 +1,58 @@
+/* 底部内嵌与 Tab 同款的自定义条，避免内容被挡 */
 .platform-page {
-  padding-bottom: 48rpx;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+.platform-entry-card {
+  margin-top: 20rpx;
+  padding: 0;
+  overflow: hidden;
+}
+
+.platform-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx;
+  min-height: 100rpx;
+  box-sizing: border-box;
+}
+
+.platform-entry-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #101828;
+}
+
+.platform-entry-badge {
+  min-width: 44rpx;
+  height: 44rpx;
+  line-height: 44rpx;
+  padding: 0 12rpx;
+  border-radius: 999rpx;
+  text-align: center;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #fff;
+  background: #3b82f6;
+  flex-shrink: 0;
+}
+
+.platform-entry-badge--warn {
+  background: #d97706;
+}
+
+.platform-entry-badge--danger {
+  background: #dc2626;
+}
+
+.platform-entry-arrow {
+  margin-left: auto;
+  font-size: 40rpx;
+  color: #98a2b3;
+  font-weight: 300;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .platform-overview-card,
@@ -16,12 +69,6 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 20rpx;
-}
-
-.platform-risk-id {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #101828;
 }
 
 .platform-risk-note {

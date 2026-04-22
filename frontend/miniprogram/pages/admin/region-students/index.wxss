@@ -1,0 +1,15 @@
+@import "../region/index.wxss";
+
+.list-row-ellipsis--time {
+  max-width: 100%;
+  text-align: right;
+  font-size: 28rpx;
+  color: #3b4453;
+  line-height: 1.5;
+  white-space: normal;
+  word-break: break-all;
+}
+
+.list-row--time {
+  align-items: flex-start;
+}

@@ -1,0 +1,15 @@
+.create-page {
+  padding-bottom: 64rpx;
+}
+
+.create-hint {
+  font-size: 24rpx;
+  color: #667085;
+  line-height: 1.5;
+  margin-bottom: 8rpx;
+}
+
+.create-picker-line {
+  line-height: 1.4;
+  word-break: break-all;
+}

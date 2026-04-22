@@ -1,0 +1,67 @@
+.req-reject-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx;
+  box-sizing: border-box;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.req-reject-dialog {
+  width: 100%;
+  max-width: 620rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx 24rpx 32rpx;
+  border: 1rpx solid #eaecf0;
+  box-shadow: 0 20rpx 64rpx rgba(16, 24, 40, 0.12);
+  box-sizing: border-box;
+}
+
+.req-reject-dialog .title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #101828;
+  margin-bottom: 20rpx;
+}
+
+.req-reject-dialog .field {
+  margin-bottom: 12rpx;
+}
+
+.req-reject-dialog .field-label {
+  display: block;
+  font-size: 26rpx;
+  color: #475467;
+  margin-bottom: 12rpx;
+}
+
+.req-reject-dialog .field-textarea {
+  min-height: 180rpx;
+  width: 100%;
+  padding: 20rpx;
+  box-sizing: border-box;
+  background: #f5f7fa;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+}
+
+.req-reject-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 24rpx;
+  justify-content: flex-end;
+}
+
+.req-reject-actions .btn-primary,
+.req-reject-actions .btn-secondary {
+  flex: 1;
+  min-width: 200rpx;
+}

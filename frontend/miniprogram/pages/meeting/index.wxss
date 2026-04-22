@@ -2,6 +2,29 @@
   padding-bottom: 48rpx;
 }
 
+.meeting-hero-hint {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #667085;
+  line-height: 1.5;
+  text-align: center;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.meeting-bar {
+  width: 100%;
+  margin-top: 8rpx;
+  margin-bottom: 8rpx;
+}
+
+.meeting-btn-new {
+  width: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+}
+
 .meeting-next-card,
 .meeting-history-card {
   margin-top: 20rpx;

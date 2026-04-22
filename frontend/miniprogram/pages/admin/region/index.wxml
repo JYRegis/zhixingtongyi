@@ -1,62 +1,76 @@
 <view class="page-shell">
   <view class="container region-page">
     <view class="page-hero">
-      <view class="page-hero-eyebrow">区域协同</view>
-      <view class="page-hero-title">区域管理看板</view>
-      <view class="page-hero-desc">围绕代管账号、学生状态与身份审核，统一管理区域内的学员信息。</view>
-      <view class="page-hero-badges">
-        <view class="hero-badge">管辖区域：{{regionName}}</view>
-        <view class="hero-badge">支持代操作联动</view>
-        <view class="hero-badge">操作便捷</view>
-      </view>
+      <view class="page-hero-title" wx:if="{{hasScope}}">{{regionName}}</view>
+      <view class="page-hero-title" wx:else>区域</view>
     </view>
 
-    <view class="stat-grid">
-      <view wx:for="{{summaryCards}}" wx:key="label" class="stat-grid-item">
-        <view class="stat-card">
-          <view class="stat-label">{{item.label}}</view>
-          <view class="stat-value">{{item.value}}</view>
-          <view class="stat-note">{{item.note}}</view>
+    <view class="section-header" wx:if="{{l2Scope === 'volunteer_side' && hasScope}}">
+      <view class="section-title">志愿者注册</view>
+    </view>
+    <view wx:if="{{l2Scope === 'volunteer_side' && hasScope && !volunteerReviewList.length}}" class="card">
+      <view class="section-desc">暂无待审</view>
+    </view>
+    <block wx:if="{{l2Scope === 'volunteer_side' && hasScope}}" wx:for="{{volunteerReviewList}}" wx:key="id">
+      <view class="card region-student-card">
+        <view class="list-row list-row--tappable" data-id="{{item.id}}" bindtap="onViewOnboarding" hover-class="list-row--hover" style="margin: -4rpx 0 8rpx">
+          <text>申请资料</text>
+          <text class="list-row-cta">查看 ›</text>
         </view>
-      </view>
-    </view>
-
-    <view class="card region-actions-card">
-      <view class="section-title">常用操作</view>
-      <view class="section-desc">先完成区域内账号和审核动作，再从学员列表里选择当前需要代操作的学生。</view>
-      <view class="actions">
-        <button class="btn-primary" bindtap="onCreateAccount">新增学员账号</button>
-        <button class="btn-secondary" bindtap="onReviewIdentity">发起身份审核</button>
-      </view>
-    </view>
-
-    <view wx:if="{{actingStudent}}" class="card region-acting-card">
-      <view class="section-title">当前代操作学员</view>
-      <view class="section-desc">{{actingStudent.name}}（{{actingStudent.grade}}）· 编号 {{actingStudent.id}}。与「匹配」Tab 共用同一学员选择，便于你直接跳转继续发起结对。</view>
-    </view>
-
-    <view class="section-header">
-      <view class="section-title">学员列表</view>
-      <view class="section-desc">点击某位学生即可将其设为当前代操作对象，并同步到匹配页使用。</view>
-    </view>
-    <block wx:for="{{students}}" wx:key="id">
-      <view class="card region-student-card {{selectedStudentId === item.id ? 'region-student-card--active' : ''}}" data-id="{{item.id}}" bindtap="onSelectStudent">
-        <view class="region-student-top">
-          <view>
-            <view class="region-student-name">{{item.name}}（{{item.grade}}）</view>
-            <view class="desc">编号 {{item.id}}</view>
-          </view>
-          <view class="region-student-action">{{selectedStudentId === item.id ? '当前学员' : '设为当前'}}</view>
+        <view class="region-student-name">{{item.displayName}} · {{item.schoolName}}</view>
+        <view class="list-row" wx:if="{{item.workNo && item.workNo !== '—'}}">
+          <text>学工号</text>
+          <text>{{item.workNo}}</text>
         </view>
-        <view class="chip-row region-chip-row">
-          <view class="chip">绑定：{{item.binding}}</view>
-          <view class="chip">结对：{{item.progress}}</view>
-        </view>
-        <view class="region-student-badges">
-          <text class="badge {{item.binding === '已绑定' ? 'badge-success' : 'badge-warning'}}">{{item.binding}}</text>
-          <text class="badge {{item.progress === '结对中' ? 'badge-success' : 'badge-warning'}}">{{item.progress}}</text>
+        <view class="desc" wx:if="{{item.timeText && item.timeText !== '—'}}">可授课时间：{{item.timeText}}</view>
+        <view class="actions">
+          <button class="btn-primary" data-id="{{item.id}}" bindtap="onApproveL2">通过</button>
+          <button class="btn-secondary" data-id="{{item.id}}" bindtap="onRejectL2">驳回</button>
         </view>
       </view>
     </block>
+
+    <view class="card region-recipient-hub" wx:if="{{l2Scope === 'recipient_side' && hasScope}}">
+      <view class="section-title" style="margin-bottom: 16rpx">本区管理</view>
+      <view class="region-recipient-btns">
+        <button
+          class="region-jump-item"
+          bindtap="toRegionStudents"
+          plain="{{true}}"
+          hover-class="list-row--hover"
+          hover-stay-time="100"
+        >
+          <view class="region-jump-top">
+            <view class="region-jump-name">学生注册审核</view>
+            <view class="region-jump-cta">进入</view>
+          </view>
+          <view class="region-jump-meta" wx:if="{{studentRegCount > 0}}">待审 {{studentRegCount}} 条</view>
+          <view class="region-jump-meta" wx:else>暂无待审</view>
+        </button>
+        <button
+          class="region-jump-item"
+          bindtap="toRegionHours"
+          plain="{{true}}"
+          hover-class="list-row--hover"
+          hover-stay-time="100"
+        >
+          <view class="region-jump-top">
+            <view class="region-jump-name">认定义务时长</view>
+            <view class="region-jump-cta">进入</view>
+          </view>
+          <view class="region-jump-meta" wx:if="{{hoursCount > 0}}">待审 {{hoursCount}} 条</view>
+          <view class="region-jump-meta" wx:else>暂无待审</view>
+        </button>
+      </view>
+    </view>
+
+    <view class="card region-actions-card" wx:if="{{!hasScope || l2Scope === 'recipient_side'}}">
+      <view class="section-title" wx:if="{{!hasScope}}">未分配</view>
+      <view class="section-title" wx:elif="{{l2Scope === 'recipient_side'}}">本区</view>
+      <view class="actions" wx:if="{{!hasScope || l2Scope === 'recipient_side'}}">
+        <button class="btn-primary" wx:if="{{l2Scope === 'recipient_side'}}" bindtap="onCreateAccount">登记学员</button>
+        <button class="btn-secondary" bindtap="onCreateAccount" wx:if="{{!hasScope}}">查看</button>
+      </view>
+    </view>
   </view>
 </view>

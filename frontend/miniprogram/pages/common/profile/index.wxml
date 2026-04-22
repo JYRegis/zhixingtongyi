@@ -1,39 +1,94 @@
 <view class="page-shell">
   <view class="container profile-page">
     <view class="page-hero">
-      <view class="page-hero-eyebrow">{{heroEyebrow}}</view>
       <view class="page-hero-title">{{heroTitle}}</view>
-      <view class="page-hero-desc">{{heroDesc}}</view>
-      <view class="page-hero-badges">
-        <view wx:for="{{heroBadges}}" wx:key="*this" class="hero-badge">{{item}}</view>
-      </view>
     </view>
 
-    <view class="stat-grid">
-      <view wx:for="{{summaryCards}}" wx:key="label" class="stat-grid-item">
-        <view class="stat-card">
-          <view class="stat-label">{{item.label}}</view>
-          <view class="stat-value">{{item.value}}</view>
-          <view class="stat-note">{{item.note}}</view>
+    <view class="card profile-account-card">
+      <view class="section-header profile-account-section-title">
+        <view class="section-title">登录信息</view>
+      </view>
+      <view class="profile-account-body">
+        <view class="profile-account-hero">
+          <image
+            wx:if="{{accAvatarUrl}}"
+            class="profile-account-avatar profile-account-avatar--img"
+            src="{{accAvatarUrl}}"
+            mode="aspectFill"
+          />
+          <view wx:else class="profile-account-avatar profile-account-avatar--text">{{accAvatarChar}}</view>
+        </view>
+        <view class="profile-account-text">
+          <view class="profile-account-nick">{{accNickname}}</view>
+          <view class="profile-account-phone">手机 {{accPhoneDisplay}}</view>
         </view>
       </view>
+      <view class="profile-account-actions">
+        <button class="btn-secondary" bindtap="onEditAccount">修改头像、昵称与手机</button>
+      </view>
     </view>
-
-    <view class="surface-note">{{focusNote}}</view>
 
     <block wx:for="{{sections}}" wx:key="key">
       <view class="section-header">
         <view class="section-title">{{item.title}}</view>
-        <view class="section-desc">{{item.desc}}</view>
       </view>
       <view class="card profile-section-card">
         <block wx:for="{{item.fields}}" wx:key="key" wx:for-item="field">
           <view class="field profile-field">
             <text class="field-label">{{field.label}}</text>
+            <picker
+              wx:if="{{field.type === 'picker_school'}}"
+              mode="selector"
+              range="{{field.range}}"
+              range-key="name"
+              value="{{field.pickerValue}}"
+              bindchange="onPickSchool"
+            >
+              <view
+                class="field-input profile-field-input profile-picker-line {{!field.hasValue ? 'form-placeholder-std' : ''}}"
+              >{{field.hasValue ? (field.lineText || '已选学校') : '请选择学校'}}</view>
+            </picker>
+            <picker
+              wx:elif="{{field.type === 'picker_grade'}}"
+              mode="selector"
+              range="{{field.range}}"
+              range-key="name"
+              value="{{field.pickerValue}}"
+              bindchange="onPickGrade"
+            >
+              <view
+                class="field-input profile-field-input profile-picker-line {{!field.hasValue ? 'form-placeholder-std' : ''}}"
+              >{{field.hasValue ? (field.lineText || '') : '请选择年级'}}</view>
+            </picker>
+            <view class="time-pair-wrap" wx:elif="{{field.type === 'time_chips'}}">
+              <view class="profile-chips-row profile-chips-row--tight">
+                <view
+                  class="profile-chip profile-chip--sm {{item.on ? 'profile-chip--on' : ''}}"
+                  wx:for="{{field.weekChips}}"
+                  wx:key="id"
+                  data-tfield="{{field.tfield}}"
+                  data-tkind="week"
+                  data-id="{{item.id}}"
+                  bindtap="onToggleProfileTime"
+                  >{{item.name}}</view>
+              </view>
+              <view class="profile-chips-row profile-chips-row--tight">
+                <view
+                  class="profile-chip profile-chip--sm {{item.on ? 'profile-chip--on' : ''}}"
+                  wx:for="{{field.slotChips}}"
+                  wx:key="id"
+                  data-tfield="{{field.tfield}}"
+                  data-tkind="slot"
+                  data-id="{{item.id}}"
+                  bindtap="onToggleProfileTime"
+                  >{{item.name}}</view>
+              </view>
+            </view>
             <input
-              wx:if="{{field.type === 'input'}}"
+              wx:elif="{{field.type === 'input'}}"
               class="field-input profile-field-input"
               placeholder="{{field.placeholder}}"
+              placeholder-class="form-placeholder-std"
               value="{{field.value}}"
               data-field="{{field.key}}"
               bindinput="onInput"
@@ -42,20 +97,19 @@
               wx:else
               class="field-textarea profile-field-textarea"
               placeholder="{{field.placeholder}}"
+              placeholder-class="form-placeholder-std"
               value="{{field.value}}"
               data-field="{{field.key}}"
               bindinput="onInput"
             />
-            <view class="profile-field-hint">{{field.hint}}</view>
+            <view class="profile-field-hint" wx:if="{{field.hint}}">{{field.hint}}</view>
           </view>
         </block>
       </view>
     </block>
 
     <view class="card profile-submit-card">
-      <view class="title profile-submit-title">保存当前资料</view>
-      <view class="desc">提交后资料将保存到你的个人档案中。</view>
-      <button class="btn-primary profile-submit-btn" bindtap="onSubmit">提交资料</button>
+      <button class="btn-primary profile-submit-btn" bindtap="onSubmit">保存</button>
     </view>
   </view>
 </view>

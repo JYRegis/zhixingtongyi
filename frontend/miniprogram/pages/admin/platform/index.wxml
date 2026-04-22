@@ -1,29 +1,11 @@
 <view class="page-shell">
   <view class="container platform-page">
     <view class="page-hero">
-      <view class="page-hero-eyebrow">平台总览</view>
-      <view class="page-hero-title">平台管理看板</view>
-      <view class="page-hero-desc">从平台侧统一查看全局数据、异常结对和权限动作，及时发现和处理异常情况。</view>
-      <view class="page-hero-badges">
-        <view class="hero-badge">平台侧视角</view>
-        <view class="hero-badge">异常巡查</view>
-        <view class="hero-badge">支持人工干预</view>
-      </view>
-    </view>
-
-    <view class="stat-grid">
-      <view wx:for="{{summaryCards}}" wx:key="label" class="stat-grid-item">
-        <view class="stat-card">
-          <view class="stat-label">{{item.label}}</view>
-          <view class="stat-value">{{item.value}}</view>
-          <view class="stat-note">{{item.note}}</view>
-        </view>
-      </view>
+      <view class="page-hero-title">平台管理</view>
     </view>
 
     <view class="card platform-overview-card">
-      <view class="section-title">核心指标</view>
-      <view class="section-desc">以下数据用于快速把握当前平台运行情况，并辅助判断是否需要人工巡查或干预。</view>
+      <view class="section-title">数据</view>
       <view class="platform-kpi-list">
         <view class="list-row">
           <text>志愿者总数</text>
@@ -42,27 +24,72 @@
           <text class="badge badge-danger">{{stats.pendingAlerts}}</text>
         </view>
       </view>
-      <view class="actions">
-        <button class="btn-primary" bindtap="onAssignPermission">给学校老师开权限</button>
-      </view>
     </view>
 
     <view class="section-header">
-      <view class="section-title">异常结对巡查</view>
-      <view class="section-desc">优先关注高风险或长期无沟通的结对关系，必要时可立即发起人工干预流程。</view>
+      <view class="section-title">待办与分类</view>
     </view>
-    <block wx:for="{{exceptionPairs}}" wx:key="id">
-      <view class="card platform-risk-card">
-        <view class="platform-risk-top">
-          <view>
-            <view class="platform-risk-id">{{item.id}}</view>
-            <view class="desc">{{item.reason}}</view>
-          </view>
-          <view class="badge {{item.risk === '高' ? 'badge-danger' : 'badge-warning'}}">{{item.risk}}风险</view>
+
+    <view class="card platform-entry-card" bindtap="goReviewStudent">
+      <view class="platform-entry-row">
+        <view>
+          <view class="platform-entry-title">乡村学员待审</view>
         </view>
-        <view class="surface-note platform-risk-note">建议平台侧先记录异常原因，再结合聊天、会议、解绑流程进行联合判断。</view>
-        <button class="btn-primary platform-risk-btn" data-id="{{item.id}}" bindtap="onForceUnbind">强制干预</button>
+        <view class="platform-entry-badge" wx:if="{{cStudent > 0}}">{{cStudent}}</view>
+        <view class="platform-entry-arrow">›</view>
       </view>
-    </block>
+    </view>
+
+    <view class="card platform-entry-card" bindtap="goReviewTeacher">
+      <view class="platform-entry-row">
+        <view>
+          <view class="platform-entry-title">支教志愿者待审</view>
+        </view>
+        <view class="platform-entry-badge" wx:if="{{cTeacher > 0}}">{{cTeacher}}</view>
+        <view class="platform-entry-arrow">›</view>
+      </view>
+    </view>
+
+    <view class="card platform-entry-card" bindtap="goReviewL2">
+      <view class="platform-entry-row">
+        <view>
+          <view class="platform-entry-title">学校老师待审</view>
+        </view>
+        <view class="platform-entry-badge" wx:if="{{cL2 > 0}}">{{cL2}}</view>
+        <view class="platform-entry-arrow">›</view>
+      </view>
+    </view>
+
+    <view class="card platform-entry-card" bindtap="goReviewL1">
+      <view class="platform-entry-row">
+        <view>
+          <view class="platform-entry-title">平台运营待审</view>
+        </view>
+        <view class="platform-entry-badge" wx:if="{{cL1 > 0}}">{{cL1}}</view>
+        <view class="platform-entry-arrow">›</view>
+      </view>
+    </view>
+
+    <view class="card platform-entry-card" bindtap="goHours">
+      <view class="platform-entry-row">
+        <view>
+          <view class="platform-entry-title">认定义务时长</view>
+        </view>
+        <view class="platform-entry-badge platform-entry-badge--warn" wx:if="{{cHours > 0}}">{{cHours}}</view>
+        <view class="platform-entry-arrow">›</view>
+      </view>
+    </view>
+
+    <view class="card platform-entry-card" bindtap="goRisk">
+      <view class="platform-entry-row">
+        <view>
+          <view class="platform-entry-title">异常与预警</view>
+        </view>
+        <view class="platform-entry-badge platform-entry-badge--danger" wx:if="{{cRisk > 0}}">{{cRisk}}</view>
+        <view class="platform-entry-arrow">›</view>
+      </view>
+    </view>
+
   </view>
+  <custom-tab-bar id="custom-tab-bar" />
 </view>

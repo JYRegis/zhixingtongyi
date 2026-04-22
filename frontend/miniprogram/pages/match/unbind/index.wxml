@@ -1,52 +1,190 @@
-<view class="container">
-  <view class="card">
-    <view class="title">解绑申请</view>
-    <view class="desc">结对后解除关系需一方发起、另一方确认，确保双方知情。</view>
+<view class="page-shell">
+  <view class="container" wx:if="{{isL2Recipient}}">
+    <view class="card">
+      <view class="title">解绑待办</view>
+      <view class="section-desc" style="margin-top: 12rpx; color: #5c6b7a; font-size: 26rpx; line-height: 1.5;">
+        仅当本区内的学员或支教志愿者在各自端「发起解绑申请」后，会出现在下方列表。点选一条可查看原因与各方确认情况。
+      </view>
+    </view>
+
+    <view class="section-title">解绑申请列表</view>
+    <view class="unbind-pairlist" wx:if="{{l2RequestList.length}}">
+      <view
+        class="unbind-pair card {{item.id === l2SelectedId ? 'unbind-pair--on' : ''}}"
+        wx:for="{{l2RequestList}}"
+        wx:key="id"
+        data-rid="{{item.id}}"
+        bindtap="onSelectL2Request"
+      >
+        <view class="unbind-pair-main">
+          <view class="unbind-pair-line">{{item.studentName}} — {{item.partnerName}}</view>
+          <view class="unbind-pair-sub">提出方：{{item.initiatorLabel}} · {{item._createdAtText}}</view>
+        </view>
+        <view class="unbind-pair-meta">
+          <text class="unbind-pair-chev">详情 ›</text>
+          <text class="badge badge-warning">待处理</text>
+        </view>
+      </view>
+    </view>
+    <view class="card" wx:else>
+      <view class="section-desc" style="text-align: center; color: #98a2b3; padding: 20rpx 0;">暂无。当前没有学员或志愿者发起的解绑申请。</view>
+    </view>
+
+    <view class="section-title" wx:if="{{l2SelectedId && activeRequest && activeRequest.status === 'pending_approval'}}">申请详情</view>
+    <view class="card" wx:if="{{l2SelectedId && activeRequest && activeRequest.status === 'pending_approval'}}">
+      <view class="list-row">
+        <text>谁提出</text>
+        <text class="em">{{activeRequest.initiatorLabel}}</text>
+      </view>
+      <view class="list-row" wx:if="{{activeRequest.applicantPhone}}">
+        <text>发起人手机尾号</text>
+        <text>{{activeRequest.applicantPhone.slice(-4)}}</text>
+      </view>
+      <view class="list-row">
+        <text>解绑原因</text>
+        <text class="cell-multiline">{{activeRequest.reason}}</text>
+      </view>
+      <view class="list-row">
+        <text>本单结对</text>
+        <text>{{activeRequest.studentName}} — {{activeRequest.partnerName}}</text>
+      </view>
+      <view class="list-row">
+        <text>受援方老师（系统对口）</text>
+        <text>{{l2Name}}</text>
+      </view>
+      <view class="list-row">
+        <text>申请时间</text>
+        <text>{{activeRequest._createdAtText}}</text>
+      </view>
+      <view class="dividing-line" />
+      <view class="mini-title">各方是否已确认</view>
+      <view class="list-row">
+        <text>学员</text>
+        <text class="badge {{activeRequest.agree && activeRequest.agree.student ? 'badge-success' : 'badge-muted'}}">
+          {{activeRequest.agree && activeRequest.agree.student ? '已通过' : '未通过'}}
+        </text>
+      </view>
+      <view class="list-row">
+        <text>志愿者</text>
+        <text class="badge {{activeRequest.agree && activeRequest.agree.teacher ? 'badge-success' : 'badge-muted'}}">
+          {{activeRequest.agree && activeRequest.agree.teacher ? '已通过' : '未通过'}}
+        </text>
+      </view>
+      <view class="list-row">
+        <text>受援方老师</text>
+        <text class="badge {{activeRequest.agree && activeRequest.agree.l2 ? 'badge-success' : 'badge-muted'}}">
+          {{activeRequest.agree && activeRequest.agree.l2 ? '已通过' : '未通过'}}
+        </text>
+      </view>
+      <view class="actions" style="margin-top: 20rpx;">
+        <button class="btn-primary" bindtap="onMyAgreeL2">我同意解绑（受援方老师）</button>
+        <button class="btn-secondary" bindtap="onRejectUnbind">有异议，暂不通过</button>
+      </view>
+    </view>
   </view>
 
-  <view class="section-title">当前结对信息</view>
-  <view class="card">
-    <view class="list-row">
-      <text>结对对象</text>
-      <text>{{pairInfo.partnerName}}</text>
+  <view class="container" wx:else>
+    <view class="card">
+      <view class="title">三向解绑</view>
     </view>
-    <view class="list-row">
-      <text>科目</text>
-      <text>{{pairInfo.subject}}</text>
-    </view>
-    <view class="list-row">
-      <text>结对开始时间</text>
-      <text>{{pairInfo.startDate}}</text>
-    </view>
-    <view class="list-row">
-      <text>状态</text>
-      <text class="badge badge-success">{{pairInfo.status}}</text>
-    </view>
-  </view>
 
-  <view class="section-title">发起解绑</view>
-  <view class="card">
-    <view class="field">
-      <text class="field-label">解绑原因</text>
-      <textarea class="field-textarea" value="{{reason}}" placeholder="请填写原因，便于双方沟通确认。" bindinput="onReasonInput" />
+    <view class="section-title">结对学生 / 对方（点选一条）</view>
+    <view class="unbind-pairlist" wx:if="{{pairList.length}}">
+      <view
+        class="unbind-pair card {{item.pairId === selectedPairId ? 'unbind-pair--on' : ''}}"
+        wx:for="{{pairList}}"
+        wx:key="pairId"
+        data-pairid="{{item.pairId}}"
+        bindtap="onSelectPair"
+      >
+        <view class="unbind-pair-main">
+          <view class="unbind-pair-line">{{item.lineName}}</view>
+          <view class="unbind-pair-sub" wx:if="{{item.tag}}">{{item.tag}}</view>
+        </view>
+        <view class="unbind-pair-meta">
+          <text class="unbind-pair-chev">解绑/查看 ›</text>
+          <text class="badge {{item.status === '结对中' ? 'badge-success' : 'badge-warning'}}">{{item.status}}</text>
+        </view>
+      </view>
     </view>
-    <button class="btn-primary" bindtap="onSubmitApply">提交解绑申请</button>
-  </view>
+    <view class="card" wx:else>
+      <view class="section-desc" style="text-align: center; color: #98a2b3">暂无</view>
+    </view>
 
-  <view class="section-title">待处理申请</view>
-  <view class="card">
-    <view class="list-row">
-      <text>申请编号</text>
-      <text>#{{pendingRequest.id}}</text>
+    <view class="section-title">当前选中结对的详情</view>
+    <view class="card" wx:if="{{selectedPairId}}">
+      <view class="list-row">
+        <text>学员</text>
+        <text>{{pairInfo.studentName}}</text>
+      </view>
+      <view class="list-row">
+        <text>支教志愿者</text>
+        <text>{{pairInfo.partnerName}}</text>
+      </view>
+      <view class="list-row">
+        <text>科目</text>
+        <text>{{pairInfo.subject}}</text>
+      </view>
+      <view class="list-row">
+        <text>开始时间</text>
+        <text>{{pairInfo.startDate}}</text>
+      </view>
+      <view class="list-row">
+        <text>状态</text>
+        <text class="badge {{pairInfo.status === '结对中' ? 'badge-success' : 'badge-warning'}}">{{pairInfo.status}}</text>
+      </view>
     </view>
-    <view class="list-row">
-      <text>发起方</text>
-      <text>{{pendingRequest.from}}</text>
+
+    <view class="section-title" wx:if="{{pairInfo.status === '结对中' && canInitiateUnbind}}">发起解绑（对当前选中的这条）</view>
+    <view class="card" wx:if="{{pairInfo.status === '结对中' && canInitiateUnbind}}">
+      <view class="field">
+        <text class="field-label">解绑原因</text>
+        <textarea class="field-textarea" value="{{reason}}" placeholder="请说明原因" bindinput="onReasonInput" />
+      </view>
+      <button class="btn-primary" bindtap="onSubmitApply">提交本结对的解绑申请</button>
     </view>
-    <view class="desc" style="margin-top: 12rpx;">{{pendingRequest.reason}}</view>
-    <view class="actions">
-      <button class="btn-primary" bindtap="onAgree">同意解绑</button>
-      <button class="btn-secondary" bindtap="onReject">暂不同意</button>
+
+    <view class="section-title" wx:if="{{activeRequest && activeRequest.status === 'pending_approval' && (role === 'student' || role === 'teacher')}}">确认进度（对当前点选的结对）</view>
+    <view class="card" wx:if="{{activeRequest && activeRequest.status === 'pending_approval' && (role === 'student' || role === 'teacher')}}">
+      <view class="list-row">
+        <text>谁提出</text>
+        <text class="em">{{activeRequest.initiatorLabel || (activeRequest.fromRole === 'teacher' ? '志愿者' : '学员')}}</text>
+      </view>
+      <view class="list-row">
+        <text>本单学员</text>
+        <text>{{activeRequest.studentName}}</text>
+      </view>
+      <view class="list-row">
+        <text>受援方老师</text>
+        <text>{{l2Name}}</text>
+      </view>
+      <view class="list-row">
+        <text>解绑原因</text>
+        <text class="cell-multiline">{{activeRequest.reason}}</text>
+      </view>
+      <view class="list-row">
+        <text>学员</text>
+        <text class="badge {{activeRequest.agree && activeRequest.agree.student ? 'badge-success' : 'badge-warning'}}">
+          {{activeRequest.agree && activeRequest.agree.student ? '已通过' : '未通过'}}
+        </text>
+      </view>
+      <view class="list-row">
+        <text>志愿者</text>
+        <text class="badge {{activeRequest.agree && activeRequest.agree.teacher ? 'badge-success' : 'badge-warning'}}">
+          {{activeRequest.agree && activeRequest.agree.teacher ? '已通过' : '未通过'}}
+        </text>
+      </view>
+      <view class="list-row">
+        <text>受援方老师</text>
+        <text class="badge {{activeRequest.agree && activeRequest.agree.l2 ? 'badge-success' : 'badge-warning'}}">
+          {{activeRequest.agree && activeRequest.agree.l2 ? '已通过' : '未通过'}}
+        </text>
+      </view>
+      <view class="actions">
+        <button class="btn-primary" wx:if="{{role === 'student'}}" bindtap="onMyAgree">我同意解绑（学员端）</button>
+        <button class="btn-primary" wx:if="{{role === 'teacher'}}" bindtap="onMyAgreeTeacher">我同意解绑（志愿者端）</button>
+        <button class="btn-secondary" bindtap="onRejectUnbind">对方案有异议/暂不处理</button>
+      </view>
     </view>
   </view>
 </view>

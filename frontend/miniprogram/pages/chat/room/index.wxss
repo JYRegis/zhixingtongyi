@@ -5,6 +5,45 @@
   background: #ededed;
 }
 
+/* 管理/巡览：气泡与标签走灰、左起布局；头像仍用角色色（与下方 --stu / --vol 一致） */
+.chat-page--observer {
+  background: #e5e5e5;
+}
+
+.chat-page--observer .chat-body {
+  background: #e5e5e5;
+}
+
+/* 不再一侧贴左一侧贴右制造「主账号」感，两侧同左起展示 */
+.chat-page--observer .msg--l1stu,
+.chat-page--observer .msg--l1vol {
+  opacity: 1;
+  align-items: flex-start;
+}
+
+.chat-page--observer .msg-l1-pill {
+  color: #4b5563 !important;
+  background: #d1d5db !important;
+  font-weight: 500;
+}
+
+.chat-page--observer .msg-name--l1 {
+  color: #6b7280;
+}
+
+/* 与学员侧同向：左到右 头像+气泡，志愿者侧原 row-reverse 在巡览中会导致「我在右边说话」的观感 */
+.chat-page--observer .msg-content--l1right {
+  flex-direction: row;
+}
+
+.chat-page--observer .msg-bubble--l1stu,
+.chat-page--observer .msg-bubble--l1vol {
+  background: #d1d5db !important;
+  color: #374151 !important;
+  border: 1rpx solid #bfc4cc !important;
+  border-radius: 16rpx !important;
+}
+
 .chat-body {
   flex: 1;
   padding: 24rpx 24rpx 0;
@@ -55,6 +94,70 @@
 
 .msg--other {
   align-items: flex-start;
+}
+
+/* 一级巡览：学员左、志愿者右，双方均显式标出 */
+.msg--l1stu {
+  align-items: flex-start;
+}
+
+.msg--l1vol {
+  align-items: flex-end;
+}
+
+.msg-name--l1 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  padding: 0 8rpx;
+}
+
+.msg-l1-pill {
+  display: inline-block;
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+  color: #1d4ed8;
+  background: #dbeafe;
+  font-weight: 600;
+}
+
+.msg-content--l1left,
+.msg-content--l1right {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  max-width: 82%;
+}
+
+.msg-content--l1left {
+  flex-direction: row;
+}
+
+.msg-content--l1right {
+  flex-direction: row-reverse;
+}
+
+.msg-avatar-text--stu {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.msg-avatar-text--vol {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.msg-bubble--l1stu {
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: 20rpx 20rpx 20rpx 6rpx;
+  border: 1rpx solid #e5e7eb;
+}
+
+.msg-bubble--l1vol {
+  background: #c8f0a8;
+  color: #000;
+  border-radius: 20rpx 20rpx 6rpx 20rpx;
 }
 
 .msg-name {

@@ -1,0 +1,73 @@
+.hours-apply-page {
+  padding-bottom: 48rpx;
+}
+
+.hours-apply-form {
+  margin-top: 0;
+}
+
+.form-label {
+  font-size: 26rpx;
+  color: #475467;
+  margin-bottom: 12rpx;
+  margin-top: 24rpx;
+}
+
+.form-label:first-child {
+  margin-top: 0;
+}
+
+.form-req {
+  color: #d92d20;
+}
+
+.form-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22rpx 24rpx;
+  background: #f9fafb;
+  border-radius: 16rpx;
+  border: 1rpx solid #e4e7ec;
+  font-size: 28rpx;
+  color: #101828;
+}
+
+.form-picker-arrow {
+  font-size: 24rpx;
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  background: #f9fafb;
+  border-radius: 16rpx;
+  border: 1rpx solid #e4e7ec;
+  font-size: 30rpx;
+}
+
+.form-hint {
+  font-size: 22rpx;
+  color: #98a2b3;
+  margin-top: 10rpx;
+  line-height: 1.5;
+}
+
+.hours-apply-submit {
+  margin-top: 40rpx;
+  width: 100%;
+  border-radius: 44rpx;
+}
+
+.hours-apply-section {
+  margin-top: 40rpx;
+}
+
+.list-row--hover {
+  opacity: 0.92;
+}

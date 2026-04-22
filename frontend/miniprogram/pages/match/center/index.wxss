@@ -79,7 +79,7 @@
 .match-proxy-foot {
   margin-top: 16rpx;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 16rpx;
 }
@@ -114,6 +114,22 @@
 
 .match-change-btn {
   margin-top: 20rpx;
+}
+
+.match-subject-card {
+  margin-top: 20rpx;
+}
+
+.match-list-count {
+  font-size: 26rpx;
+  color: #667085;
+  margin: 0 0 8rpx 0;
+  padding: 0 4rpx;
+}
+
+.match-subj-strong {
+  font-weight: 700;
+  color: #175cd3;
 }
 
 .match-filter-row {

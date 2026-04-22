@@ -9,17 +9,17 @@
 | --- | --- | --- | --- |
 | 首页（选身份） | `pages/common/home/index` | 全部角色 | 口语化「我是 xxx」选择身份后进入登录页 | 已实现 |
 | 注册与登录页 | `pages/common/auth/index` | 全部角色 | 本机号码列表、微信手机号、头像昵称、手输 | 已实现 |
-| 资料完善页 | `pages/common/profile/index` | 志愿者、学员 | 注册信息录入与补充 | 已实现 |
-| 工作台页 | `pages/common/workbench/index` | 全部角色 | 角色分流入口，显示待办 | 已实现 |
-| 设置页 | `pages/common/settings/index` | 全部角色 | 登录、头像昵称手机、完善资料、退出登录 | 已实现 |
+| 资料与账号页 | `pages/common/profile/index` | 已登录用户 | 登录信息（头像/昵称/手机，跳转 auth）+ 各角色资料表，设置里单入口 | 已实现 |
+| 工作台页 | `pages/common/workbench/index` | 全部角色 | 角色分流「我的待办」入口（**不含**结对待办，结对待办在匹配中心） | 已实现 |
+| 设置页 | `pages/common/settings/index` | 全部角色 | 登录、**资料与账号**单入口、退出登录 | 已实现 |
 | 页面模板页 | `pages/common/template/index` | 开发者 | 新页面复制模板来源 | 已实现 |
 
 ## 2. 匹配与结对模块
 
 | 页面名称 | 路径 | 主要角色 | 说明 | 状态 |
 | --- | --- | --- | --- |
-| 匹配中心 | `pages/match/center/index` | 学员、学校老师 | 推荐教师列表与筛选；学校老师须先选代管学员再发起申请 | 已实现 |
-| 申请处理页 | `pages/match/requests/index` | 志愿者 | 接受/拒绝申请，拒绝理由必填 | 已实现 |
+| 匹配中心 | `pages/match/center/index` | 学员、志愿者 | 推荐列表支持**学科**筛选；**结对待办**入口在此；学员看志愿者、志愿者看结对学生；多结对时解绑在 `unbind` 逐条操作 | 已实现 |
+| 申请处理页 | `pages/match/requests/index` | 学员、志愿者 | 结对待办列表；志愿者可接受/拒绝，拒绝理由必填 | 已实现 |
 | 解绑申请页 | `pages/match/unbind/index` | 结对双方 | 发起解绑与确认 | 已实现 |
 
 ## 3. 沟通与会议模块
@@ -28,7 +28,8 @@
 | --- | --- | --- | --- |
 | 结对会话列表 | `pages/chat/list/index` | 已结对用户 | Tab「聊天」：展示已结对对象，点进单独会话 | 已实现 |
 | 聊天页 | `pages/chat/room/index` | 已结对用户 | 与某一对象的消息窗口，按 partnerId 分桶存本地 | 已实现 |
-| 会议页 | `pages/meeting/index` | 已结对用户、管理员 | 显示会议时间、链接、提醒 | 已实现 |
+| 会议页 | `pages/meeting/index` | 学员、志愿者（**Tab 入口**；管理员无此 Tab） | 下一场/历史、新建入口；`meetingStore` 本地 | 已实现 |
+| 新建会议 | `pages/meeting/create/index` | 学员、志愿者 | 登记时间、结对、粘贴**外部**会邀链接 | 已实现 |
 
 ## 4. 管理模块
 

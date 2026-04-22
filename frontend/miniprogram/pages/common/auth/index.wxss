@@ -15,12 +15,31 @@
   padding-bottom: 48rpx;
 }
 
+.auth-avatar-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 28rpx;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-avatar-hint {
+  font-size: 26rpx;
+  color: #667085;
+  line-height: 1.5;
+  text-align: left;
+  max-width: 400rpx;
+  flex-shrink: 1;
+}
+
 .auth-avatar-btn {
   width: 180rpx !important;
   height: 180rpx !important;
   min-width: 0 !important;
   padding: 0 !important;
   margin: 0;
+  flex-shrink: 0;
   border-radius: 50%;
   overflow: hidden;
   background: #fff;
@@ -246,10 +265,35 @@
   border: none;
 }
 
-.auth-foot {
-  margin-top: 28rpx;
-  text-align: center;
-  font-size: 22rpx;
-  color: #98a2b3;
-  line-height: 1.6;
+.field-req {
+  color: #d92d20;
+  font-weight: 400;
+  margin-left: 4rpx;
 }
+
+/* ---------- login 模式：说明与流程切换 ---------- */
+
+.auth-login-tip {
+  margin: 0 0 20rpx;
+  padding: 20rpx 24rpx;
+  font-size: 24rpx;
+  color: #475467;
+  line-height: 1.6;
+  background: #f9fafb;
+  border-radius: 16rpx;
+  border: 1rpx solid #e4e7ec;
+}
+
+.auth-flow-switch {
+  margin-top: 40rpx;
+  padding: 0 8rpx 60rpx;
+  text-align: center;
+}
+
+.auth-flow-text {
+  font-size: 28rpx;
+  color: #3b82f6;
+  text-decoration: underline;
+  text-underline-offset: 6rpx;
+}
+

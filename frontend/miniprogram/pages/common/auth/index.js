@@ -1,4 +1,5 @@
 const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
+const { getByPhone } = require("../../../utils/userProfileStore");
 
 const STORAGE_PHONES = "zhixing_saved_phones";
 
@@ -6,6 +7,8 @@ Page({
   data: {
     role: "",
     roleName: "",
+    isLogin: false,
+    fromProfile: false,
     savedPhoneItems: [],
     selectedPhone: "",
     manualPhone: "",
@@ -14,6 +17,8 @@ Page({
     avatarUrl: ""
   },
   onLoad(query) {
+    this._returnTo = ((query && query.returnTo) || "").trim();
+    const fromProfile = this._returnTo === "profile";
     const role = (query.role || "").trim();
     if (!role) {
       wx.showModal({
@@ -24,10 +29,21 @@ Page({
       });
       return;
     }
+    let isLogin = String((query && query.flow) || "") === "login";
+    if (query && query.prefill === "1") {
+      isLogin = false;
+    }
     this.setData({
       role,
-      roleName: ROLE_DISPLAY_NAME[role] || "用户"
+      roleName: ROLE_DISPLAY_NAME[role] || "用户",
+      isLogin: isLogin,
+      fromProfile: fromProfile
     });
+    try {
+      wx.setNavigationBarTitle({ title: isLogin ? "登录" : "注册" });
+    } catch (e) {
+      // ignore
+    }
     this.loadSavedPhones();
     if (query.prefill === "1") {
       const u = getApp().globalData.userInfo || {};
@@ -40,6 +56,28 @@ Page({
         showManualPhone: phone.length === 11
       });
     }
+  },
+  onShow() {
+    const t = this.data.isLogin ? "登录" : "注册";
+    try {
+      wx.setNavigationBarTitle({ title: t });
+    } catch (e) {
+      // ignore
+    }
+  },
+  onSwitchFlow(e) {
+    const raw = e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tologin;
+    const toLogin = raw === true || raw === "true";
+    const r = this.data.role || "";
+    if (!r) {
+      return;
+    }
+    wx.redirectTo({
+      url:
+        "/pages/common/auth/index?role=" +
+        encodeURIComponent(r) +
+        (toLogin ? "&flow=login" : "&flow=register")
+    });
   },
   loadSavedPhones() {
     const raw = wx.getStorageSync(STORAGE_PHONES) || [];
@@ -128,21 +166,56 @@ Page({
       wx.showToast({ title: "请填写11位大陆手机号", icon: "none" });
       return;
     }
-    const nickname = (this.data.nickname || "").trim();
-    if (!nickname) {
-      wx.showToast({ title: "请填写昵称", icon: "none" });
-      return;
-    }
-    this.applyPhoneAndSave(phone);
     const app = getApp();
-    app.setLogin(this.data.role, {
-      nickname,
-      avatarUrl: this.data.avatarUrl || "",
-      phone,
-      role: this.data.role
-    });
-    wx.showToast({ title: "登录成功", icon: "success" });
+    if (this.data.isLogin) {
+      this.applyPhoneAndSave(phone);
+      const prof = getByPhone(phone) || {};
+      const last4 = phone.slice(-4);
+      const nick =
+        (prof.nickname && String(prof.nickname).trim()) ||
+        (prof.name && String(prof.name).trim()) ||
+        (prof.nickName && String(prof.nickName).trim()) ||
+        "用户" + last4;
+      const avatarUrl = String(prof.avatarUrl || "").trim();
+      app.setLogin(this.data.role, {
+        nickname: nick,
+        avatarUrl: avatarUrl || this.data.avatarUrl || "",
+        phone,
+        role: this.data.role
+      });
+    } else {
+      const nickname = (this.data.nickname || "").trim();
+      if (!nickname) {
+        wx.showToast({ title: "请填写昵称", icon: "none" });
+        return;
+      }
+      this.applyPhoneAndSave(phone);
+      app.setLogin(this.data.role, {
+        nickname,
+        avatarUrl: this.data.avatarUrl || "",
+        phone,
+        role: this.data.role
+      });
+    }
+    const backToProfile = this._returnTo === "profile";
+    let okTitle = "完成";
+    if (backToProfile) {
+      okTitle = "已更新";
+    } else if (this.data.isLogin) {
+      okTitle = "登录成功";
+    } else {
+      okTitle = "注册成功";
+    }
+    wx.showToast({ title: okTitle, icon: "success" });
     setTimeout(() => {
+      if (backToProfile) {
+        wx.navigateBack({
+          fail: function () {
+            wx.redirectTo({ url: "/pages/common/profile/index" });
+          }
+        });
+        return;
+      }
       wx.switchTab({ url: "/pages/common/workbench/index" });
     }, 400);
   }

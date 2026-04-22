@@ -1,0 +1,13 @@
+<view class="page-shell">
+  <view class="container ob-pend-page">
+    <view class="card ob-pend-card">
+      <view class="ob-pend-ico" aria-hidden="true">⏳</view>
+      <view class="title">您的账号正在审核中</view>
+      <view class="ob-pend-hint" wx:if="{{roleName}}">当前身份：{{roleName}}</view>
+    </view>
+    <view class="ob-pend-actions">
+      <button class="btn-primary" bindtap="onReLaunchHome">返回首页</button>
+      <button class="btn-secondary" bindtap="onChangeAccount">切换账号登录</button>
+    </view>
+  </view>
+</view>

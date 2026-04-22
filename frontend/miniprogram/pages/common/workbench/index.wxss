@@ -6,6 +6,12 @@
   overflow: hidden;
 }
 
+.workbench-hello {
+  margin-top: 12rpx;
+  font-size: 28rpx;
+  color: #475467;
+}
+
 .workbench-hero-meta {
   margin-top: 20rpx;
 }
@@ -63,8 +69,8 @@
   background: #eef4ff;
 }
 
-.workbench-menu-title {
-  margin-top: 20rpx;
+.workbench-menu-top .workbench-menu-title {
+  margin-top: 0;
   font-size: 34rpx;
   font-weight: 700;
   color: #101828;

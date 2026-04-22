@@ -70,13 +70,6 @@
   color: #101828;
 }
 
-.home-section-desc {
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  color: #667085;
-  line-height: 1.5;
-}
-
 .home-cards {
   padding: 0 32rpx;
 }
@@ -123,4 +116,18 @@
   color: #98a2b3;
   line-height: 1.5;
   text-align: center;
+}
+
+.home-quick-login {
+  margin: 8rpx 48rpx 0;
+  padding: 0 0 8rpx;
+  text-align: center;
+}
+
+.home-quick-login-link {
+  font-size: 28rpx;
+  color: #3b82f6;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 6rpx;
 }

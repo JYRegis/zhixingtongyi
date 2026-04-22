@@ -1,0 +1,22 @@
+<view class="page-shell">
+  <view class="container platform-page">
+    <view class="page-hero">
+      <view class="page-hero-title">异常与预警</view>
+    </view>
+
+    <view wx:if="{{!exceptionPairs.length}}" class="card">
+      <view class="section-desc">暂无</view>
+    </view>
+    <block wx:for="{{exceptionPairs}}" wx:key="index" wx:for-index="index">
+      <view class="card platform-risk-card" style="margin-top: 20rpx">
+        <view class="platform-risk-top">
+          <view>
+            <view class="desc">{{item.reason}}</view>
+          </view>
+          <view class="badge {{item.risk == '高' ? 'badge-danger' : 'badge-warning'}}">{{item.risk}}风险</view>
+        </view>
+        <button class="btn-primary platform-risk-btn" bindtap="onForceUnbind">处理</button>
+      </view>
+    </block>
+  </view>
+</view>

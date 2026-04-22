@@ -1,71 +1,99 @@
-const { PROXY_STUDENTS, getActingStudent, setActingStudent } = require("../../../utils/proxyStudents");
+const { getApplicationsForL2, resolveApplication } = require("../../../utils/onboardingStore");
+const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
+const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
+const {
+  getRecipientStudentRegList,
+  getRecipientHoursList,
+  getVolunteerRegList
+} = require("../../../utils/regionL2Display");
 
 Page({
   data: {
-    regionName: "云龙县龙兴村试点校",
-    students: PROXY_STUDENTS,
-    selectedStudentId: "",
-    actingStudent: null,
-    summaryCards: []
+    l2Scope: "",
+    hasScope: false,
+    regionName: "—",
+    volunteerReviewList: [],
+    /** 受援方 hub：待审条数 */
+    studentRegCount: 0,
+    hoursCount: 0,
+    noScopeTitle: "请等待平台分配"
   },
   onShow() {
-    const acting = getActingStudent();
+    checkOnboardingOrRedirect("pages/admin/region/index");
+    mergeFromStorageIntoApp();
+    const u = (getApp().globalData && getApp().globalData.userInfo) || {};
+    const p = getByPhone(u.phone) || u;
+    const scope = p.l2Scope || "";
+    const hasScope = scope === "volunteer_side" || scope === "recipient_side";
+    const regionName = hasScope
+      ? scope === "volunteer_side"
+        ? "支教方"
+        : "受援方"
+      : "未分配";
+    const phone = u.phone;
+    let volList = [];
+    let stuC = 0;
+    let hC = 0;
+    if (hasScope && scope === "volunteer_side" && phone) {
+      volList = getVolunteerRegList(String(phone));
+    } else if (hasScope && scope === "recipient_side" && phone) {
+      stuC = getRecipientStudentRegList(String(phone)).length;
+      hC = getRecipientHoursList(String(phone)).length;
+    }
     this.setData({
-      actingStudent: acting,
-      selectedStudentId: acting ? acting.id : "",
-      summaryCards: this.buildSummaryCards(acting)
+      l2Scope: scope,
+      hasScope,
+      regionName,
+      noScopeTitle: "请等待平台分配",
+      volunteerReviewList: volList,
+      studentRegCount: stuC,
+      hoursCount: hC
     });
   },
   onPullDownRefresh() {
     this.onShow();
     wx.stopPullDownRefresh();
   },
-  buildSummaryCards(actingStudent) {
-    const students = this.data.students || [];
-    const pairedCount = students.filter((item) => item.binding === "已绑定").length;
-    const matchingCount = students.filter((item) => item.progress === "结对中").length;
-    return [
-      {
-        label: "所辖学员",
-        value: `${students.length}人`,
-        note: "当前区域内已录入的学生"
-      },
-      {
-        label: "已绑定账号",
-        value: `${pairedCount}人`,
-        note: "已完成基础账号绑定的学生"
-      },
-      {
-        label: "当前代操作",
-        value: actingStudent ? actingStudent.name : "未选择",
-        note: actingStudent ? "与匹配页联动使用同一学员" : "可从列表快速指定当前学生"
-      }
-    ];
+  toRegionStudents() {
+    wx.navigateTo({ url: "/pages/admin/region-students/index" });
   },
-  onSelectStudent(e) {
-    const id = e.currentTarget.dataset.id;
-    const one = this.data.students.find((s) => s.id === id);
-    if (!one) {
+  toRegionHours() {
+    wx.navigateTo({ url: "/pages/admin/region-hours/index" });
+  },
+  onViewOnboarding(e) {
+    const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
+    if (!id) {
       return;
     }
-    setActingStudent({ id: one.id, name: one.name, grade: one.grade });
-    this.setData({
-      selectedStudentId: id,
-      actingStudent: getActingStudent(),
-      summaryCards: this.buildSummaryCards(getActingStudent())
-    });
-    wx.showToast({ title: "已设为当前代操作学员", icon: "success" });
+    wx.navigateTo({ url: "/pages/common/review-submission-detail/index?type=onboarding&id=" + encodeURIComponent(String(id)) });
   },
   onCreateAccount() {
-    wx.showToast({
-      title: "已创建学员账号",
-      icon: "success"
-    });
+    if (!this.data.hasScope || this.data.l2Scope !== "recipient_side") {
+      wx.showToast({ title: "受援方老师可管学生注册", icon: "none" });
+      return;
+    }
+    wx.showToast({ title: "已记录（Mock）", icon: "success" });
   },
-  onReviewIdentity() {
-    wx.showToast({
-      title: "已提交身份审核",
-      icon: "success"
-    });
+  onApproveL2(e) {
+    const id = e.currentTarget.dataset.id;
+    const u = getApp().globalData.userInfo || {};
+    const res = resolveApplication(id, true, { role: "admin_level_2", phone: u.phone, nickname: u.nickname });
+    if (!res.ok) {
+      wx.showToast({ title: res.message || "失败", icon: "none" });
+      return;
+    }
+    wx.showToast({ title: "已处理", icon: "success" });
+    this.onShow();
+  },
+  onRejectL2(e) {
+    const id = e.currentTarget.dataset.id;
+    const u = getApp().globalData.userInfo || {};
+    const res = resolveApplication(id, false, { role: "admin_level_2", phone: u.phone, nickname: u.nickname });
+    if (!res.ok) {
+      wx.showToast({ title: res.message || "失败", icon: "none" });
+      return;
+    }
+    wx.showToast({ title: "已驳回", icon: "none" });
+    this.onShow();
   }
 });

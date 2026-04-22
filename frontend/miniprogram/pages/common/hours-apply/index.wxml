@@ -1,0 +1,71 @@
+<view class="page-shell">
+  <view class="container hours-apply-page">
+    <view class="page-hero">
+      <view class="page-hero-title">认定义务时长</view>
+      <view class="page-hero-desc">选择一条结对，填写本周志愿时长。提交后由受援方学校或平台审核。</view>
+    </view>
+
+    <view wx:if="{{!pairList.length}}" class="card">
+      <view class="section-desc">当前没有「结对中」的结对，请先在「匹配」中完成结对后再申请。</view>
+    </view>
+
+    <view wx:else class="card hours-apply-form">
+      <view class="form-label">选择结对 <text class="form-req">*</text></view>
+      <picker mode="selector" range="{{pairList}}" range-key="label" value="{{pairIndex}}" bindchange="onPairChange">
+        <view class="form-picker">
+          <text class="form-picker-text">{{pairList[pairIndex].label}}</text>
+          <text class="form-picker-arrow">选</text>
+        </view>
+      </picker>
+
+      <view class="form-label">认定义务时长（小时） <text class="form-req">*</text></view>
+      <input
+        class="form-input"
+        type="digit"
+        placeholder="如 2.5"
+        value="{{hoursInput}}"
+        bindinput="onHoursInput"
+      />
+
+      <view class="form-label">周次 <text class="form-req">*</text></view>
+      <input
+        class="form-input"
+        placeholder="如 2026-W16"
+        value="{{weekInput}}"
+        bindinput="onWeekInput"
+      />
+      <view class="form-hint">一般填 ISO 周，如 2026-W16；默认已填本周参考值，可改。</view>
+
+      <button class="btn-primary hours-apply-submit" bindtap="onSubmit">提交审核</button>
+    </view>
+
+    <view class="section-header hours-apply-section" wx:if="{{myList.length}}">
+      <view class="section-title">我的申请记录</view>
+    </view>
+
+    <block wx:for="{{myList}}" wx:key="id">
+      <view class="card" style="margin-top: 20rpx" data-id="{{item.id}}" bindtap="onViewItem" hover-class="list-row--hover">
+        <view class="list-row list-row--tappable">
+          <text>认定义务时长</text>
+          <text class="list-row-cta">详情 ›</text>
+        </view>
+        <view class="list-row">
+          <text>状态</text>
+          <text>{{item.statusLabel}}</text>
+        </view>
+        <view class="list-row">
+          <text>学员 / 志愿者</text>
+          <text>{{item.studentName}} / {{item.volunteerName}}</text>
+        </view>
+        <view class="list-row">
+          <text>时长 / 周次</text>
+          <text>{{item.hours}} 小时 · {{item.week}}</text>
+        </view>
+        <view class="list-row">
+          <text>受援校</text>
+          <text>{{item.schoolName}}</text>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

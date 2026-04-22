@@ -1,18 +1,21 @@
 <view class="auth-page">
   <view class="auth-top">
-    <button class="auth-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-      <image wx:if="{{avatarUrl}}" class="auth-avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
-      <view wx:else class="auth-avatar-empty">
-        <view class="auth-avatar-icon"></view>
-      </view>
-    </button>
-    <view class="auth-top-title">完善你的信息</view>
+    <view class="auth-avatar-row" wx:if="{{!isLogin}}">
+      <button class="auth-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image wx:if="{{avatarUrl}}" class="auth-avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="auth-avatar-empty">
+          <view class="auth-avatar-icon"></view>
+        </view>
+      </button>
+      <text class="auth-avatar-hint">点击可更换图片</text>
+    </view>
+    <view class="auth-top-title">{{isLogin ? '登录' : '注册'}}</view>
     <view class="auth-top-role">{{roleName}}</view>
   </view>
 
   <view class="auth-form">
-    <view class="auth-group">
-      <view class="auth-group-title">昵称</view>
+    <view class="auth-group" wx:if="{{!isLogin}}">
+      <view class="auth-group-title">昵称 <text class="field-req">*</text></view>
       <view class="auth-input-wrap">
         <input
           class="auth-input"
@@ -26,7 +29,8 @@
     </view>
 
     <view class="auth-group">
-      <view class="auth-group-title">手机号</view>
+      <view class="auth-group-title">手机号 <text class="field-req">*</text></view>
+      <view class="auth-login-tip" wx:if="{{isLogin}}">登录仅需验证手机号。若本地有该号档案，将自动恢复昵称与头像；新号将以默认昵称进入，可稍后在「资料与账号」完善。</view>
       <button class="auth-wx-phone-btn" open-type="getPhoneNumber" bindgetphonenumber="onGetPhoneNumber">
         <view class="auth-wx-phone-inner">
           <view class="auth-wx-phone-icon"></view>
@@ -42,7 +46,7 @@
           bindtap="onSelectSavedPhone"
         >
           <text>{{item.display}}</text>
-          <text wx:if="{{selectedPhone === item.phone}}" class="auth-check-mark">&#10003;</text>
+          <text wx:if="{{selectedPhone === item.phone}}" class="auth-check-mark">✓</text>
         </view>
       </view>
       <view class="auth-or">
@@ -64,6 +68,10 @@
     </view>
   </view>
 
-  <button class="auth-submit-btn" bindtap="onSubmit">完成并进入</button>
-  <view class="auth-foot">点击上方头像可更换照片，返回可重新选择身份</view>
+  <button class="auth-submit-btn" bindtap="onSubmit">{{isLogin ? '登录' : '完成并进入'}}</button>
+
+  <view class="auth-flow-switch" wx:if="{{!fromProfile}}">
+    <text class="auth-flow-text" wx:if="{{isLogin}}" data-tologin="{{false}}" bindtap="onSwitchFlow">新用户，去完善资料</text>
+    <text class="auth-flow-text" wx:else data-tologin="{{true}}" bindtap="onSwitchFlow">已有资料，用手机号快速登录</text>
+  </view>
 </view>

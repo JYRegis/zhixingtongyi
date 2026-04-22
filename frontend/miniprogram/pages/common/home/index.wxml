@@ -13,8 +13,7 @@
   </view>
 
   <view class="home-section">
-    <view class="home-section-title">请先选择您的身份</view>
-    <view class="home-section-desc">点选最符合您的一句即可进入，用词尽量好懂</view>
+    <view class="home-section-title">选择身份</view>
   </view>
 
   <view class="home-cards">
@@ -27,10 +26,13 @@
       bindtap="onChooseRole"
     >
       <view class="home-card-iam">{{item.iam}}</view>
-      <view class="home-card-hint">{{item.hint}}</view>
+      <view class="home-card-hint" wx:if="{{item.hint}}">{{item.hint}}</view>
       <view class="home-card-go" style="color: {{item.accent}};">进入 →</view>
     </view>
   </view>
 
-  <view class="home-footnote">选择你的身份，即可进入对应的工作台。</view>
+  <view class="home-quick-login">
+    <text class="home-quick-login-link" bindtap="onQuickLogin">已有账号，仅手机号快速登录</text>
+  </view>
+
 </view>

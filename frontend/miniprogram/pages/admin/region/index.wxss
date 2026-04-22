@@ -1,3 +1,11 @@
+.list-row-ellipsis {
+  max-width: 60%;
+  word-break: break-all;
+  text-align: right;
+  font-size: 28rpx;
+  color: #3b4453;
+}
+
 .region-page {
   padding-bottom: 48rpx;
 }
@@ -42,4 +50,58 @@
 
 .region-student-badges {
   margin-top: 18rpx;
+}
+
+/* 受援方：两个入口 */
+.region-recipient-hub {
+  margin-top: 20rpx;
+}
+
+.region-recipient-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+button.region-jump-item {
+  margin: 0;
+  width: 100%;
+  text-align: left;
+  line-height: inherit;
+  font-weight: inherit;
+  font-size: inherit;
+  color: inherit;
+  padding: 24rpx 20rpx;
+  border: 1rpx solid #e4e7ec;
+  border-radius: 12rpx;
+  background: #f9fafb;
+}
+
+button.region-jump-item::after {
+  border: none;
+}
+
+.region-jump-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+.region-jump-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #101828;
+}
+
+.region-jump-cta {
+  font-size: 26rpx;
+  color: #175cd3;
+  font-weight: 600;
+}
+
+.region-jump-meta {
+  font-size: 24rpx;
+  color: #667085;
+  line-height: 1.4;
 }

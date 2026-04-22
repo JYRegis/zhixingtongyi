@@ -1,0 +1,87 @@
+.unbind-pairlist {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-bottom: 12rpx;
+}
+
+.unbind-pair {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 28rpx;
+  border: 2rpx solid #e5e6eb;
+}
+
+.unbind-pair--on {
+  border-color: #07c160;
+  background: #f0fff4;
+}
+
+.unbind-pair-main {
+  flex: 1;
+  min-width: 0;
+  margin-right: 20rpx;
+}
+
+.unbind-pair-line {
+  font-size: 30rpx;
+  color: #1a1a1a;
+  line-height: 1.4;
+}
+
+.unbind-pair-sub {
+  font-size: 24rpx;
+  color: #8c8c8c;
+  margin-top: 6rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unbind-pair-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.unbind-pair-chev {
+  font-size: 24rpx;
+  color: #07c160;
+}
+
+.em {
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: right;
+  max-width: 68%;
+  word-break: break-all;
+}
+
+.badge-muted {
+  background: #f2f3f5;
+  color: #5c6b7a;
+}
+
+.list-row .cell-multiline {
+  flex: 1;
+  text-align: right;
+  line-height: 1.4;
+  font-size: 28rpx;
+  color: #1a1a1a;
+}
+
+.dividing-line {
+  height: 1rpx;
+  background: #e5e6eb;
+  margin: 24rpx 0 16rpx;
+}
+
+.mini-title {
+  font-size: 26rpx;
+  color: #5c6b7a;
+  margin-bottom: 12rpx;
+}

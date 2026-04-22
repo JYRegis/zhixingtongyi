@@ -1,0 +1,55 @@
+<view class="page-shell create-page">
+  <view class="container">
+    <view class="card" style="margin-top: 16rpx;">
+      <view class="title">新建会议</view>
+      <view class="section-desc create-hint">
+        在腾讯会议、课堂等自己开好会后，将入会链接或 URL 粘贴在下方。小程序不会代替您调腾讯会议创建房间。
+      </view>
+    </view>
+
+    <view class="card" style="margin-top: 20rpx;" wx:if="{{!pairOptions.length && (role === 'student' || role === 'teacher')}}">
+      <view class="section-desc" style="color: #b54708">当前没有可选结对口。请先完成结对后再排会议。</view>
+    </view>
+
+    <view class="card" style="margin-top: 20rpx;" wx:else>
+      <view class="field">
+        <text class="field-label">主题 <text class="field-req">*</text></text>
+        <input class="field-input" value="{{title}}" data-k="title" bindinput="onText" placeholder="如：数学第 3 次辅导" />
+      </view>
+      <view class="field field--control" wx:if="{{pairOptions.length}}">
+        <text class="field-label">关联结对 <text class="field-req" wx:if="{{pairRequired}}">*</text></text>
+        <picker mode="selector" range="{{pairOptions}}" range-key="name" value="{{pairIndex}}" bindchange="onPickPair">
+          <view
+            class="field-input apply-picker-line create-picker-line"
+            style="line-height: 1.4;"
+            >{{pairLineDisplay}}</view>
+        </picker>
+      </view>
+      <view class="field field--control">
+        <text class="field-label">日期 <text class="field-req">*</text></text>
+        <picker mode="date" value="{{dateStr}}" bindchange="onPickDate" start="2020-01-01" end="2040-12-31">
+          <view class="field-input create-picker-line">{{dateStr || '选择日期'}}</view>
+        </picker>
+      </view>
+      <view class="field field--control">
+        <text class="field-label">时间 <text class="field-req">*</text></text>
+        <picker mode="time" value="{{timeStr}}" start="00:00" end="23:59" bindchange="onPickTime">
+          <view class="field-input create-picker-line">{{timeStr || '选择时间'}}</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="field-label">会议链接</text>
+        <textarea
+          class="field-textarea"
+          value="{{roomLink}}"
+          data-k="roomLink"
+          bindinput="onText"
+          placeholder="选填。粘贴腾讯会议等会邀链接，便于他方复制进入"
+        />
+      </view>
+      <view class="actions" style="margin-top: 24rpx;">
+        <button class="btn-primary" bindtap="onSubmit" disabled="{{submitDisabled}}">保存</button>
+      </view>
+    </view>
+  </view>
+</view>

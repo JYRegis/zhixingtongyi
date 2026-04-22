@@ -1,4 +1,4 @@
-<view class="chat-page">
+<view class="chat-page {{l1ViewOnly ? 'chat-page--observer' : ''}}">
   <scroll-view
     scroll-y
     class="chat-body"
@@ -8,25 +8,49 @@
     <view wx:if="{{!messages.length}}" class="chat-empty">
       <view class="chat-empty-icon">💬</view>
       <view class="chat-empty-title">还没有聊天记录</view>
-      <view class="chat-empty-desc">发一条消息开始沟通吧</view>
+      <view class="chat-empty-desc">{{l1ViewOnly ? '暂无内容' : '发一条消息开始沟通吧'}}</view>
     </view>
-    <block wx:for="{{messages}}" wx:key="id">
-      <view id="msg-{{item.id}}" class="msg {{item.isSelf ? 'msg--self' : 'msg--other'}}">
-        <view class="msg-name">{{item.from}} · {{item.time}}</view>
-        <view class="msg-content {{item.isSelf ? 'msg-content--self' : 'msg-content--other'}}">
-          <view class="msg-avatar">
-            <image wx:if="{{item.isSelf && myAvatarUrl}}" class="msg-avatar-img" src="{{myAvatarUrl}}" mode="aspectFill" />
-            <view wx:elif="{{item.isSelf}}" class="msg-avatar-text">{{myAvatarChar}}</view>
-            <view wx:else class="msg-avatar-text msg-avatar-text--other">{{item.avatarChar}}</view>
+    <block wx:if="{{!l1ViewOnly}}">
+      <block wx:for="{{messages}}" wx:key="id">
+        <view id="msg-{{item.id}}" class="msg {{item.isSelf ? 'msg--self' : 'msg--other'}}">
+          <view class="msg-name">{{item.from}} · {{item.time}}</view>
+          <view class="msg-content {{item.isSelf ? 'msg-content--self' : 'msg-content--other'}}">
+            <view class="msg-avatar">
+              <image wx:if="{{item.isSelf && myAvatarUrl}}" class="msg-avatar-img" src="{{myAvatarUrl}}" mode="aspectFill" />
+              <view wx:elif="{{item.isSelf}}" class="msg-avatar-text">{{myAvatarChar}}</view>
+              <view wx:else class="msg-avatar-text msg-avatar-text--other">{{item.avatarChar}}</view>
+            </view>
+            <view class="msg-bubble {{item.isSelf ? 'msg-bubble--self' : 'msg-bubble--other'}}">{{item.text}}</view>
           </view>
-          <view class="msg-bubble {{item.isSelf ? 'msg-bubble--self' : 'msg-bubble--other'}}">{{item.text}}</view>
         </view>
-      </view>
+      </block>
+    </block>
+    <block wx:else>
+      <block wx:for="{{messages}}" wx:key="id">
+        <view
+          id="msg-{{item.id}}"
+          class="msg {{item.l1IsStudent ? 'msg--l1stu' : 'msg--l1vol'}}"
+        >
+          <view class="msg-name msg-name--l1">
+            <text class="msg-l1-pill">{{item.partyLabel}}</text>
+            <text> {{item.from}} · {{item.time}}</text>
+          </view>
+          <view class="msg-content {{item.l1IsStudent ? 'msg-content--l1left' : 'msg-content--l1right'}}">
+            <view class="msg-avatar">
+              <view
+                class="msg-avatar-text {{item.l1IsStudent ? 'msg-avatar-text--stu' : 'msg-avatar-text--vol'}}"
+              >{{item.avatarChar}}</view>
+            </view>
+            <view class="msg-bubble {{item.l1IsStudent ? 'msg-bubble--l1stu' : 'msg-bubble--l1vol'}}"
+              >{{item.text}}</view>
+          </view>
+        </view>
+      </block>
     </block>
     <view class="chat-body-bottom-pad"></view>
   </scroll-view>
 
-  <view class="chat-bar">
+  <view class="chat-bar" wx:if="{{!l1ViewOnly}}">
     <view class="chat-bar-inner">
       <view class="chat-bar-icon" bindtap="onMockVoice">
         <view class="icon-mic"></view>

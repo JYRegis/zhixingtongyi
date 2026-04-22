@@ -1,58 +1,70 @@
+const { getAllPendingForUI } = require("../../../utils/onboardingStore");
+const { getAllPendingForL1 } = require("../../../utils/hoursReviewStore");
+const { mergeFromStorageIntoApp } = require("../../../utils/userProfileStore");
+const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
+const { to } = require("../../../utils/nav");
+
+const RISK_MOCK_LEN = 10;
+
 Page({
   data: {
     stats: {
-      volunteerCount: 128,
-      studentCount: 246,
-      pairCount: 92,
-      pendingAlerts: 6
+      volunteerCount: 328,
+      studentCount: 612,
+      pairCount: 198,
+      pendingAlerts: 24
     },
-    summaryCards: [],
-    exceptionPairs: [
-      { id: "P20250501", reason: "连续 14 天无沟通记录", risk: "中" },
-      { id: "P20250418", reason: "多次会议缺席", risk: "高" }
-    ]
+    cStudent: 0,
+    cTeacher: 0,
+    cL1: 0,
+    cL2: 0,
+    cHours: 0,
+    cRisk: RISK_MOCK_LEN
   },
   onShow() {
+    checkOnboardingOrRedirect("pages/admin/platform/index");
+    mergeFromStorageIntoApp();
+    try {
+      const t = this.selectComponent("#custom-tab-bar");
+      if (t && typeof t.sync === "function") {
+        t.sync();
+      }
+    } catch (e) {
+      // 非本页无组件时忽略
+    }
+    const app = getApp();
+    const u = app.globalData.userInfo || {};
+    const pending = getAllPendingForUI("admin_level_1", u.phone) || [];
+    const by = (r) => pending.filter((a) => a.role === r).length;
+    const h = (getAllPendingForL1() || []).length;
     this.setData({
-      summaryCards: [
-        {
-          label: "志愿者总数",
-          value: this.data.stats.volunteerCount,
-          note: "当前已入库的志愿者人数"
-        },
-        {
-          label: "有效结对",
-          value: this.data.stats.pairCount,
-          note: "当前仍在持续中的有效结对"
-        },
-        {
-          label: "待处理预警",
-          value: this.data.stats.pendingAlerts,
-          note: "建议优先跟进的异常提醒数量"
-        }
-      ]
+      cStudent: by("student"),
+      cTeacher: by("teacher"),
+      cL1: by("admin_level_1"),
+      cL2: by("admin_level_2"),
+      cHours: h
     });
   },
   onPullDownRefresh() {
     this.onShow();
     wx.stopPullDownRefresh();
   },
-  onAssignPermission() {
-    wx.showToast({
-      title: "权限已变更",
-      icon: "none"
-    });
+  goReviewStudent() {
+    to("/pages/admin/platform/review/index", { role: "student" });
   },
-  onForceUnbind(e) {
-    const id = e.currentTarget.dataset.id;
-    wx.showModal({
-      title: "确认干预",
-      content: `是否对 ${id} 发起强制解绑流程？`,
-      success: (res) => {
-        if (res.confirm) {
-          wx.showToast({ title: "干预已记录", icon: "success" });
-        }
-      }
-    });
+  goReviewTeacher() {
+    to("/pages/admin/platform/review/index", { role: "teacher" });
+  },
+  goReviewL2() {
+    to("/pages/admin/platform/review/index", { role: "admin_level_2" });
+  },
+  goReviewL1() {
+    to("/pages/admin/platform/review/index", { role: "admin_level_1" });
+  },
+  goHours() {
+    to("/pages/admin/platform/hours/index");
+  },
+  goRisk() {
+    to("/pages/admin/platform/risk/index");
   }
 });

@@ -1,7 +1,6 @@
 <view class="container">
   <view class="card">
     <view class="title">{{pageTitle}}</view>
-    <view class="desc">复制此页作为新业务页面，保留加载态和空态结构。</view>
   </view>
 
   <view wx:if="{{loading}}" class="card" style="margin-top: 20rpx;">
@@ -12,7 +11,5 @@
     <view class="desc">暂无数据</view>
   </view>
 
-  <view wx:else class="card" style="margin-top: 20rpx;">
-    <view class="desc">这里放置你的业务内容。</view>
-  </view>
+  <view wx:else class="card" style="margin-top: 20rpx"></view>
 </view>

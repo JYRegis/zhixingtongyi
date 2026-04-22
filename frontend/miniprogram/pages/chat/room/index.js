@@ -1,5 +1,14 @@
-const { loadThread, saveThread } = require("../../../utils/chatPartners");
+const {
+  loadThread,
+  saveThread,
+  mapThreadForL1View,
+  getL1ThreadTitleLine,
+  isRecipientL2ObserverAllowed,
+  isVolunteerL2ObserverAllowed
+} = require("../../../utils/chatPartners");
 const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
+const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
+const { getByPhone, mergeFromStorageIntoApp } = require("../../../utils/userProfileStore");
 
 Page({
   data: {
@@ -12,8 +21,8 @@ Page({
     inputFocused: false,
     message: "",
     canSend: false,
+    l1ViewOnly: false,
     messages: [],
-    welcomeHint: "",
     scrollInto: ""
   },
   onLoad(query) {
@@ -33,46 +42,114 @@ Page({
       return;
     }
     this.partnerId = partnerId;
-    wx.setNavigationBarTitle({ title: partnerName });
-    this.setData({ partnerId, partnerName });
+    mergeFromStorageIntoApp();
+    const app0 = getApp();
+    const u0 = (app0.globalData && app0.globalData.userInfo) || {};
+    const prof0 = (u0.phone && getByPhone(String(u0.phone))) || u0;
+    const r0 = ((app0.globalData && app0.globalData.role) || (prof0 && prof0.role) || "").trim();
+    const isRecipientObserver =
+      r0 === "admin_level_2" && prof0.l2Scope === "recipient_side" && u0.phone
+        ? isRecipientL2ObserverAllowed(String(u0.phone), partnerId, prof0)
+        : false;
+    const isVolunteerObserver =
+      r0 === "admin_level_2" && prof0.l2Scope === "volunteer_side" && u0.phone
+        ? isVolunteerL2ObserverAllowed(String(u0.phone), partnerId, prof0)
+        : false;
+    if (r0 === "admin_level_2" && u0.phone) {
+      if (prof0.l2Scope === "recipient_side" && !isRecipientObserver) {
+        wx.showToast({ title: "无权查看此会话，请从聊天列表进入", icon: "none" });
+        setTimeout(() => {
+          wx.switchTab({ url: "/pages/chat/list/index" });
+        }, 800);
+        this.partnerId = "";
+        return;
+      }
+      if (prof0.l2Scope === "volunteer_side" && !isVolunteerObserver) {
+        wx.showToast({ title: "无权查看此会话，请从聊天列表进入", icon: "none" });
+        setTimeout(() => {
+          wx.switchTab({ url: "/pages/chat/list/index" });
+        }, 800);
+        this.partnerId = "";
+        return;
+      }
+    }
+    const isObserverTitle =
+      r0 === "admin_level_1" || isRecipientObserver || isVolunteerObserver;
+    const title = isObserverTitle ? getL1ThreadTitleLine(partnerId) : partnerName;
+    wx.setNavigationBarTitle({ title: title || partnerName });
+    this.setData({ partnerId, partnerName: title || partnerName });
     this.reloadMessages();
   },
   onShow() {
+    checkOnboardingOrRedirect("pages/chat/room/index");
+    mergeFromStorageIntoApp();
     const app = getApp();
-    const role = app.globalData.role || "";
     const userInfo = app.globalData.userInfo || {};
+    const prof = (userInfo.phone && getByPhone(String(userInfo.phone))) || userInfo;
+    const role = ((app.globalData && app.globalData.role) || (prof && prof.role) || "").trim();
+    const isRecipientObserver =
+      role === "admin_level_2" && prof.l2Scope === "recipient_side" && userInfo.phone
+        ? isRecipientL2ObserverAllowed(String(userInfo.phone), this.partnerId, prof)
+        : false;
+    const isVolunteerObserver =
+      role === "admin_level_2" && prof.l2Scope === "volunteer_side" && userInfo.phone
+        ? isVolunteerL2ObserverAllowed(String(userInfo.phone), this.partnerId, prof)
+        : false;
+    const l1 = role === "admin_level_1";
     const nickname = (userInfo.nickname || "").trim();
     this.setData({
       role,
       roleName: ROLE_DISPLAY_NAME[role] || "学员",
       myAvatarUrl: (userInfo.avatarUrl || "").trim(),
-      myAvatarChar: nickname ? nickname.charAt(0) : "我",
-      welcomeHint:
-        role === "teacher"
-          ? "可在这里和学员同步课程安排、作业反馈与会前提醒。"
-          : "可在这里与志愿者确认课程安排、反馈学习进展。"
+      myAvatarChar: nickname ? nickname.charAt(0) : "我"
     });
     if (this.partnerId) {
       this.reloadMessages();
+      if (l1 || isRecipientObserver || isVolunteerObserver) {
+        try {
+          wx.setNavigationBarTitle({ title: getL1ThreadTitleLine(this.partnerId) });
+        } catch (e) {
+          // ignore
+        }
+      }
     }
   },
   reloadMessages() {
     if (!this.partnerId) {
       return;
     }
+    mergeFromStorageIntoApp();
     const raw = loadThread(this.partnerId);
-    const messages = raw.map(function (m) {
-      return {
-        id: m.id,
-        from: m.from,
-        text: m.text,
-        time: m.time,
-        isSelf: m.isSelf,
-        avatarChar: (m.from || "").charAt(0) || "?"
-      };
-    });
+    const app0 = getApp();
+    const u0 = (app0.globalData && app0.globalData.userInfo) || {};
+    const p0 = (u0.phone && getByPhone(String(u0.phone))) || u0;
+    const role0 =
+      ((app0.globalData && app0.globalData.role) || (p0 && p0.role) || "").trim();
+    const isRecipientObserver =
+      role0 === "admin_level_2" && p0.l2Scope === "recipient_side" && u0.phone
+        ? isRecipientL2ObserverAllowed(String(u0.phone), this.partnerId, p0)
+        : false;
+    const isVolunteerObserver =
+      role0 === "admin_level_2" && p0.l2Scope === "volunteer_side" && u0.phone
+        ? isVolunteerL2ObserverAllowed(String(u0.phone), this.partnerId, p0)
+        : false;
+    const isL1 = role0 === "admin_level_1";
+    const observer = isL1 || isRecipientObserver || isVolunteerObserver;
+    const messages = observer
+      ? mapThreadForL1View(this.partnerId, raw)
+      : raw.map(function (m) {
+          return {
+            id: m.id,
+            from: m.from,
+            text: m.text,
+            time: m.time,
+            isSelf: m.isSelf,
+            avatarChar: (m.from || "").charAt(0) || "?"
+          };
+        });
     const last = messages.length ? messages[messages.length - 1] : null;
     this.setData({
+      l1ViewOnly: observer,
       messages,
       scrollInto: last ? `msg-${last.id}` : ""
     });
@@ -91,6 +168,14 @@ Page({
     });
   },
   onSend() {
+    if (this.data.l1ViewOnly) {
+      const role0 = (getApp().globalData && getApp().globalData.role) || "";
+      wx.showToast({
+        title: "本会话中不可发消息",
+        icon: "none"
+      });
+      return;
+    }
     const text = this.data.message.trim();
     if (!text || !this.partnerId) {
       return;

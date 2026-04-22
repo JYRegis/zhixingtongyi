@@ -1,15 +1,11 @@
 /**
  * 学校老师（二级管理员）代管学员数据与当前代操作学员本地缓存。
- * 正式环境改为接口：所辖学员列表 + 当前 actingStudentId。
+ * 正式环境由接口拉取所辖学员列表；本处默认不预置假数据，通过审后的列表应为空，直至接口/种子写入。
  */
 
 const STORAGE_KEY = "zhixing_acting_student";
 
-const PROXY_STUDENTS = [
-  { id: "S001", name: "小林", grade: "初三", binding: "已绑定", progress: "结对中" },
-  { id: "S002", name: "小周", grade: "初二", binding: "待绑定", progress: "待匹配" },
-  { id: "S003", name: "小王", grade: "高一", binding: "已绑定", progress: "待确认" }
-];
+const PROXY_STUDENTS = [];
 
 function getActingStudent() {
   try {
