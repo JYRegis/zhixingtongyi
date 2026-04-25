@@ -2,6 +2,7 @@
   "pages": [
     "pages/common/home/index",
     "pages/common/auth/index",
+    "pages/common/role-select/index",
     "pages/common/onboarding-pending/index",
     "pages/common/onboarding-apply/index",
     "pages/common/workbench/index",

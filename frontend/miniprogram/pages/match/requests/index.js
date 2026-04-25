@@ -1,5 +1,6 @@
 const { formatSavedTimeForDisplay } = require("../../../utils/classTimeOptions");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
+const { getPendingApplications, processApplication } = require("../../../utils/backendApi");
 
 function formatApplyAt(ts) {
   if (ts == null) {
@@ -67,7 +68,7 @@ Page({
   onLoad() {
     this._pending = SEED.map((r) => ({ ...r }));
   },
-  onShow() {
+  async onShow() {
     checkOnboardingOrRedirect("pages/match/requests/index");
     const app0 = getApp();
     const r = (app0.globalData && app0.globalData.role) || "";
@@ -83,6 +84,22 @@ Page({
       return;
     }
     this._viewerRole = r;
+    if (r === "teacher") {
+      try {
+        const remote = await getPendingApplications();
+        this._pending = (Array.isArray(remote) ? remote : []).map((row) => ({
+          id: row.id,
+          studentName: row.studentName || `学员${row.studentId || ""}`,
+          volunteerName: "",
+          timeRaw: row.timeRaw || "",
+          appliedAt: row.applyTime
+        }));
+      } catch (e) {
+        if (console && console.warn) {
+          console.warn("[match-requests] getPendingApplications fallback to mock", e);
+        }
+      }
+    }
     if (!this._pending) {
       this._pending = SEED.map((x) => ({ ...x }));
     }
@@ -94,7 +111,7 @@ Page({
       pendingList: sorted.map((x) => mapItem(x, r))
     });
   },
-  onAccept(e) {
+  async onAccept(e) {
     if (this._viewerRole !== "teacher") {
       return;
     }
@@ -102,15 +119,23 @@ Page({
     if (!this._pending) {
       this._pending = SEED.map((r) => ({ ...r }));
     }
-    this._pending = this._pending.filter((item) => item.id !== id);
-    const sorted = this._pending
-      .slice()
-      .sort((a, b) => (a.appliedAt || 0) - (b.appliedAt || 0));
-    this.setData({ pendingList: sorted.map((x) => mapItem(x, this._viewerRole || "teacher")) });
-    wx.showToast({
-      title: "已接受",
-      icon: "success"
-    });
+    try {
+      await processApplication(id, "accept", "");
+      this._pending = this._pending.filter((item) => item.id !== id);
+      const sorted = this._pending
+        .slice()
+        .sort((a, b) => (a.appliedAt || 0) - (b.appliedAt || 0));
+      this.setData({ pendingList: sorted.map((x) => mapItem(x, this._viewerRole || "teacher")) });
+      wx.showToast({
+        title: "已接受",
+        icon: "success"
+      });
+    } catch (err) {
+      wx.showToast({
+        title: (err && err.message) || "操作失败",
+        icon: "none"
+      });
+    }
   },
   /** 蒙层滚动穿透占位 */
   preventScrollThrough() {},
@@ -130,7 +155,7 @@ Page({
       rejectReason: e.detail.value
     });
   },
-  onRejectConfirm() {
+  async onRejectConfirm() {
     const { activeRejectId, rejectReason } = this.data;
     if (!activeRejectId) {
       return;
@@ -142,22 +167,30 @@ Page({
       });
       return;
     }
-    if (!this._pending) {
-      this._pending = SEED.map((r) => ({ ...r }));
+    try {
+      await processApplication(activeRejectId, "reject", rejectReason.trim());
+      if (!this._pending) {
+        this._pending = SEED.map((r) => ({ ...r }));
+      }
+      this._pending = this._pending.filter((item) => item.id !== activeRejectId);
+      wx.showToast({
+        title: "已拒绝",
+        icon: "none"
+      });
+      const sorted2 = this._pending
+        .slice()
+        .sort((a, b) => (a.appliedAt || 0) - (b.appliedAt || 0));
+      this.setData({
+        pendingList: sorted2.map((x) => mapItem(x, this._viewerRole || "teacher")),
+        activeRejectId: null,
+        rejectReason: ""
+      });
+    } catch (err) {
+      wx.showToast({
+        title: (err && err.message) || "操作失败",
+        icon: "none"
+      });
     }
-    this._pending = this._pending.filter((item) => item.id !== activeRejectId);
-    wx.showToast({
-      title: "已拒绝",
-      icon: "none"
-    });
-    const sorted2 = this._pending
-      .slice()
-      .sort((a, b) => (a.appliedAt || 0) - (b.appliedAt || 0));
-    this.setData({
-      pendingList: sorted2.map((x) => mapItem(x, this._viewerRole || "teacher")),
-      activeRejectId: null,
-      rejectReason: ""
-    });
   },
   onCancelReject() {
     this.setData({

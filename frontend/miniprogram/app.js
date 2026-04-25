@@ -28,12 +28,20 @@ App({
     try {
       const savedRole = wx.getStorageSync("role");
       const savedUserInfo = wx.getStorageSync("userInfo");
+      const savedToken = wx.getStorageSync("token");
+      const base = savedUserInfo || null;
       if (savedRole) {
         this.globalData.role = savedRole;
-        const base = savedUserInfo || { nickname: "缓存用户", role: savedRole };
+      }
+      if (savedToken) {
+        this.globalData.token = savedToken;
+      }
+      if (base) {
         const p = base.phone && getByPhone(String(base.phone));
         this.globalData.userInfo = p ? { ...p, ...base } : base;
         wx.setStorageSync("userInfo", this.globalData.userInfo);
+      } else if (savedRole) {
+        this.globalData.userInfo = { nickname: "缓存用户", role: savedRole };
       }
     } catch (e) {
       if (console && console.error) {
@@ -72,5 +80,6 @@ App({
     this.globalData.token = "";
     wx.removeStorageSync("role");
     wx.removeStorageSync("userInfo");
+    wx.removeStorageSync("token");
   }
 });

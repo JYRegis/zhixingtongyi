@@ -100,13 +100,10 @@
   color: #101828;
 }
 
-.auth-top-role {
+.auth-top-tip {
   margin-top: 12rpx;
-  font-size: 26rpx;
-  color: #3b82f6;
-  background: #eff6ff;
-  padding: 8rpx 24rpx;
-  border-radius: 999rpx;
+  font-size: 24rpx;
+  color: #475467;
 }
 
 /* ---------- form ---------- */

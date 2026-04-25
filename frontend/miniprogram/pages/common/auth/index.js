@@ -1,210 +1,174 @@
-const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
-const { getByPhone } = require("../../../utils/userProfileStore");
-
-const STORAGE_PHONES = "zhixing_saved_phones";
+const { authWxLogin, authPhoneLogin, authRoleApply } = require("../../../utils/backendApi");
 
 Page({
   data: {
-    role: "",
-    roleName: "",
-    isLogin: false,
     fromProfile: false,
-    savedPhoneItems: [],
-    selectedPhone: "",
     manualPhone: "",
-    showManualPhone: false,
-    nickname: "",
-    avatarUrl: ""
+    wxPhoneCode: "",
+    encryptedData: "",
+    iv: "",
+    submitting: false
   },
   onLoad(query) {
     this._returnTo = ((query && query.returnTo) || "").trim();
     const fromProfile = this._returnTo === "profile";
-    const role = (query.role || "").trim();
-    if (!role) {
-      wx.showModal({
-        title: "提示",
-        content: "请先在首页选择您的身份。",
-        showCancel: false,
-        success: () => wx.navigateBack()
-      });
-      return;
-    }
-    let isLogin = String((query && query.flow) || "") === "login";
-    if (query && query.prefill === "1") {
-      isLogin = false;
-    }
     this.setData({
-      role,
-      roleName: ROLE_DISPLAY_NAME[role] || "用户",
-      isLogin: isLogin,
       fromProfile: fromProfile
     });
     try {
-      wx.setNavigationBarTitle({ title: isLogin ? "登录" : "注册" });
+      wx.setNavigationBarTitle({ title: "登录" });
     } catch (e) {
       // ignore
-    }
-    this.loadSavedPhones();
-    if (query.prefill === "1") {
-      const u = getApp().globalData.userInfo || {};
-      const phone = (u.phone || "").replace(/\D/g, "").slice(0, 11);
-      this.setData({
-        nickname: (u.nickname || "").trim(),
-        avatarUrl: (u.avatarUrl || "").trim(),
-        manualPhone: phone,
-        selectedPhone: phone.length === 11 ? phone : "",
-        showManualPhone: phone.length === 11
-      });
     }
   },
   onShow() {
-    const t = this.data.isLogin ? "登录" : "注册";
     try {
-      wx.setNavigationBarTitle({ title: t });
+      wx.setNavigationBarTitle({ title: "登录" });
     } catch (e) {
       // ignore
     }
-  },
-  onSwitchFlow(e) {
-    const raw = e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tologin;
-    const toLogin = raw === true || raw === "true";
-    const r = this.data.role || "";
-    if (!r) {
-      return;
-    }
-    wx.redirectTo({
-      url:
-        "/pages/common/auth/index?role=" +
-        encodeURIComponent(r) +
-        (toLogin ? "&flow=login" : "&flow=register")
-    });
-  },
-  loadSavedPhones() {
-    const raw = wx.getStorageSync(STORAGE_PHONES) || [];
-    const list = Array.isArray(raw) ? raw : [];
-    const savedPhoneItems = list.map((phone) => ({
-      phone,
-      display: String(phone).replace(/^(\d{3})\d{4}(\d{4})$/, "$1****$2")
-    }));
-    this.setData({ savedPhoneItems });
-  },
-  persistPhones(phones) {
-    wx.setStorageSync(STORAGE_PHONES, phones.slice(0, 5));
-    this.loadSavedPhones();
-  },
-  onSelectSavedPhone(e) {
-    const phone = e.currentTarget.dataset.phone;
-    this.setData({
-      selectedPhone: phone,
-      manualPhone: phone,
-      showManualPhone: false
-    });
-  },
-  onShowManualInput() {
-    this.setData({
-      showManualPhone: true,
-      selectedPhone: "",
-      manualPhone: ""
-    });
-  },
-  onManualPhoneInput(e) {
-    const v = (e.detail.value || "").replace(/\D/g, "").slice(0, 11);
-    this.setData({
-      manualPhone: v,
-      selectedPhone: v.length === 11 ? v : ""
-    });
   },
   /**
    * 微信手机号快速验证：真实环境需用 e.detail.code 调后端换明文。
    */
   onGetPhoneNumber(e) {
     const d = e.detail || {};
-    if (d.errMsg && d.errMsg.indexOf("fail") !== -1) {
-      wx.showToast({ title: "已取消授权，可手动输入", icon: "none" });
+    console.log("[auth] getPhoneNumber detail:", d);
+    const errMsg = String(d.errMsg || "");
+    if (errMsg.indexOf("fail") !== -1) {
+      if (errMsg.indexOf("cancel") !== -1) {
+        wx.showToast({ title: "你已取消授权，请重新点击", icon: "none" });
+      } else if (errMsg.indexOf("privacy") !== -1) {
+        wx.showToast({ title: "请先同意隐私协议后再授权", icon: "none" });
+      } else {
+        const fullErr = errMsg || "unknown";
+        wx.showModal({
+          title: "手机号授权失败",
+          content: "微信返回：" + fullErr + "\n请确认：小程序已开通手机号能力、当前账号在测试白名单、并已同意隐私协议。",
+          showCancel: false
+        });
+      }
       return;
     }
-    if (d.code) {
-      const demoPhone = "13900000000";
-      wx.showToast({ title: "已自动填入手机号", icon: "none" });
-      this.applyPhoneAndSave(demoPhone);
+    const phoneCode = d.code ? String(d.code).trim() : "";
+    const encryptedData = d.encryptedData ? String(d.encryptedData).trim() : "";
+    const iv = d.iv ? String(d.iv).trim() : "";
+    if (phoneCode || (encryptedData && iv)) {
+      this.setData({
+        wxPhoneCode: phoneCode,
+        encryptedData: encryptedData,
+        iv: iv
+      });
+      wx.showToast({ title: "已授权手机号，正在登录", icon: "none" });
+      this.onSubmit();
       return;
     }
-    wx.showToast({ title: "请手动输入或使用已保存号码", icon: "none" });
+    const shortErr = errMsg ? errMsg.slice(0, 28) : "无手机号凭据";
+    wx.showToast({ title: "授权结果异常: " + shortErr, icon: "none" });
   },
-  applyPhoneAndSave(phone) {
-    const p = String(phone).replace(/\D/g, "").slice(0, 11);
-    if (p.length !== 11) {
-      return;
-    }
-    let list = wx.getStorageSync(STORAGE_PHONES) || [];
-    if (!Array.isArray(list)) {
-      list = [];
-    }
-    const next = [p, ...list.filter((x) => x !== p)].slice(0, 5);
-    this.persistPhones(next);
-    this.setData({
-      manualPhone: p,
-      selectedPhone: p,
-      showManualPhone: false
-    });
+  onManualPhoneInput(e) {
+    const value = (e.detail.value || "").replace(/\D/g, "").slice(0, 11);
+    this.setData({ manualPhone: value });
   },
-  onChooseAvatar(e) {
-    const url = e.detail && e.detail.avatarUrl;
-    if (url) {
-      this.setData({ avatarUrl: url });
-    }
-  },
-  onNicknameInput(e) {
-    this.setData({ nickname: (e.detail.value || "").trim() });
-  },
-  onNicknameBlur(e) {
-    this.setData({ nickname: (e.detail.value || "").trim() });
-  },
-  onSubmit() {
-    const phone = (this.data.manualPhone || this.data.selectedPhone || "").replace(/\D/g, "").slice(0, 11);
+  async onManualSubmit() {
+    const phone = (this.data.manualPhone || "").replace(/\D/g, "").slice(0, 11);
     if (!/^1\d{10}$/.test(phone)) {
       wx.showToast({ title: "请填写11位大陆手机号", icon: "none" });
       return;
     }
-    const app = getApp();
-    if (this.data.isLogin) {
-      this.applyPhoneAndSave(phone);
-      const prof = getByPhone(phone) || {};
-      const last4 = phone.slice(-4);
-      const nick =
-        (prof.nickname && String(prof.nickname).trim()) ||
-        (prof.name && String(prof.name).trim()) ||
-        (prof.nickName && String(prof.nickName).trim()) ||
-        "用户" + last4;
-      const avatarUrl = String(prof.avatarUrl || "").trim();
-      app.setLogin(this.data.role, {
-        nickname: nick,
-        avatarUrl: avatarUrl || this.data.avatarUrl || "",
-        phone,
-        role: this.data.role
-      });
-    } else {
-      const nickname = (this.data.nickname || "").trim();
-      if (!nickname) {
-        wx.showToast({ title: "请填写昵称", icon: "none" });
-        return;
-      }
-      this.applyPhoneAndSave(phone);
-      app.setLogin(this.data.role, {
-        nickname,
-        avatarUrl: this.data.avatarUrl || "",
-        phone,
-        role: this.data.role
-      });
+    await this.submitLogin({
+      mode: "phone",
+      phone: phone
+    });
+  },
+  async onSubmit() {
+    await this.submitLogin({ mode: "wechat" });
+  },
+  async submitLogin(options) {
+    if (this.data.submitting) {
+      return;
     }
+    this.setData({ submitting: true });
+    const app = getApp();
+    const effectiveRole = (app.globalData && app.globalData.role) || "";
+    const roleApplyMap = {
+      student: "STUDENT",
+      teacher: "TEACHER"
+    };
+    const appUser = (app.globalData && app.globalData.userInfo) || {};
+    const nick =
+      (appUser.nickname && String(appUser.nickname).trim()) ||
+      (appUser.name && String(appUser.name).trim()) ||
+      (appUser.nickName && String(appUser.nickName).trim()) ||
+      "微信用户";
+    const avatarUrl = String(appUser.avatarUrl || appUser.avatar || "").trim();
+    let token = "";
+    let remoteUser = null;
+    try {
+      let loginRes = null;
+      if (options.mode === "phone") {
+        loginRes = await authPhoneLogin({
+          phone: options.phone,
+          nickName: nick,
+          avatarUrl: avatarUrl
+        });
+      } else {
+        const hasWxPhoneCode = !!(this.data.wxPhoneCode && String(this.data.wxPhoneCode).trim());
+        const hasEncryptedPayload = !!(
+          this.data.encryptedData &&
+          String(this.data.encryptedData).trim() &&
+          this.data.iv &&
+          String(this.data.iv).trim()
+        );
+        if (!hasWxPhoneCode && !hasEncryptedPayload) {
+          throw new Error("请先点击微信一键获取手机号");
+        }
+        const loginCode = await this.fetchWxLoginCode();
+        const payload = {
+          code: loginCode,
+          phoneCode: this.data.wxPhoneCode || undefined,
+          encryptedData: this.data.encryptedData || undefined,
+          iv: this.data.iv || undefined,
+          userInfo: {
+            nickName: nick,
+            avatarUrl: avatarUrl
+          }
+        };
+        loginRes = await authWxLogin(payload);
+      }
+      token = loginRes && loginRes.token ? loginRes.token : "";
+      remoteUser = loginRes && loginRes.user ? loginRes.user : null;
+      if (token) {
+        app.globalData.token = token;
+        wx.setStorageSync("token", token);
+      }
+      const targetRole = roleApplyMap[effectiveRole];
+      if (token && targetRole) {
+        await authRoleApply(targetRole);
+      }
+    } catch (e) {
+      wx.showToast({
+        title: (e && e.message) || "登录失败",
+        icon: "none"
+      });
+      this.setData({ submitting: false });
+      return;
+    }
+    const phoneFromBackend = (remoteUser && remoteUser.phone) || "";
+    const finalPhone = /^1\d{10}$/.test(String(phoneFromBackend)) ? String(phoneFromBackend) : "";
+    app.setLogin(effectiveRole, {
+      nickname: (remoteUser && remoteUser.username) || nick,
+      avatarUrl: (remoteUser && remoteUser.avatar) || avatarUrl,
+      phone: finalPhone,
+      role: effectiveRole,
+      userId: remoteUser && remoteUser.id ? String(remoteUser.id) : finalPhone
+    });
     const backToProfile = this._returnTo === "profile";
     let okTitle = "完成";
     if (backToProfile) {
       okTitle = "已更新";
-    } else if (this.data.isLogin) {
-      okTitle = "登录成功";
     } else {
-      okTitle = "注册成功";
+      okTitle = "登录成功";
     }
     wx.showToast({ title: okTitle, icon: "success" });
     setTimeout(() => {
@@ -216,7 +180,23 @@ Page({
         });
         return;
       }
-      wx.switchTab({ url: "/pages/common/workbench/index" });
+      wx.redirectTo({ url: "/pages/common/role-select/index" });
     }, 400);
+    this.setData({ submitting: false });
+  },
+  fetchWxLoginCode() {
+    return new Promise((resolve, reject) => {
+      wx.login({
+        success: (res) => {
+          const code = res && res.code;
+          if (!code) {
+            reject(new Error("微信登录 code 获取失败"));
+            return;
+          }
+          resolve(code);
+        },
+        fail: () => reject(new Error("微信登录失败"))
+      });
+    });
   }
 });

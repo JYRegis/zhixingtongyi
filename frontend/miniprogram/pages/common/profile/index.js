@@ -4,6 +4,14 @@ const { getSchoolsByKind, getSchoolName } = require("../../../utils/schoolsMock"
 const { matchGradeToPicker } = require("../../../utils/gradeOptions");
 const { matchClassTimeToForm, parseTimeSelection, serializeTimeSelection, isValidTimeSelection } = require("../../../utils/classTimeOptions");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
+const {
+  getStudentProfile,
+  saveStudentProfile,
+  submitStudentProfile,
+  getVolunteerProfile,
+  createVolunteerProfile,
+  updateVolunteerProfile
+} = require("../../../utils/backendApi");
 
 const roleFieldMap = {
   teacher: ["name", "workNo", "schoolId", "grade", "subjects", "personality", "availableTime"],
@@ -256,10 +264,11 @@ Page({
   onLoad() {
     this.syncPage();
   },
-  onShow() {
+  async onShow() {
     checkOnboardingOrRedirect("pages/common/profile/index");
     mergeFromStorageIntoApp();
     this.syncPage();
+    await this.trySyncProfileFromBackend();
   },
   onEditAccount() {
     const r = (this.data.role || (getApp().globalData && getApp().globalData.role) || "").trim();
@@ -323,6 +332,38 @@ Page({
       accNickname: nick0,
       accPhoneDisplay: accPhoneDisplay
     });
+  },
+  async trySyncProfileFromBackend() {
+    const role = this.data.role || "";
+    if (role !== "student" && role !== "teacher") {
+      return;
+    }
+    try {
+      const remote = role === "student" ? await getStudentProfile() : await getVolunteerProfile();
+      if (!remote) {
+        return;
+      }
+      const f = { ...this.data.form };
+      f.name = remote.realName || f.name || "";
+      f.schoolId = remote.schoolId != null ? String(remote.schoolId) : (f.schoolId || "");
+      if (role === "teacher") {
+        f.school = remote.school || f.school || "";
+      }
+      f.grade = remote.grade || f.grade || "";
+      f.personality = remote.personalityDesc || f.personality || "";
+      if (role === "student") {
+        const sub = Array.isArray(remote.subjectsNeeded) ? remote.subjectsNeeded.join("、") : "";
+        f.subjects = sub || f.subjects || "";
+      } else {
+        const sub = Array.isArray(remote.skilledSubjects) ? remote.skilledSubjects.join("、") : "";
+        f.subjects = sub || f.subjects || "";
+      }
+      this.syncPage(f);
+    } catch (e) {
+      if (console && console.warn) {
+        console.warn("[profile] sync backend profile failed", e);
+      }
+    }
   },
   onPickSchool(e) {
     const ix = Number(e.detail.value);
@@ -391,7 +432,7 @@ Page({
     };
     this.syncPage(nextForm);
   },
-  onSubmit() {
+  async onSubmit() {
     const { form, visibleFields, role } = this.data;
     if (!form.name || !form.name.trim()) {
       wx.showToast({ title: "请填写姓名", icon: "none" });
@@ -462,9 +503,57 @@ Page({
       });
       saveProfile(String(u.phone), patch);
     }
-    wx.showToast({
-      title: "资料已保存",
-      icon: "success"
-    });
+    try {
+      if (role === "student") {
+        const t = parseTimeSelection(String(form.studentAvailableTime || ""));
+        const freeTime = [{ weekIds: t.weekIds, slotIds: t.slotIds }];
+        const payload = {
+          realName: String(form.name || "").trim(),
+          schoolId: form.schoolId ? Number(form.schoolId) : null,
+          grade: String(form.grade || "").trim(),
+          subjectsNeeded: String(form.subjects || "")
+            .split(/[，,\s]+/)
+            .map((x) => x.trim())
+            .filter(Boolean),
+          freeTime: freeTime,
+          personalityDesc: String(form.personality || "").trim() || null
+        };
+        await saveStudentProfile(payload);
+        await submitStudentProfile();
+      } else if (role === "teacher") {
+        const t = parseTimeSelection(String(form.availableTime || ""));
+        const freeTime = [{ weekIds: t.weekIds, slotIds: t.slotIds }];
+        const payload = {
+          realName: String(form.name || "").trim(),
+          school: String((form.schoolId && getSchoolName(form.schoolId)) || form.school || "").trim(),
+          grade: String(form.grade || "").trim(),
+          freeTime: freeTime,
+          skilledSubjects: String(form.subjects || "")
+            .split(/[，,\s]+/)
+            .map((x) => x.trim())
+            .filter(Boolean),
+          personalSkills: "",
+          personalityDesc: String(form.personality || "").trim() || null
+        };
+        const appUser = getApp().globalData.userInfo || {};
+        if (appUser.hasProfile) {
+          await updateVolunteerProfile(payload);
+        } else {
+          await createVolunteerProfile(payload);
+          appUser.hasProfile = true;
+          getApp().globalData.userInfo = appUser;
+          wx.setStorageSync("userInfo", appUser);
+        }
+      }
+      wx.showToast({
+        title: "资料已保存",
+        icon: "success"
+      });
+    } catch (err) {
+      wx.showToast({
+        title: (err && err.message) || "保存失败",
+        icon: "none"
+      });
+    }
   }
 });

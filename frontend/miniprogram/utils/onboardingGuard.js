@@ -4,6 +4,7 @@ const { ensureStatusFromApplications } = require("./onboardingStore");
 const ALLOWED_NO_ONBOARD = new Set([
   "pages/common/home/index",
   "pages/common/auth/index",
+  "pages/common/role-select/index",
   "pages/common/onboarding-apply/index",
   "pages/common/template/index"
 ]);
@@ -13,6 +14,7 @@ const ALLOWED_WHEN_PENDING = new Set([
   "pages/common/onboarding-pending/index",
   "pages/common/home/index",
   "pages/common/auth/index",
+  "pages/common/role-select/index",
   "pages/common/template/index"
 ]);
 

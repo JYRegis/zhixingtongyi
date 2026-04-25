@@ -4,6 +4,7 @@ const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { formatSavedTimeForDisplay } = require("../../../utils/classTimeOptions");
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
 const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
+const { getRecommendations, applyMatch } = require("../../../utils/backendApi");
 
 var matchHeroMap = {
   student: { title: "志愿者推荐" },
@@ -115,7 +116,7 @@ Page({
     renderList: [],
     list: []
   },
-  onShow: function () {
+  onShow: async function () {
     const role0 = (getApp().globalData && getApp().globalData.role) || "";
     mergeFromStorageIntoApp();
     if (role0 === "admin_level_1") {
@@ -134,6 +135,27 @@ Page({
     syncCustomTabBar();
     var role = getApp().globalData.role || "";
     var fullList = buildListForRole(role);
+    if (role === "student") {
+      try {
+        const remote = await getRecommendations();
+        fullList = (Array.isArray(remote) ? remote : []).map(function (row, idx) {
+          return {
+            id: row.teacherId || idx + 1,
+            teacherId: row.teacherId,
+            asVolunteer: row.realName || "志愿者",
+            asStudent: "",
+            timeRaw: row.freeTime || "",
+            score: 90,
+            style: row.school || "",
+            subject: (row.grade || "综合")
+          };
+        });
+      } catch (e) {
+        if (console && console.warn) {
+          console.warn("[match-center] getRecommendations fallback to mock", e);
+        }
+      }
+    }
     var idx = typeof this.data.subjectIndex === "number" ? this.data.subjectIndex : 0;
     var renderList = applySubjectFilter(fullList, idx);
     var hero = matchHeroMap[role] || matchHeroMap.student;
@@ -170,15 +192,25 @@ Page({
       subjectLineText: subjectOptions[idx] != null ? subjectOptions[idx] : "全部"
     });
   },
-  onApply: function (e) {
+  onApply: async function (e) {
     var id = e.currentTarget.dataset.id;
     var one = this.data.renderList.find(function (item) {
       return item.id === id;
     });
-    wx.showToast({
-      title: "已申请" + (one && one.teacher ? " " + one.teacher : ""),
-      icon: "success"
-    });
+    try {
+      if (one && one.teacherId) {
+        await applyMatch(one.teacherId);
+      }
+      wx.showToast({
+        title: "已申请" + (one && one.teacher ? " " + one.teacher : ""),
+        icon: "success"
+      });
+    } catch (err) {
+      wx.showToast({
+        title: (err && err.message) || "申请失败",
+        icon: "none"
+      });
+    }
   },
   toRequests: function () {
     to("/pages/match/requests/index");

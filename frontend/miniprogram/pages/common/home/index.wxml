@@ -1,38 +1,20 @@
 <view class="home-page">
-  <view class="home-hero">
-    <view class="home-brand">
-      <text class="home-brand-mark">驿</text>
-    </view>
-    <view class="home-title">知行同驿</view>
-    <view class="home-subtitle">连接城市志愿者与乡村孩子的云支教平台</view>
-    <view class="home-badge-row">
-      <text class="home-badge">结对学习</text>
-      <text class="home-badge">线上陪伴</text>
-      <text class="home-badge">安全沟通</text>
-    </view>
-  </view>
+  <view class="home-mask"></view>
+  <view class="home-glow home-glow-top"></view>
+  <view class="home-glow home-glow-bottom"></view>
 
-  <view class="home-section">
-    <view class="home-section-title">选择身份</view>
-  </view>
+  <view class="home-content">
+    <view class="home-brand-badge">ZHIXING TONGYI</view>
+    <view class="home-title-wrap">
+      <view class="home-title">知行同驿</view>
+      <view class="home-subtitle">连接城市志愿者与乡村孩子的云支教平台</view>
+    </view>
 
-  <view class="home-cards">
-    <view
-      wx:for="{{cards}}"
-      wx:key="value"
-      class="home-card"
-      style="border-left-color: {{item.accent}};"
-      data-role="{{item.value}}"
-      bindtap="onChooseRole"
-    >
-      <view class="home-card-iam">{{item.iam}}</view>
-      <view class="home-card-hint" wx:if="{{item.hint}}">{{item.hint}}</view>
-      <view class="home-card-go" style="color: {{item.accent}};">进入 →</view>
+    <view class="home-panel">
+      <view class="home-panel-title">欢迎回来</view>
+      <view class="home-panel-desc">使用微信一键授权登录，未注册账号将自动创建</view>
+      <button class="home-btn home-btn-primary" bindtap="onGoLogin">微信一键登录</button>
+      <view class="home-login-note">登录后进入角色选择</view>
     </view>
   </view>
-
-  <view class="home-quick-login">
-    <text class="home-quick-login-link" bindtap="onQuickLogin">已有账号，仅手机号快速登录</text>
-  </view>
-
 </view>
