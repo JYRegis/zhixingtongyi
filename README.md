@@ -15,10 +15,9 @@ copy .env.example .env
 docker compose up --build
 ```
 
-3. 健康检查
+3. 接口访问
 
 后端启动后访问：
-- `GET http://localhost:8080/api/v1/health`
 - Swagger：`http://localhost:8080/api/v1/swagger-ui.html`
 
 RabbitMQ 管理台：

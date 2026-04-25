@@ -38,13 +38,24 @@ POST /auth/wx-login
     "username": "用户名",
     "role": 0,
     "avatar": "头像URL",
-    "hasProfile": false // 是否已完善个人信息
+    "hasProfile": false, // 是否已完善个人信息
+    "roleApplied": false // 是否已申请学生/志愿者角色
   }
 }
 ```
 
-### 1.2 完善个人信息
-根据用户角色调用不同的接口（见下方各角色模块）
+说明：首次登录自动创建基础用户账号（未绑定学生/志愿者扩展资料），后续通过角色申请接口进入审核流。
+
+### 1.2 申请角色（学生/志愿者）
+```
+POST /auth/role-apply
+```
+```json
+{
+  "targetRole": "STUDENT" // STUDENT 或 TEACHER
+}
+```
+说明：提交后进入对应审核流程。
 
 ### 1.3 退出登录
 ```
@@ -71,13 +82,9 @@ GET /admin/users
 GET /admin/users/{userId}
 ```
 
-#### 2.1.3 创建用户（管理员手动创建）
-```
-POST /admin/users
-```
-请求参数根据角色不同而不同
+约束说明：管理员（含一级管理员）不能直接创建用户账号，平台用户由小程序登录自动注册。
 
-#### 2.1.4 更新用户状态
+#### 2.1.3 更新用户状态
 ```
 PUT /admin/users/{userId}/status
 ```
@@ -87,7 +94,21 @@ PUT /admin/users/{userId}/status
 }
 ```
 
-#### 2.1.5 分配二级管理员权限
+#### 2.1.4 一级管理员创建学校
+```
+POST /admin/schools
+```
+```json
+{
+  "name": "示例中学",
+  "regionCode": "510100",
+  "address": "xx路xx号",
+  "contactPerson": "张老师",
+  "contactPhone": "13800000000"
+}
+```
+
+#### 2.1.5 一级管理员指定二级管理员并分配学校/地区权限
 ```
 POST /admin/secondary-admins
 ```
@@ -96,9 +117,17 @@ POST /admin/secondary-admins
   "userId": 1,
   "schoolId": 1,
   "regionCode": "510100",
-  "permissions": ["student_audit", "student_manage"]
+  "permissions": ["student_manage"]
 }
 ```
+
+权限说明：
+- `student_manage`：本校学生注册审核、学生监管、本校学生关联志愿者时长审核
+- `teacher_audit`：志愿者注册审核
+说明：一级管理员可只授予其中一种权限，也可同时授予两种权限。
+地域约束：
+- 学生侧以云南地区学校体系为主，`student_manage` 按学校/地区进行隔离审核。
+- 志愿者侧为上海来源用户，志愿者审核不受学校/地区隔离限制。
 
 ### 2.2 志愿者管理
 
@@ -141,6 +170,8 @@ PUT /admin/teachers/{teacherId}/audit
   "notes": "审核备注"
 }
 ```
+权限要求：需具备 `teacher_audit`。
+审核规则：任意具备 `teacher_audit` 权限的二级管理员均可对志愿者申请执行审核通过/拒绝，不要求与学生学校或地区一致。
 
 #### 2.2.5 设置是否持续接受匹配
 ```
@@ -154,13 +185,13 @@ PUT /teacher/continuous-match
 
 ### 2.3 学生管理
 
-#### 2.3.1 学生注册（完善信息）
+#### 2.3.1 学生资料草稿保存
 ```
 POST /student/profile
 ```
 ```json
 {
-  "realName": "真实姓名",
+  "realName": "真实姓名（可选）",
   "schoolId": 1,
   "grade": "初三",
   "subjectsNeeded": ["数学", "英语"],
@@ -171,20 +202,39 @@ POST /student/profile
   "personalityDesc": "内向，需要耐心引导"
 }
 ```
+字段约束：申请阶段支持草稿保存，`subjectsNeeded`、`freeTime` 可为空；进入配对前必须补全资料。
 
-#### 2.3.2 获取学生个人信息
+#### 2.3.2 提交配对资料
+```
+POST /student/profile/submit
+```
+说明：将资料状态从 `DRAFT` 提交为 `READY_FOR_MATCH`，校验 `grade`、`subjectsNeeded`、`freeTime` 必填。
+
+#### 2.3.3 二级管理员审核学生资料
+```
+PUT /admin/students/{studentId}/audit
+```
+```json
+{
+  "status": 1, // 1-通过，2-拒绝
+  "notes": "审核备注"
+}
+```
+权限要求：需具备 `student_manage`，且只能审核本校学生。
+
+#### 2.3.4 获取学生资料
 ```
 GET /student/profile
 ```
 
-#### 2.3.3 更新学生信息
+#### 2.3.5 更新学生资料
 ```
 PUT /student/profile
 ```
 
-#### 2.3.4 二级管理员代管学生
+#### 2.3.6 二级管理员代管学生
 
-##### 2.3.4.1 为代管学生创建账号
+##### 2.3.6.1 为代管学生创建账号
 ```
 POST /admin/students/batch-create
 ```
@@ -203,12 +253,12 @@ POST /admin/students/batch-create
 }
 ```
 
-##### 2.3.4.2 获取代管学生列表
+##### 2.3.6.2 获取代管学生列表
 ```
 GET /admin/students/managed
 ```
 
-##### 2.3.4.3 切换当前操作的学生（代管模式）
+##### 2.3.6.3 切换当前操作的学生（代管模式）
 ```
 POST /admin/students/{studentId}/switch
 ```
@@ -230,6 +280,7 @@ POST /match/apply
   "teacherId": 1
 }
 ```
+前置校验：学生资料状态必须为 `READY_FOR_MATCH`，且 `grade`、`subjectsNeeded`、`freeTime` 均非空。
 
 ### 3.3 获取待处理的结对申请（为志愿者端）
 ```
@@ -258,17 +309,31 @@ GET /match/my-pairs
 POST /match/{pairId}/unbind-request
 ```
 
-### 3.7 处理解绑申请
+### 3.7 三方确认解绑（学生/志愿者/二级管理员）
 ```
-PUT /match/{pairId}/unbind-process
+PUT /match/{pairId}/unbind-confirm
 ```
 ```json
 {
-  "action": "accept" // accept 或 reject
+  "action": "accept", // accept 或 reject
+  "role": "STUDENT", // STUDENT / TEACHER / SECONDARY_ADMIN
+  "rejectReason": "拒绝原因（action=reject时必填）"
 }
 ```
+规则：任意一方发起解绑后，学生、志愿者、对应二级管理员三方都确认才最终解绑。
+状态机规则：
+- 任一方发起后，状态进入 `UNBIND_PENDING`，并重置三方确认位。
+- 任一方拒绝后，状态进入 `UNBIND_REJECTED`，记录拒绝方、拒绝原因与拒绝时间。
+- 从 `UNBIND_REJECTED` 再次发起解绑时，清理上一次拒绝信息并重新进入 `UNBIND_PENDING`。
+- 三方全部同意后，状态进入 `UNBOUND` 并记录 `unbindAcceptTime`。
 
-### 3.8 获取结对详情
+### 3.8 查询解绑确认进度
+```
+GET /match/{pairId}/unbind-progress
+```
+返回三方当前确认状态与确认时间。
+
+### 3.9 获取结对详情
 ```
 GET /match/{pairId}
 ```
@@ -363,6 +428,7 @@ POST /chat/messages
   "content": "你好，今天学习如何？"
 }
 ```
+权限校验：发送者必须存在于 `chat_participant`，且当前未退出会话（`leftTime` 为空）。
 
 ### 6.2 获取聊天记录
 ```
@@ -373,6 +439,27 @@ GET /chat/messages
 ### 6.3 标记消息已读
 ```
 PUT /chat/messages/{messageId}/read
+```
+
+### 6.4 管理员加入会话
+```
+POST /chat/pairs/{pairId}/participants
+```
+```json
+{
+  "userId": 2001
+}
+```
+规则：仅同校且具备 `student_manage` 权限的二级管理员可加入；学生绑定管理员默认已加入。
+
+### 6.5 管理员退出会话
+```
+DELETE /chat/pairs/{pairId}/participants/{userId}
+```
+
+### 6.6 获取会话参与者列表
+```
+GET /chat/pairs/{pairId}/participants
 ```
 
 ## 7. 算法配置模块（管理员）
@@ -446,6 +533,10 @@ POST /volunteer-records
   "meetingId": 123, 
   "duration": 60, 
   "meetingDate": "2026-04-09",
+  "serviceDesc": "讲解一元二次方程并批改作业",
+  "evidenceImages": [
+    "https://cdn.xxx.com/record/1.png"
+  ],
   "aiSummary": "本次课程主要复习了二次函数，学生掌握良好，课后作业已布置。"
 }
 ```
@@ -466,7 +557,7 @@ GET /admin/volunteer-records/pending
 查询参数：schoolId, regionCode, page, size（根据管理员管辖范围及权限过滤）
 
 ### 10.4 审核服务记录（二级管理员端）
-(需拥有 volunteer_record_audit 权限)
+(需拥有 `student_manage` 权限)
 
 PUT /admin/volunteer-records/{recordId}/audit
 请求参数：
@@ -484,6 +575,7 @@ GET /volunteer-records
 
 ## 权限说明
 - 所有API需要根据用户角色进行权限校验
-- 二级管理员只能操作其管辖区域的数据
+- 二级管理员在学生侧只能操作其管辖区域的数据
+- 志愿者审核（`teacher_audit`）为跨区域能力，可由任意具备权限的二级管理员执行
 - 志愿者和学生只能操作自己的数据
 - 一级管理员拥有所有权限

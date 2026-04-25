@@ -374,7 +374,7 @@ wechat:
   在 VolunteerRecordServiceImpl.java 中，针对管理员“审核通过”的操作，必须开启数据库事务 @Transactional(rollbackFor = Exception.class)。确保将记录状态更新为“审核通过(APPROVED)”与将对应的 duration 累加到 TeacherProfile 的 total_service_duration 字段中这两个操作保持严格的原子性。
 
 - 二级管理员权限拦截：
-  使用 Spring Security 配合自定义 PermissionInterceptor。RecordAdminController.java 中的时长审核接口，需要校验当前登录管理员（通过 SecurityUtil.getCurrentUserId() 提取）的 permissions JSON 字段中是否包含 "volunteer_record_audit" 权限标识。
+  使用 Spring Security 配合自定义 PermissionInterceptor。RecordAdminController.java 中的时长审核接口，需要校验当前登录管理员（通过 SecurityUtil.getCurrentUserId() 提取）的 permissions JSON 字段中是否包含 "student_manage" 权限标识。
 
 - 数据隔离（代管与管辖区域）：
   二级管理员（老师）在查询待审核时长列表时，业务层 VolunteerRecordService 必须根据该管理员关联的 school_id 进行隐式条件过滤，确保老师只能审核本校（或代管）学员产生的服务记录。

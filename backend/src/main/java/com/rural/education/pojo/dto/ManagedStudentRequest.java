@@ -1,0 +1,23 @@
+package com.rural.education.pojo.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.Data;
+
+import java.util.List;
+import java.util.Map;
+
+@Data
+public class ManagedStudentRequest {
+    @NotBlank(message = "realName 不能为空")
+    private String realName;
+    private Long schoolId;
+    @NotBlank(message = "grade 不能为空")
+    private String grade;
+    @NotEmpty(message = "subjectsNeeded 不能为空")
+    private List<String> subjectsNeeded;
+    @NotEmpty(message = "freeTime 不能为空")
+    private List<Map<String, Object>> freeTime;
+    private String personalityDesc;
+}
+

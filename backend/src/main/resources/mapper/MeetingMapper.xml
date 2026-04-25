@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rural.education.mapper.MeetingMapper">
+
+    <select id="selectMeetingDetail" parameterType="long" resultType="map">
+        SELECT m.*, mp.student_id, mp.teacher_id
+        FROM meeting m
+        JOIN match_pair mp ON m.match_pair_id = mp.id
+        WHERE m.id = #{meetingId}
+    </select>
+
+    <select id="selectTeacherMeetings" parameterType="long" resultType="map">
+        SELECT m.*
+        FROM meeting m
+        JOIN match_pair mp ON m.match_pair_id = mp.id
+        WHERE mp.teacher_id = #{userId}
+        ORDER BY m.start_time DESC
+    </select>
+
+    <select id="selectStudentMeetings" parameterType="long" resultType="map">
+        SELECT m.*
+        FROM meeting m
+        JOIN match_pair mp ON m.match_pair_id = mp.id
+        WHERE mp.student_id = #{userId}
+        ORDER BY m.start_time DESC
+    </select>
+
+</mapper>
