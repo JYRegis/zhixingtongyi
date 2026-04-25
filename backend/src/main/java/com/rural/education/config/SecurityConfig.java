@@ -40,7 +40,7 @@ public class SecurityConfig {
                         // === 放行区（不需要 Token 即可访问） ===
 
                         // 放行登录相关接口（微信真实登录 + 开发测试后门）
-                        .requestMatchers("/auth/wx-login", "/auth/mock-login").permitAll()
+                        .requestMatchers("/auth/wx-login", "/auth/mock-login", "/auth/phone-login").permitAll()
 
                         // 放行 Swagger 在线接口文档相关的路径
                         .requestMatchers(

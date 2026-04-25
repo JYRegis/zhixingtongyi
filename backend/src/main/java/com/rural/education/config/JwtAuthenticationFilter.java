@@ -1,6 +1,7 @@
 package com.rural.education.config;
 
 import com.rural.education.utils.JwtUtil;
+import com.rural.education.utils.CurrentUserContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,6 +50,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // 3. 解析 Token 获取用户信息
                 Long userId = jwtUtil.getUserIdFromToken(jwt);
+                if (userId != null) {
+                    CurrentUserContext.setUserId(userId);
+                }
 
                 // 4. 将用户认证信息存入 Spring Security 上下文
                 if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -59,12 +63,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
+            // 5. 放行请求（无论 Token 是否存在或解析是否失败）
+            filterChain.doFilter(request, response);
         } catch (Exception e) {
             log.error("Token 解析失败: {}", e.getMessage());
+            // Token 解析失败不阻断请求链路
+            filterChain.doFilter(request, response);
+        } finally {
+            CurrentUserContext.clear();
         }
-
-        // 5. 放行请求
-        filterChain.doFilter(request, response);
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

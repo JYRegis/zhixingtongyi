@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rural.education.mapper.StudentProfileMapper">
+
+    <select id="selectManagedStudents" parameterType="long" resultType="map">
+        SELECT sp.*, u.username, u.phone
+        FROM student_profile sp
+        JOIN user u ON sp.user_id = u.id
+        WHERE sp.bind_admin_id = #{adminId}
+        ORDER BY sp.update_time DESC
+    </select>
+
+</mapper>

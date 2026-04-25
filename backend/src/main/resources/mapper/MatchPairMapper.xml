@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rural.education.mapper.MatchPairMapper">
+
+    <select id="selectPendingApplications" parameterType="long" resultType="map">
+        SELECT id,
+               student_id AS studentId,
+               apply_time AS applyTime
+        FROM match_pair
+        WHERE teacher_id = #{teacherId}
+          AND match_status = 0
+        ORDER BY apply_time DESC
+    </select>
+
+</mapper>

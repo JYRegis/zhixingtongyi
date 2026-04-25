@@ -1,0 +1,15 @@
+package com.rural.education.pojo.dto;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+public class BatchCreateStudentsRequest {
+    @Valid
+    @NotEmpty(message = "students 不能为空")
+    private List<ManagedStudentRequest> students;
+}
+
