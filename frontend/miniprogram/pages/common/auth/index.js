@@ -4,9 +4,8 @@ Page({
   data: {
     fromProfile: false,
     manualPhone: "",
-    wxPhoneCode: "",
-    encryptedData: "",
-    iv: "",
+    nickname: "",
+    avatarUrl: "",
     submitting: false
   },
   onLoad(query) {
@@ -14,6 +13,16 @@ Page({
     const fromProfile = this._returnTo === "profile";
     this.setData({
       fromProfile: fromProfile
+    });
+    // TODO: 后续恢复“已登录进入登录页自动跳转”逻辑；当前为避免影响开发测试先关闭。
+    const appUser = (getApp().globalData && getApp().globalData.userInfo) || {};
+    this.setData({
+      nickname:
+        (appUser.nickname && String(appUser.nickname).trim()) ||
+        (appUser.name && String(appUser.name).trim()) ||
+        (appUser.nickName && String(appUser.nickName).trim()) ||
+        "",
+      avatarUrl: String(appUser.avatarUrl || appUser.avatar || "").trim()
     });
     try {
       wx.setNavigationBarTitle({ title: "登录" });
@@ -28,47 +37,24 @@ Page({
       // ignore
     }
   },
-  /**
-   * 微信手机号快速验证：真实环境需用 e.detail.code 调后端换明文。
-   */
-  onGetPhoneNumber(e) {
-    const d = e.detail || {};
-    console.log("[auth] getPhoneNumber detail:", d);
-    const errMsg = String(d.errMsg || "");
-    if (errMsg.indexOf("fail") !== -1) {
-      if (errMsg.indexOf("cancel") !== -1) {
-        wx.showToast({ title: "你已取消授权，请重新点击", icon: "none" });
-      } else if (errMsg.indexOf("privacy") !== -1) {
-        wx.showToast({ title: "请先同意隐私协议后再授权", icon: "none" });
-      } else {
-        const fullErr = errMsg || "unknown";
-        wx.showModal({
-          title: "手机号授权失败",
-          content: "微信返回：" + fullErr + "\n请确认：小程序已开通手机号能力、当前账号在测试白名单、并已同意隐私协议。",
-          showCancel: false
-        });
-      }
-      return;
-    }
-    const phoneCode = d.code ? String(d.code).trim() : "";
-    const encryptedData = d.encryptedData ? String(d.encryptedData).trim() : "";
-    const iv = d.iv ? String(d.iv).trim() : "";
-    if (phoneCode || (encryptedData && iv)) {
-      this.setData({
-        wxPhoneCode: phoneCode,
-        encryptedData: encryptedData,
-        iv: iv
-      });
-      wx.showToast({ title: "已授权手机号，正在登录", icon: "none" });
-      this.onSubmit();
-      return;
-    }
-    const shortErr = errMsg ? errMsg.slice(0, 28) : "无手机号凭据";
-    wx.showToast({ title: "授权结果异常: " + shortErr, icon: "none" });
+  async onWxIdentityLogin() {
+    await this.submitLogin({ mode: "wechat" });
   },
   onManualPhoneInput(e) {
     const value = (e.detail.value || "").replace(/\D/g, "").slice(0, 11);
     this.setData({ manualPhone: value });
+  },
+  onNicknameInput(e) {
+    const value = (e.detail.value || "").trim();
+    this.setData({ nickname: value });
+  },
+  onChooseAvatar(e) {
+    const url = e && e.detail && e.detail.avatarUrl ? String(e.detail.avatarUrl).trim() : "";
+    if (!url) {
+      wx.showToast({ title: "头像获取失败", icon: "none" });
+      return;
+    }
+    this.setData({ avatarUrl: url });
   },
   async onManualSubmit() {
     const phone = (this.data.manualPhone || "").replace(/\D/g, "").slice(0, 11);
@@ -80,9 +66,6 @@ Page({
       mode: "phone",
       phone: phone
     });
-  },
-  async onSubmit() {
-    await this.submitLogin({ mode: "wechat" });
   },
   async submitLogin(options) {
     if (this.data.submitting) {
@@ -96,12 +79,15 @@ Page({
       teacher: "TEACHER"
     };
     const appUser = (app.globalData && app.globalData.userInfo) || {};
-    const nick =
+    const preferredNick = (this.data.nickname && String(this.data.nickname).trim()) || "";
+    const preferredAvatar = String(this.data.avatarUrl || "").trim();
+    const displayNick =
+      preferredNick ||
       (appUser.nickname && String(appUser.nickname).trim()) ||
       (appUser.name && String(appUser.name).trim()) ||
       (appUser.nickName && String(appUser.nickName).trim()) ||
       "微信用户";
-    const avatarUrl = String(appUser.avatarUrl || appUser.avatar || "").trim();
+    const displayAvatar = preferredAvatar || String(appUser.avatarUrl || appUser.avatar || "").trim();
     let token = "";
     let remoteUser = null;
     try {
@@ -109,30 +95,21 @@ Page({
       if (options.mode === "phone") {
         loginRes = await authPhoneLogin({
           phone: options.phone,
-          nickName: nick,
-          avatarUrl: avatarUrl
+          nickName: preferredNick || undefined,
+          avatarUrl: preferredAvatar || undefined
         });
       } else {
-        const hasWxPhoneCode = !!(this.data.wxPhoneCode && String(this.data.wxPhoneCode).trim());
-        const hasEncryptedPayload = !!(
-          this.data.encryptedData &&
-          String(this.data.encryptedData).trim() &&
-          this.data.iv &&
-          String(this.data.iv).trim()
-        );
-        if (!hasWxPhoneCode && !hasEncryptedPayload) {
-          throw new Error("请先点击微信一键获取手机号");
-        }
         const loginCode = await this.fetchWxLoginCode();
+        const userInfoPayload = {};
+        if (preferredNick) {
+          userInfoPayload.nickName = preferredNick;
+        }
+        if (preferredAvatar) {
+          userInfoPayload.avatarUrl = preferredAvatar;
+        }
         const payload = {
           code: loginCode,
-          phoneCode: this.data.wxPhoneCode || undefined,
-          encryptedData: this.data.encryptedData || undefined,
-          iv: this.data.iv || undefined,
-          userInfo: {
-            nickName: nick,
-            avatarUrl: avatarUrl
-          }
+          userInfo: Object.keys(userInfoPayload).length ? userInfoPayload : undefined
         };
         loginRes = await authWxLogin(payload);
       }
@@ -157,8 +134,8 @@ Page({
     const phoneFromBackend = (remoteUser && remoteUser.phone) || "";
     const finalPhone = /^1\d{10}$/.test(String(phoneFromBackend)) ? String(phoneFromBackend) : "";
     app.setLogin(effectiveRole, {
-      nickname: (remoteUser && remoteUser.username) || nick,
-      avatarUrl: (remoteUser && remoteUser.avatar) || avatarUrl,
+      nickname: (remoteUser && remoteUser.username) || displayNick,
+      avatarUrl: (remoteUser && remoteUser.avatar) || displayAvatar,
       phone: finalPhone,
       role: effectiveRole,
       userId: remoteUser && remoteUser.id ? String(remoteUser.id) : finalPhone

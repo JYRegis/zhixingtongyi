@@ -1,23 +1,35 @@
 <view class="auth-page">
   <view class="auth-top">
+    <button class="auth-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image wx:if="{{avatarUrl}}" class="auth-avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="auth-avatar-empty">头像</view>
+    </button>
     <view class="auth-top-title">登录</view>
-    <view class="auth-top-tip">没有账号将自动注册，登录后再选择角色</view>
+    <view class="auth-top-tip">请选择一种方式继续</view>
   </view>
 
   <view class="auth-form">
     <view class="auth-group">
-      <view class="auth-group-title">手机号 <text class="field-req">*</text></view>
-      <view class="auth-login-tip">点击下方按钮后将直接完成授权与登录，无需二次点击。</view>
-      <button class="auth-wx-phone-btn" open-type="getPhoneNumber" bindgetphonenumber="onGetPhoneNumber">
+      <view class="auth-input-wrap">
+        <input
+          class="auth-input"
+          type="nickname"
+          maxlength="20"
+          placeholder="请输入昵称（可选）"
+          value="{{nickname}}"
+          bindinput="onNicknameInput"
+        />
+      </view>
+      <view class="auth-login-tip">昵称与头像会随登录一起同步到账号资料。</view>
+      <button class="auth-wx-phone-btn" bindtap="onWxIdentityLogin">
         <view class="auth-wx-phone-inner">
-          <view class="auth-wx-phone-icon"></view>
-          <text>微信一键获取手机号并登录</text>
+          <text>微信登录</text>
         </view>
       </button>
 
       <view class="auth-or">
         <view class="auth-or-line"></view>
-        <text class="auth-or-text">或手机号注册/登录</text>
+        <text class="auth-or-text">或</text>
         <view class="auth-or-line"></view>
       </view>
       <view class="auth-input-wrap">
@@ -30,6 +42,7 @@
           bindinput="onManualPhoneInput"
         />
       </view>
+      <view class="auth-dev-tip">手机号登录仅用于开发测试</view>
       <button class="auth-submit-btn" bindtap="onManualSubmit">手机号登录</button>
     </view>
   </view>
