@@ -49,7 +49,8 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             if (isNewUser) {
                 user = new User();
                 user.setWechatOpenid(openId);
-                user.setUsername(request.getUserInfo() != null ? request.getUserInfo().getNickName() : "wx_user_" + UUID.randomUUID().toString().substring(0, 8));
+                String preferredName = request.getUserInfo() != null ? request.getUserInfo().getNickName() : null;
+                user.setUsername(resolveAvailableUsername(preferredName, null));
                 user.setPassword(UUID.randomUUID().toString());
                 user.setAvatar(request.getUserInfo() != null ? request.getUserInfo().getAvatarUrl() : "");
                 user.setRole(3); // 默认为普通角色(学员)
@@ -59,7 +60,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             } else {
                 boolean needUpdate = false;
                 if (request.getUserInfo() != null && request.getUserInfo().getNickName() != null && !request.getUserInfo().getNickName().isBlank()) {
-                    user.setUsername(request.getUserInfo().getNickName());
+                    user.setUsername(resolveAvailableUsername(request.getUserInfo().getNickName(), user.getId()));
                     needUpdate = true;
                 }
                 if (request.getUserInfo() != null && request.getUserInfo().getAvatarUrl() != null && !request.getUserInfo().getAvatarUrl().isBlank()) {
@@ -138,7 +139,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             if (nick == null || nick.isBlank()) {
                 nick = "用户" + phone.substring(phone.length() - 4);
             }
-            user.setUsername(nick);
+            user.setUsername(resolveAvailableUsername(nick, null));
             user.setPassword(UUID.randomUUID().toString());
             user.setAvatar(request.getAvatarUrl() == null ? "" : request.getAvatarUrl());
             user.setRole(3);
@@ -147,7 +148,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
         } else {
             boolean needUpdate = false;
             if (request.getNickName() != null && !request.getNickName().isBlank()) {
-                user.setUsername(request.getNickName());
+                user.setUsername(resolveAvailableUsername(request.getNickName(), user.getId()));
                 needUpdate = true;
             }
             if (request.getAvatarUrl() != null && !request.getAvatarUrl().isBlank()) {
@@ -248,6 +249,25 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             throw new BizException("Bearer token 不能为空");
         }
         return token;
+    }
+
+    private String resolveAvailableUsername(String preferred, Long currentUserId) {
+        String base = (preferred == null || preferred.isBlank()) ? "微信用户" : preferred.trim();
+        String candidate = base;
+        int attempt = 0;
+        while (attempt < 20) {
+            LambdaQueryWrapper<User> query = new LambdaQueryWrapper<User>().eq(User::getUsername, candidate);
+            if (currentUserId != null) {
+                query.ne(User::getId, currentUserId);
+            }
+            User exists = userMapper.selectOne(query);
+            if (exists == null) {
+                return candidate;
+            }
+            attempt++;
+            candidate = base + "_" + UUID.randomUUID().toString().substring(0, 6);
+        }
+        return base + "_" + System.currentTimeMillis();
     }
 
     @SuppressWarnings("deprecation")
