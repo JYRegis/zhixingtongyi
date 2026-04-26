@@ -1,7 +1,7 @@
 # 城乡结对支教平台API设计
 
 ## API规范
-- 基础路径：`/api/v1`
+- 基础路径：`/api`（当前实现；由 `server.servlet.context-path` 提供）
 - 请求头：`Content-Type: application/json`
 - 认证方式：JWT Token（除登录注册外都需要在Header中携带`Authorization: Bearer {token}`）
 - 响应格式：

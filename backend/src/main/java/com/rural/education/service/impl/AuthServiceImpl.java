@@ -5,14 +5,18 @@ import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rural.education.pojo.po.StudentProfile;
-import com.rural.education.pojo.po.TeacherProfile;
-import com.rural.education.pojo.dto.*;
-import com.rural.education.pojo.po.User;
+import com.rural.education.enums.UserRole;
+import com.rural.education.enums.UserStatus;
+import com.rural.education.dto.request.auth.LoginRequest;
+import com.rural.education.dto.request.auth.WxLoginRequest;
+import com.rural.education.dto.response.auth.LoginResponse;
+import com.rural.education.model.entity.StudentProfile;
+import com.rural.education.model.entity.TeacherProfile;
+import com.rural.education.model.entity.User;
 import com.rural.education.exception.BizException;
-import com.rural.education.mapper.StudentProfileMapper;
-import com.rural.education.mapper.TeacherProfileMapper;
-import com.rural.education.mapper.UserMapper;
+import com.rural.education.model.mapper.StudentProfileMapper;
+import com.rural.education.model.mapper.TeacherProfileMapper;
+import com.rural.education.model.mapper.UserMapper;
 import com.rural.education.service.AuthService;
 import com.rural.education.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -53,8 +57,8 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
                 user.setUsername(resolveAvailableUsername(preferredName, null));
                 user.setPassword(UUID.randomUUID().toString());
                 user.setAvatar(request.getUserInfo() != null ? request.getUserInfo().getAvatarUrl() : "");
-                user.setRole(3); // 默认为普通角色(学员)
-                user.setStatus(1);
+                user.setRole(UserRole.STUDENT.getCode());
+                user.setStatus(UserStatus.ENABLED.getCode());
                 user.setPhone(phone);
                 userMapper.insert(user);
             } else {
@@ -109,8 +113,8 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             user.setUsername(mockName);
             user.setPassword(UUID.randomUUID().toString());
             user.setAvatar("https://example.com/default-avatar.png");
-            user.setRole(3); // 默认学员角色
-            user.setStatus(1);
+            user.setRole(UserRole.STUDENT.getCode());
+            user.setStatus(UserStatus.ENABLED.getCode());
             user.setPhone(phone);
             userMapper.insert(user);
         } else if (phone != null && !phone.isBlank()) {
@@ -127,7 +131,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
     // =====================================
 
     @Override
-    public LoginResponse phoneLogin(PhoneLoginRequest request) {
+    public LoginResponse phoneLogin(LoginRequest request) {
         String phone = request.getPhone();
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
         boolean isNewUser = (user == null);
@@ -142,8 +146,8 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             user.setUsername(resolveAvailableUsername(nick, null));
             user.setPassword(UUID.randomUUID().toString());
             user.setAvatar(request.getAvatarUrl() == null ? "" : request.getAvatarUrl());
-            user.setRole(3);
-            user.setStatus(1);
+            user.setRole(UserRole.STUDENT.getCode());
+            user.setStatus(UserStatus.ENABLED.getCode());
             userMapper.insert(user);
         } else {
             boolean needUpdate = false;
@@ -169,9 +173,9 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
     public void roleApply(Long userId, String targetRole) {
         int role;
         if ("STUDENT".equalsIgnoreCase(targetRole)) {
-            role = 3;
+            role = UserRole.STUDENT.getCode();
         } else if ("TEACHER".equalsIgnoreCase(targetRole)) {
-            role = 2;
+            role = UserRole.TEACHER.getCode();
         } else {
             throw new BizException("targetRole 仅支持 STUDENT 或 TEACHER");
         }
@@ -221,12 +225,12 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
 
     private boolean hasProfile(Long userId, Integer role) {
         try {
-            if (role != null && role == 2) {
+            if (UserRole.TEACHER.getCode() == (role == null ? -1 : role)) {
                 return teacherProfileMapper.selectCount(
                         new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, userId)
                 ) > 0;
             }
-            if (role != null && role == 3) {
+            if (UserRole.STUDENT.getCode() == (role == null ? -1 : role)) {
                 return studentProfileMapper.selectCount(
                         new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
                 ) > 0;

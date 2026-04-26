@@ -5,10 +5,14 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rural.education.dto.common.PageResponse;
+import com.rural.education.enums.NotificationType;
 import com.rural.education.exception.BizException;
-import com.rural.education.mapper.MessageNotificationMapper;
-import com.rural.education.pojo.dto.*;
-import com.rural.education.pojo.po.MessageNotification;
+import com.rural.education.model.mapper.MessageNotificationMapper;
+import com.rural.education.dto.common.NotificationEvent;
+import com.rural.education.dto.request.notification.NotificationReadRequest;
+import com.rural.education.dto.request.notification.InternalNotificationRequest;
+import com.rural.education.model.entity.MessageNotification;
 import com.rural.education.service.NotificationAsyncPublisher;
 import com.rural.education.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +30,7 @@ public class NotificationServiceImpl extends ServiceImpl<MessageNotificationMapp
     private final ObjectMapper objectMapper;
 
     @Override
-    public List<MessageNotification> list(Long userId, Integer type, Boolean unreadOnly, Integer page, Integer size) {
+    public PageResponse<MessageNotification> list(Long userId, Integer type, Boolean unreadOnly, Integer page, Integer size) {
         LambdaQueryWrapper<MessageNotification> wrapper = new LambdaQueryWrapper<MessageNotification>()
                 .eq(MessageNotification::getUserId, userId);
         if (type != null) {
@@ -37,7 +41,7 @@ public class NotificationServiceImpl extends ServiceImpl<MessageNotificationMapp
         }
         wrapper.orderByDesc(MessageNotification::getSentTime);
         Page<MessageNotification> p = messageNotificationMapper.selectPage(new Page<>(page, size), wrapper);
-        return p.getRecords();
+        return PageResponse.from(p);
     }
 
     @Override
@@ -54,7 +58,7 @@ public class NotificationServiceImpl extends ServiceImpl<MessageNotificationMapp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void batchRead(Long userId, BatchReadRequest request) {
+    public void batchRead(Long userId, NotificationReadRequest request) {
         if (request.getNotificationIds() == null || request.getNotificationIds().isEmpty()) {
             return;
         }
@@ -85,15 +89,15 @@ public class NotificationServiceImpl extends ServiceImpl<MessageNotificationMapp
 
     private Integer typeFromCode(String code) {
         if ("MATCH_APPLY".equalsIgnoreCase(code)) {
-            return 0;
+            return NotificationType.MATCH_APPLY.getCode();
         }
         if ("MATCH_ACCEPT".equalsIgnoreCase(code)) {
-            return 1;
+            return NotificationType.MATCH_ACCEPT.getCode();
         }
         if ("MATCH_REJECT".equalsIgnoreCase(code)) {
-            return 2;
+            return NotificationType.MATCH_REJECT.getCode();
         }
-        return 9;
+        throw new BizException("不支持的通知类型: " + code);
     }
 }
 

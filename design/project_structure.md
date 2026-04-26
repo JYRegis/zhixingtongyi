@@ -19,7 +19,10 @@ src/main/java/com/rural/education/
 │   ├── MybatisPlusConfig.java                # MyBatis-Plus配置
 │   ├── RedisConfig.java                      # Redis配置
 │   ├── SwaggerConfig.java                    # API文档配置
-│   └── WxConfig.java                         # 微信小程序配置
+│   ├── WxConfig.java                         # 微信小程序配置
+│   ├── MqConfig.java                         # RabbitMQ交换机/队列配置
+│   ├── RabbitJackson2Config.java             # RabbitMQ Jackson 序列化配置
+│   └── JwtAuthenticationFilter.java          # JWT鉴权过滤器
 ├── controller/                                # 控制器层
 │   ├── auth/                                 # 认证相关
 │   │   ├── AuthController.java
@@ -52,73 +55,91 @@ src/main/java/com/rural/education/
 ├── service/                                   # 服务层
 │   ├── impl/                                 # 服务实现
 │   │   ├── AuthServiceImpl.java
-│   │   ├── UserServiceImpl.java
+│   │   ├── AdminServiceImpl.java
 │   │   ├── TeacherServiceImpl.java
 │   │   ├── StudentServiceImpl.java
 │   │   ├── MatchServiceImpl.java
 │   │   ├── NotificationServiceImpl.java
 │   │   ├── MeetingServiceImpl.java
-│   │   ├── ChatServiceImpl.java
-│   │   ├── AlgorithmServiceImpl.java
-│   │   └── VolunteerRecordServiceImpl.java   # [新增] 志愿时长服务实现(包含状态流转与时长累加逻辑)
+│   │   ├── UserAccessServiceImpl.java
+│   │   ├── NotificationAsyncPublisherImpl.java
+│   │   ├── ChatServiceImpl.java              # [待实现] 预留
+│   │   ├── AlgorithmServiceImpl.java         # [待实现] 预留
+│   │   ├── VolunteerRecordServiceImpl.java   # [新增][待实现] 预留
+│   │   └── UserServiceImpl.java              # [待实现] 预留
 │   ├── AuthService.java
-│   ├── UserService.java
+│   ├── AdminService.java
 │   ├── TeacherService.java
 │   ├── StudentService.java
 │   ├── MatchService.java
 │   ├── NotificationService.java
 │   ├── MeetingService.java
-│   ├── ChatService.java
-│   ├── AlgorithmService.java
-│   ├── VolunteerRecordService.java           # [新增] 志愿时长服务接口
-│   └── WxService.java                        # 微信服务
-├── mapper/                                    # 数据访问层（MyBatis-Plus）
-│   ├── UserMapper.java
-│   ├── SchoolMapper.java
-│   ├── AdminProfileMapper.java
-│   ├── TeacherProfileMapper.java
-│   ├── StudentProfileMapper.java
-│   ├── MatchPairMapper.java
-│   ├── MessageNotificationMapper.java
-│   ├── MeetingMapper.java
-│   ├── ChatMessageMapper.java
-│   ├── AlgorithmWeightConfigMapper.java
-│   └── VolunteerRecordMapper.java            # [新增] 志愿记录Mapper
-├── entity/                                    # 实体类（对应数据库表）
-│   ├── User.java
-│   ├── School.java
-│   ├── AdminProfile.java
-│   ├── TeacherProfile.java
-│   ├── StudentProfile.java
-│   ├── MatchPair.java
-│   ├── MessageNotification.java
-│   ├── Meeting.java
-│   ├── ChatMessage.java
-│   ├── AlgorithmWeightConfig.java
-│   └── VolunteerRecord.java                  # [新增] 志愿服务时长记录实体
+│   ├── UserAccessService.java
+│   ├── NotificationAsyncPublisher.java
+│   ├── ChatService.java                      # [待实现] 预留
+│   ├── AlgorithmService.java                 # [待实现] 预留
+│   ├── VolunteerRecordService.java           # [新增][待实现] 预留
+│   ├── WxService.java                        # [待实现] 预留
+│   └── UserService.java                      # [待实现] 预留
+├── model/                                     # 数据模型（统一管理 mapper + entity）
+│   ├── mapper/                                # 数据访问层（MyBatis-Plus）
+│   │   ├── UserMapper.java
+│   │   ├── SchoolMapper.java
+│   │   ├── AdminProfileMapper.java
+│   │   ├── TeacherProfileMapper.java
+│   │   ├── StudentProfileMapper.java
+│   │   ├── MatchPairMapper.java
+│   │   ├── MessageNotificationMapper.java
+│   │   ├── MeetingMapper.java
+│   │   ├── ChatMessageMapper.java            # [待实现] 预留
+│   │   ├── AlgorithmWeightConfigMapper.java  # [待实现] 预留
+│   │   └── VolunteerRecordMapper.java        # [新增][待实现] 预留
+│   └── entity/                                # 实体类（对应数据库表）
+│       ├── User.java
+│       ├── School.java
+│       ├── AdminProfile.java
+│       ├── TeacherProfile.java
+│       ├── StudentProfile.java
+│       ├── MatchPair.java
+│       ├── MessageNotification.java
+│       ├── Meeting.java
+│       ├── ChatMessage.java                  # [待实现] 预留
+│       ├── AlgorithmWeightConfig.java        # [待实现] 预留
+│       └── VolunteerRecord.java              # [新增][待实现] 预留
 ├── dto/                                       # 数据传输对象
 │   ├── request/                              # 请求DTO
 │   │   ├── auth/
-│   │   │   ├── LoginRequest.java
-│   │   │   └── WxLoginRequest.java
+│   │   │   ├── LoginRequest.java             # 手机号登录请求（已实现）
+│   │   │   ├── WxLoginRequest.java
+│   │   │   └── RoleApplyRequest.java
 │   │   ├── admin/
-│   │   │   ├── CreateUserRequest.java
-│   │   │   └── AuditTeacherRequest.java
+│   │   │   ├── SchoolRequest.java            # 已实现
+│   │   │   ├── SecondaryAdminRequest.java    # 已实现
+│   │   │   ├── UpdateUserStatusRequest.java  # 已实现
+│   │   │   ├── AuditRequest.java             # 已实现（学生/教师审核共用）
+│   │   │   ├── BatchCreateStudentsRequest.java
+│   │   │   ├── ManagedStudentRequest.java
+│   │   │   ├── CreateUserRequest.java        # [待实现] 预留
+│   │   │   └── AuditTeacherRequest.java      # [待实现] 预留（当前由 AuditRequest 统一）
 │   │   ├── teacher/
-│   │   │   └── TeacherProfileRequest.java
+│   │   │   ├── TeacherProfileRequest.java
+│   │   │   └── ContinuousMatchRequest.java
 │   │   ├── student/
 │   │   │   └── StudentProfileRequest.java
 │   │   ├── match/
 │   │   │   ├── MatchApplyRequest.java
-│   │   │   └── ProcessMatchRequest.java
+│   │   │   ├── ProcessMatchRequest.java
+│   │   │   └── UnbindConfirmRequest.java
 │   │   ├── record/                           # [新增] 时长记录相关请求
 │   │   │   ├── SubmitRecordRequest.java      # 教师提交DTO
 │   │   │   ├── StudentConfirmRequest.java    # 学生确认DTO
 │   │   │   └── AdminAuditRecordRequest.java  # 管理员审核DTO
 │   │   ├── notification/
-│   │   │   └── NotificationReadRequest.java
+│   │   │   ├── NotificationReadRequest.java
+│   │   │   └── InternalNotificationRequest.java
 │   │   ├── meeting/
-│   │   │   └── CreateMeetingRequest.java
+│   │   │   ├── CreateMeetingRequest.java
+│   │   │   └── UpdateStatusRequest.java
 │   │   ├── chat/
 │   │   │   └── SendMessageRequest.java
 │   │   └── system/
@@ -129,7 +150,8 @@ src/main/java/com/rural/education/
 │   │   ├── common/
 │   │   │   ├── ApiResponse.java             # 统一响应格式
 │   │   │   ├── PageResponse.java            # 分页响应
-│   │   │   └── UserInfo.java                # 用户基本信息
+│   │   │   ├── NotificationEvent.java       # MQ消息DTO（已实现）
+│   │   │   └── UserInfo.java                # [待实现] 预留
 │   │   ├── admin/
 │   │   │   ├── UserDetailResponse.java
 │   │   │   └── DashboardResponse.java
@@ -148,34 +170,36 @@ src/main/java/com/rural/education/
 │   │   │   └── MeetingResponse.java
 │   │   └── chat/
 │   │       └── ChatMessageResponse.java
-│   └── query/                                # 查询条件DTO
-│       ├── UserQuery.java
-│       ├── MatchQuery.java
-│       ├── NotificationQuery.java
-│       ├── RecordQuery.java                  # [新增] 时长记录查询条件
-│       └── MeetingQuery.java
+│   └── query/                                # 查询条件DTO（当前多数为待实现）
+│       ├── UserQuery.java                    # [待实现] 预留
+│       ├── MatchQuery.java                   # [待实现] 预留
+│       ├── NotificationQuery.java            # [待实现] 预留
+│       ├── RecordQuery.java                  # [新增][待实现] 预留
+│       └── MeetingQuery.java                 # [待实现] 预留
 ├── vo/                                        # 视图对象（用于前端展示）
 │   ├── TeacherVO.java
 │   ├── StudentVO.java
 │   ├── MatchPairVO.java
 │   └── MeetingVO.java
 ├── enums/                                     # 枚举类
-│   ├── UserRole.java
-│   ├── UserStatus.java
-│   ├── MatchStatus.java
-│   ├── NotificationType.java
-│   ├── MeetingStatus.java
-│   ├── MessageType.java
-│   ├── AuditStatus.java
-│   └── RecordStatus.java                     # [新增] 记录状态(PENDING_STUDENT, PENDING_ADMIN, APPROVED, REJECTED)
+│   ├── UserRole.java                         # user.role: 0-L1_ADMIN, 1-L2_ADMIN, 2-TEACHER, 3-STUDENT
+│   ├── UserStatus.java                       # user.status: 0-DISABLED, 1-ENABLED
+│   ├── MatchStatus.java                      # match_pair.match_status: 0-APPLIED,1-ACCEPTED,2-REJECTED,3-UNBIND_CONFIRMING,4-UNBOUND,5-UNBIND_REJECTED
+│   ├── NotificationType.java                 # message_notification.type: 0..8 (结对/解绑/会议/时长通知)
+│   ├── MeetingStatus.java                    # meeting.status: 0-NOT_STARTED,1-IN_PROGRESS,2-FINISHED,3-CANCELLED
+│   ├── MessageType.java                      # chat_message.message_type: 0-TEXT,1-IMAGE,2-VOICE
+│   ├── AuditStatus.java                      # teacher_profile.certification_status & student_profile.audit_status: 0-PENDING,1-APPROVED,2-REJECTED
+│   └── RecordStatus.java                     # volunteer_record.status: 0-PENDING_STUDENT_CONFIRM,1-PENDING_ADMIN_AUDIT,2-APPROVED,3-REJECTED,4-STUDENT_REJECTED
 ├── utils/                                     # 工具类
 │   ├── JwtUtil.java
 │   ├── SecurityUtil.java                     # 安全上下文工具
 │   ├── RedisUtil.java
-│   ├── WechatUtil.java                       # 微信工具类
-│   ├── DateUtil.java
 │   ├── JsonUtil.java
-│   └── BeanCopyUtil.java                     # Bean拷贝工具
+│   ├── CurrentUserContext.java
+│   ├── CurrentUserUtil.java
+│   ├── WechatUtil.java                       # [待实现] 预留
+│   ├── DateUtil.java                         # [待实现] 预留
+│   └── BeanCopyUtil.java                     # [待实现] 预留
 ├── aspect/                                    # 切面
 │   ├── LogAspect.java                        # 日志切面
 │   ├── PermissionAspect.java                 # 权限切面
@@ -210,9 +234,13 @@ src/main/resources/
 ├── application.yml                           # 主配置文件
 ├── application-dev.yml                       # 开发环境配置
 ├── application-prod.yml                      # 生产环境配置
-├── mapper/                                   # MyBatis XML映射文件（可选）
-│   ├── UserMapper.xml
-│   ├── VolunteerRecordMapper.xml             # [新增]
+├── mapper/                                   # MyBatis XML映射文件
+│   ├── MatchPairMapper.xml
+│   ├── TeacherProfileMapper.xml
+│   ├── StudentProfileMapper.xml
+│   ├── MeetingMapper.xml
+│   ├── UserMapper.xml                        # [待实现] 预留
+│   ├── VolunteerRecordMapper.xml             # [新增][待实现] 预留
 │   └── ...
 ├── static/                                   # 静态资源
 ├── templates/                                # 模板文件

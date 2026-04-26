@@ -3,16 +3,19 @@ package com.rural.education.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rural.education.enums.MatchStatus;
+import com.rural.education.enums.MeetingStatus;
+import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BizException;
-import com.rural.education.mapper.MatchPairMapper;
-import com.rural.education.mapper.MeetingMapper;
-import com.rural.education.mapper.UserMapper;
-import com.rural.education.pojo.dto.*;
-import com.rural.education.pojo.vo.*;
-import com.rural.education.pojo.po.MatchPair;
-import com.rural.education.pojo.po.Meeting;
-import com.rural.education.pojo.po.User;
+import com.rural.education.model.mapper.MatchPairMapper;
+import com.rural.education.model.mapper.MeetingMapper;
+import com.rural.education.model.mapper.UserMapper;
+import com.rural.education.dto.request.meeting.CreateMeetingRequest;
+import com.rural.education.dto.request.meeting.UpdateStatusRequest;
+import com.rural.education.model.entity.MatchPair;
+import com.rural.education.model.entity.Meeting;
+import com.rural.education.model.entity.User;
+import com.rural.education.vo.MeetingVO;
 import com.rural.education.service.MeetingService;
 import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,23 +32,23 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
     private final MeetingMapper meetingMapper;
     private final UserMapper userMapper;
     private final MatchPairMapper matchPairMapper;
-    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void create(Long userId, MeetingCreateRequest request) {
+    public void create(Long userId, CreateMeetingRequest request) {
         User user = userAccessService.requireUser(userId);
         MatchPair pair = matchPairMapper.selectById(request.getMatchPairId());
         if (pair == null) {
             throw new BizException("结对关系不存在");
         }
         Integer role = user.getRole();
-        boolean isAdmin = Integer.valueOf(0).equals(role) || Integer.valueOf(1).equals(role);
+        boolean isAdmin = Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(role)
+                || Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(role);
         boolean isPairMember = userId.equals(pair.getStudentId()) || userId.equals(pair.getTeacherId());
         if (!isAdmin && !isPairMember) {
             throw new BizException("无权创建该结对会议");
         }
-        if (!Integer.valueOf(1).equals(pair.getMatchStatus())) {
+        if (!Integer.valueOf(MatchStatus.ACCEPTED.getCode()).equals(pair.getMatchStatus())) {
             throw new BizException("仅生效中的结对可创建会议");
         }
         Meeting meeting = new Meeting();
@@ -56,13 +58,13 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
         meeting.setEndTime(LocalDateTime.parse(request.getEndTime().replace(" ", "T")));
         meeting.setMeetingLink(request.getMeetingLink());
         meeting.setCreatedBy(userId);
-        meeting.setStatus(0);
+        meeting.setStatus(MeetingStatus.NOT_STARTED.getCode());
         meetingMapper.insert(meeting);
     }
 
     @Override
     public List<Meeting> list(Long userId, Long matchPairId, Integer status, String startTimeFrom, String startTimeTo) {
-        userAccessService.requireAnyRole(userId, 0, 1);
+        userAccessService.requireAnyRole(userId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         LambdaQueryWrapper<Meeting> wrapper = new LambdaQueryWrapper<>();
         if (matchPairId != null) {
             wrapper.eq(Meeting::getMatchPairId, matchPairId);
@@ -81,33 +83,37 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
     }
 
     @Override
-    public MeetingDetailVO detail(Long userId, Long meetingId) {
-        Map<String, Object> row = meetingMapper.selectMeetingDetail(meetingId);
-        if (row == null) {
+    public MeetingVO detail(Long userId, Long meetingId) {
+        MeetingVO meeting = meetingMapper.selectMeetingDetail(meetingId);
+        if (meeting == null) {
             throw new BizException("会议不存在");
         }
         User user = userMapper.selectById(userId);
         Integer role = user == null ? null : user.getRole();
-        Long studentId = ((Number) row.get("student_id")).longValue();
-        Long teacherId = ((Number) row.get("teacher_id")).longValue();
-        if (!Integer.valueOf(0).equals(role) && !Integer.valueOf(1).equals(role) && !userId.equals(studentId) && !userId.equals(teacherId)) {
+        Long studentId = meeting.getStudentId();
+        Long teacherId = meeting.getTeacherId();
+        if (!Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(role)
+                && !Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(role)
+                && !userId.equals(studentId)
+                && !userId.equals(teacherId)) {
             throw new BizException("无权查看会议详情");
         }
-        return objectMapper.convertValue(row, MeetingDetailVO.class);
+        return meeting;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long userId, Long meetingId, UpdateStatusRequest request) {
-        Map<String, Object> row = meetingMapper.selectMeetingDetail(meetingId);
-        if (row == null) {
+        MeetingVO meeting = meetingMapper.selectMeetingDetail(meetingId);
+        if (meeting == null) {
             throw new BizException("会议不存在");
         }
         User user = userAccessService.requireUser(userId);
         Integer role = user.getRole();
-        Long studentId = ((Number) row.get("student_id")).longValue();
-        Long teacherId = ((Number) row.get("teacher_id")).longValue();
-        boolean isAdmin = Integer.valueOf(0).equals(role) || Integer.valueOf(1).equals(role);
+        Long studentId = meeting.getStudentId();
+        Long teacherId = meeting.getTeacherId();
+        boolean isAdmin = Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(role)
+                || Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(role);
         if (!isAdmin && !userId.equals(studentId) && !userId.equals(teacherId)) {
             throw new BizException("无权更新会议状态");
         }
@@ -121,18 +127,15 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
     }
 
     @Override
-    public List<MeetingItemVO> myMeetings(Long userId) {
+    public List<MeetingVO> myMeetings(Long userId) {
         User user = userMapper.selectById(userId);
         Integer role = user == null ? null : user.getRole();
-        if (role == null || (role != 2 && role != 3)) {
+        if (role == null || (role != UserRole.TEACHER.getCode() && role != UserRole.STUDENT.getCode())) {
             throw new BizException("仅学生和志愿者可查看我的会议");
         }
-        List<Map<String, Object>> rows = role == 2
+        return role == UserRole.TEACHER.getCode()
                 ? meetingMapper.selectTeacherMeetings(userId)
                 : meetingMapper.selectStudentMeetings(userId);
-        return rows.stream()
-                .map(row -> objectMapper.convertValue(row, MeetingItemVO.class))
-                .toList();
     }
 }
 

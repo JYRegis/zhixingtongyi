@@ -1,7 +1,7 @@
 package com.rural.education.service.impl;
 
 import com.rural.education.config.MqConfig;
-import com.rural.education.pojo.dto.*;
+import com.rural.education.dto.common.NotificationEvent;
 import com.rural.education.service.NotificationAsyncPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
