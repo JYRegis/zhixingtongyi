@@ -22,7 +22,7 @@ POST /auth/wx-login
 请求参数：
 ```json
 {
-  "code": "微信登录code",
+  "code": "wx.login 返回的 code",
   "userInfo": {
     "nickName": "微信昵称",
     "avatarUrl": "头像URL"
@@ -44,9 +44,40 @@ POST /auth/wx-login
 }
 ```
 
-说明：首次登录自动创建基础用户账号（未绑定学生/志愿者扩展资料），后续通过角色申请接口进入审核流。
+说明：
+- 当前登录链路使用 `wx.login` 获取身份，不依赖微信手机号授权能力。
+- 首次登录自动创建基础用户账号（未绑定学生/志愿者扩展资料），后续通过角色申请接口进入审核流。
 
-### 1.2 申请角色（学生/志愿者）
+### 1.2 手机号注册/登录（手动输入）
+```
+POST /auth/phone-login
+```
+请求参数：
+```json
+{
+  "phone": "13800138000",
+  "nickName": "可选昵称",
+  "avatarUrl": "可选头像URL"
+}
+```
+响应：
+```json
+{
+  "token": "JWT token",
+  "user": {
+    "id": 1,
+    "username": "用户名",
+    "role": 3,
+    "avatar": "头像URL",
+    "phone": "13800138000",
+    "hasProfile": false,
+    "roleApplied": false
+  }
+}
+```
+说明：手机号不存在则自动注册并登录；已存在则直接登录。
+
+### 1.3 申请角色（学生/志愿者）
 ```
 POST /auth/role-apply
 ```
@@ -57,12 +88,12 @@ POST /auth/role-apply
 ```
 说明：提交后进入对应审核流程。
 
-### 1.3 退出登录
+### 1.4 退出登录
 ```
 POST /auth/logout
 ```
 
-### 1.4 刷新Token
+### 1.5 刷新Token
 ```
 POST /auth/refresh
 ```

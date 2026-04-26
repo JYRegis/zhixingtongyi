@@ -75,6 +75,8 @@ services:
       RABBIT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
       RABBIT_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-admin}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-env}
+      WX_MINIAPP_APPID: ${WX_MINIAPP_APPID}
+      WX_MINIAPP_SECRET: ${WX_MINIAPP_SECRET}
       TZ: Asia/Shanghai
     ports:
       - "${BACKEND_PORT:-8080}:8080"
