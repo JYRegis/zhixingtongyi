@@ -5,11 +5,15 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rural.education.dto.common.PageResponse;
+import com.rural.education.enums.AuditStatus;
+import com.rural.education.enums.UserRole;
+import com.rural.education.enums.UserStatus;
 import com.rural.education.exception.BizException;
-import com.rural.education.mapper.*;
-import com.rural.education.pojo.dto.*;
-import com.rural.education.pojo.vo.*;
-import com.rural.education.pojo.po.*;
+import com.rural.education.model.mapper.*;
+import com.rural.education.dto.request.admin.*;
+import com.rural.education.model.entity.*;
+import com.rural.education.vo.*;
 import com.rural.education.service.AdminService;
 import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +39,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     private final StringRedisTemplate redisTemplate;
 
     @Override
-    public List<User> users(Long operatorId, Integer role, Integer status, Integer page, Integer size, String keyword) {
+    public PageResponse<User> users(Long operatorId, Integer role, Integer status, Integer page, Integer size, String keyword) {
         requireL1OrL2Permission(operatorId, "user_manage");
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         if (role != null) {
@@ -49,7 +53,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         }
         wrapper.orderByDesc(User::getId);
         Page<User> p = userMapper.selectPage(new Page<>(page, size), wrapper);
-        return p.getRecords();
+        return PageResponse.from(p);
     }
 
     @Override
@@ -84,7 +88,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     @Transactional(rollbackFor = Exception.class)
     public void assignSecondaryAdmin(Long operatorId, SecondaryAdminRequest request) {
         userAccessService.requireL1Admin(operatorId);
-        userMapper.update(null, new LambdaUpdateWrapper<User>().eq(User::getId, request.getUserId()).set(User::getRole, 1));
+        userMapper.update(null, new LambdaUpdateWrapper<User>().eq(User::getId, request.getUserId()).set(User::getRole, UserRole.L2_ADMIN.getCode()));
         String permissions = toJson(request.getPermissions());
         AdminProfile admin = adminProfileMapper.selectOne(
                 new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, request.getUserId())
@@ -165,8 +169,8 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
             User user = new User();
             user.setUsername(username);
             user.setPassword(UUID.randomUUID().toString());
-            user.setRole(3);
-            user.setStatus(1);
+            user.setRole(UserRole.STUDENT.getCode());
+            user.setStatus(UserStatus.ENABLED.getCode());
             userMapper.insert(user);
             StudentProfile sp = new StudentProfile();
             sp.setUserId(user.getId());
@@ -178,17 +182,15 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
             sp.setPersonalityDesc(student.getPersonalityDesc());
             sp.setProfileStatus(1);
             sp.setBindAdminId(operatorId);
-            sp.setAuditStatus(1);
+            sp.setAuditStatus(AuditStatus.APPROVED.getCode());
             studentProfileMapper.insert(sp);
         }
     }
 
     @Override
-    public List<ManagedStudentVO> managedStudents(Long operatorId) {
+    public List<StudentVO> managedStudents(Long operatorId) {
         userAccessService.requireL2WithPermission(operatorId, "student_manage");
-        return studentProfileMapper.selectManagedStudents(operatorId).stream()
-                .map(row -> objectMapper.convertValue(row, ManagedStudentVO.class))
-                .toList();
+        return studentProfileMapper.selectManagedStudents(operatorId);
     }
 
     @Override
@@ -215,10 +217,10 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     private void requireL1OrL2Permission(Long userId, String permission) {
         User user = userAccessService.requireUser(userId);
-        if (Integer.valueOf(0).equals(user.getRole())) {
+        if (Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(user.getRole())) {
             return;
         }
-        if (Integer.valueOf(1).equals(user.getRole())) {
+        if (Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(user.getRole())) {
             userAccessService.requireL2WithPermission(userId, permission);
             return;
         }

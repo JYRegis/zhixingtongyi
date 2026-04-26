@@ -5,11 +5,13 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rural.education.enums.AuditStatus;
+import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BizException;
-import com.rural.education.mapper.TeacherProfileMapper;
-import com.rural.education.pojo.dto.*;
-import com.rural.education.pojo.vo.*;
-import com.rural.education.pojo.po.TeacherProfile;
+import com.rural.education.model.mapper.TeacherProfileMapper;
+import com.rural.education.dto.request.teacher.TeacherProfileRequest;
+import com.rural.education.model.entity.TeacherProfile;
+import com.rural.education.vo.TeacherVO;
 import com.rural.education.service.TeacherService;
 import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +32,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createProfile(Long userId, TeacherProfileRequest request) {
-        userAccessService.requireRole(userId, 2);
+        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
         TeacherProfile existed = teacherProfileMapper.selectOne(
                 new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, userId)
         );
@@ -46,7 +48,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
         profile.setSkilledSubjects(toJson(request.getSkilledSubjects()));
         profile.setPersonalSkills(request.getPersonalSkills());
         profile.setPersonalityDesc(request.getPersonalityDesc());
-        profile.setCertificationStatus(0);
+        profile.setCertificationStatus(AuditStatus.PENDING.getCode());
         profile.setContinuousMatch(1);
         teacherProfileMapper.insert(profile);
         evictRecommendationCache();
@@ -55,7 +57,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateProfile(Long userId, TeacherProfileRequest request) {
-        userAccessService.requireRole(userId, 2);
+        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
         teacherProfileMapper.update(
                 null,
                 new LambdaUpdateWrapper<TeacherProfile>()
@@ -67,21 +69,21 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
                         .set(TeacherProfile::getSkilledSubjects, toJson(request.getSkilledSubjects()))
                         .set(TeacherProfile::getPersonalSkills, request.getPersonalSkills())
                         .set(TeacherProfile::getPersonalityDesc, request.getPersonalityDesc())
-                        .set(TeacherProfile::getCertificationStatus, 0)
+                        .set(TeacherProfile::getCertificationStatus, AuditStatus.PENDING.getCode())
         );
         evictRecommendationCache();
     }
 
     @Override
-    public TeacherProfileVO getProfile(Long userId) {
-        userAccessService.requireRole(userId, 2);
+    public TeacherVO getProfile(Long userId) {
+        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
         TeacherProfile row = teacherProfileMapper.selectOne(
                 new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, userId)
         );
         if (row == null) {
             return null;
         }
-        TeacherProfileVO vo = objectMapper.convertValue(row, TeacherProfileVO.class);
+        TeacherVO vo = objectMapper.convertValue(row, TeacherVO.class);
         vo.setFreeTime(parseJsonMapList(row.getFreeTime()));
         vo.setSkilledSubjects(parseJsonList(row.getSkilledSubjects()));
         return vo;
@@ -89,7 +91,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
 
     @Override
     public void updateContinuousMatch(Long userId, Boolean enabled) {
-        userAccessService.requireRole(userId, 2);
+        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
         teacherProfileMapper.update(
                 null,
                 new LambdaUpdateWrapper<TeacherProfile>()

@@ -1,7 +1,7 @@
 package com.rural.education.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.rural.education.pojo.po.User;
+import com.rural.education.model.entity.User;
 
 public interface UserAccessService extends IService<User> {
     User requireUser(Long userId);

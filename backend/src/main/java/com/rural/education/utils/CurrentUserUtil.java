@@ -1,6 +1,6 @@
 package com.rural.education.utils;
 
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.AuthException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -10,6 +10,6 @@ public class CurrentUserUtil {
         if (userIdFromThreadLocal != null) {
             return userIdFromThreadLocal;
         }
-        throw new BizException("未登录");
+        throw new AuthException("未登录");
     }
 }

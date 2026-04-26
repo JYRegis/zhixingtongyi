@@ -2,11 +2,12 @@ package com.rural.education.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BizException;
-import com.rural.education.mapper.AdminProfileMapper;
-import com.rural.education.mapper.UserMapper;
-import com.rural.education.pojo.po.AdminProfile;
-import com.rural.education.pojo.po.User;
+import com.rural.education.model.mapper.AdminProfileMapper;
+import com.rural.education.model.mapper.UserMapper;
+import com.rural.education.model.entity.AdminProfile;
+import com.rural.education.model.entity.User;
 import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,12 +51,12 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
 
     @Override
     public void requireL1Admin(Long userId) {
-        requireRole(userId, 0);
+        requireRole(userId, UserRole.L1_ADMIN.getCode());
     }
 
     @Override
     public void requireL2WithPermission(Long userId, String permission) {
-        requireRole(userId, 1);
+        requireRole(userId, UserRole.L2_ADMIN.getCode());
         AdminProfile adminProfile = adminProfileMapper.selectOne(
                 new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, userId)
         );

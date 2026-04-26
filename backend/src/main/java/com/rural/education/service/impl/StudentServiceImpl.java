@@ -5,11 +5,13 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rural.education.enums.AuditStatus;
+import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BizException;
-import com.rural.education.mapper.StudentProfileMapper;
-import com.rural.education.pojo.dto.*;
-import com.rural.education.pojo.vo.*;
-import com.rural.education.pojo.po.StudentProfile;
+import com.rural.education.model.mapper.StudentProfileMapper;
+import com.rural.education.dto.request.student.StudentProfileRequest;
+import com.rural.education.model.entity.StudentProfile;
+import com.rural.education.vo.StudentVO;
 import com.rural.education.service.StudentService;
 import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveDraft(Long userId, StudentProfileRequest request) {
-        userAccessService.requireRole(userId, 3);
+        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
         StudentProfile existed = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
         );
@@ -56,7 +58,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
             profile.setPersonalityDesc(request.getPersonalityDesc());
             profile.setProfileStatus(0);
             profile.setBindAdminId(request.getBindAdminId());
-            profile.setAuditStatus(0);
+            profile.setAuditStatus(AuditStatus.PENDING.getCode());
             studentProfileMapper.insert(profile);
         }
     }
@@ -64,7 +66,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void submitProfile(Long userId) {
-        userAccessService.requireRole(userId, 3);
+        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
         StudentProfile profile = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
         );
@@ -83,15 +85,15 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
     }
 
     @Override
-    public StudentProfileVO getProfile(Long userId) {
-        userAccessService.requireRole(userId, 3);
+    public StudentVO getProfile(Long userId) {
+        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
         StudentProfile row = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
         );
         if (row == null) {
             return null;
         }
-        StudentProfileVO vo = objectMapper.convertValue(row, StudentProfileVO.class);
+        StudentVO vo = objectMapper.convertValue(row, StudentVO.class);
         vo.setSubjectsNeeded(parseJsonList(row.getSubjectsNeeded()));
         vo.setFreeTime(parseJsonMapList(row.getFreeTime()));
         return vo;

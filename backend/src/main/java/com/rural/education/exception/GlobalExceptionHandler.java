@@ -1,6 +1,6 @@
 package com.rural.education.exception;
 
-import com.rural.education.pojo.dto.*;
+import com.rural.education.dto.common.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,9 +11,24 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(BusinessException.class)
+    public ApiResponse<Void> handleBusiness(BusinessException ex) {
+        return ApiResponse.error(400, ex.getMessage());
+    }
+
     @ExceptionHandler(BizException.class)
     public ApiResponse<Void> handleBiz(BizException ex) {
         return ApiResponse.error(400, ex.getMessage());
+    }
+
+    @ExceptionHandler(AuthException.class)
+    public ApiResponse<Void> handleAuth(AuthException ex) {
+        return ApiResponse.error(401, ex.getMessage());
+    }
+
+    @ExceptionHandler(PermissionException.class)
+    public ApiResponse<Void> handlePermission(PermissionException ex) {
+        return ApiResponse.error(403, ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

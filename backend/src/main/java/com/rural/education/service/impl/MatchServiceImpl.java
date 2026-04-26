@@ -5,16 +5,24 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rural.education.enums.MatchStatus;
+import com.rural.education.enums.NotificationType;
+import com.rural.education.enums.UserRole;
+import com.rural.education.enums.UserStatus;
 import com.rural.education.exception.BizException;
-import com.rural.education.mapper.MatchPairMapper;
-import com.rural.education.mapper.StudentProfileMapper;
-import com.rural.education.mapper.TeacherProfileMapper;
-import com.rural.education.mapper.UserMapper;
-import com.rural.education.pojo.dto.*;
-import com.rural.education.pojo.vo.*;
-import com.rural.education.pojo.po.MatchPair;
-import com.rural.education.pojo.po.StudentProfile;
-import com.rural.education.pojo.po.User;
+import com.rural.education.model.mapper.MatchPairMapper;
+import com.rural.education.model.mapper.StudentProfileMapper;
+import com.rural.education.model.mapper.TeacherProfileMapper;
+import com.rural.education.model.mapper.UserMapper;
+import com.rural.education.dto.common.NotificationEvent;
+import com.rural.education.dto.request.match.MatchApplyRequest;
+import com.rural.education.dto.request.match.ProcessMatchRequest;
+import com.rural.education.dto.request.match.UnbindConfirmRequest;
+import com.rural.education.model.entity.MatchPair;
+import com.rural.education.model.entity.StudentProfile;
+import com.rural.education.model.entity.User;
+import com.rural.education.vo.MatchPairVO;
+import com.rural.education.vo.TeacherVO;
 import com.rural.education.service.MatchService;
 import com.rural.education.service.NotificationAsyncPublisher;
 import com.rural.education.service.UserAccessService;
@@ -42,20 +50,18 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     private final NotificationAsyncPublisher notificationAsyncPublisher;
 
     @Override
-    public List<TeacherRecommendationVO> recommendations(Long userId) {
-        userAccessService.requireRole(userId, 3);
+    public List<TeacherVO> recommendations(Long userId) {
+        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
         String cacheKey = "match:recommendations:student:" + userId;
         String cached = redisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
             try {
-                return objectMapper.readValue(cached, new TypeReference<List<TeacherRecommendationVO>>() {});
+                return objectMapper.readValue(cached, new TypeReference<List<TeacherVO>>() {});
             } catch (Exception ignore) {
                 // ignore and fallback db query
             }
         }
-        List<TeacherRecommendationVO> list = teacherProfileMapper.selectRecommendations().stream()
-                .map(row -> objectMapper.convertValue(row, TeacherRecommendationVO.class))
-                .toList();
+        List<TeacherVO> list = teacherProfileMapper.selectRecommendations();
         try {
             redisTemplate.opsForValue().set(cacheKey, objectMapper.writeValueAsString(list), RECOMMENDATION_CACHE_TTL_MINUTES, TimeUnit.MINUTES);
         } catch (Exception ignore) {
@@ -66,10 +72,10 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void apply(Long userId, ApplyRequest request) {
-        userAccessService.requireRole(userId, 3);
+    public void apply(Long userId, MatchApplyRequest request) {
+        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
         User teacher = userMapper.selectById(request.getTeacherId());
-        if (teacher == null || !Integer.valueOf(2).equals(teacher.getRole()) || !Integer.valueOf(1).equals(teacher.getStatus())) {
+        if (teacher == null || !Integer.valueOf(UserRole.TEACHER.getCode()).equals(teacher.getRole()) || !Integer.valueOf(UserStatus.ENABLED.getCode()).equals(teacher.getStatus())) {
             throw new BizException("目标志愿者不存在或不可用");
         }
         StudentProfile profile = studentProfileMapper.selectOne(
@@ -88,7 +94,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                 new LambdaQueryWrapper<MatchPair>()
                         .eq(MatchPair::getStudentId, userId)
                         .eq(MatchPair::getTeacherId, request.getTeacherId())
-                        .in(MatchPair::getMatchStatus, 0, 1, 3)
+                        .in(MatchPair::getMatchStatus, MatchStatus.APPLIED.getCode(), MatchStatus.ACCEPTED.getCode(), MatchStatus.UNBIND_CONFIRMING.getCode())
         );
         if (existed > 0) {
             throw new BizException("已存在待处理或生效中的结对关系");
@@ -96,12 +102,12 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         MatchPair pair = new MatchPair();
         pair.setStudentId(userId);
         pair.setTeacherId(request.getTeacherId());
-        pair.setMatchStatus(0);
+        pair.setMatchStatus(MatchStatus.APPLIED.getCode());
         pair.setApplyTime(LocalDateTime.now());
         matchPairMapper.insert(pair);
         NotificationEvent event = new NotificationEvent();
         event.setUserId(request.getTeacherId());
-        event.setType(0);
+        event.setType(NotificationType.MATCH_APPLY.getCode());
         event.setTitle("新的结对申请");
         event.setContent("你收到了新的学生结对申请");
         event.setParamsJson("{\"studentId\":" + userId + "}");
@@ -110,17 +116,15 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     }
 
     @Override
-    public List<PendingApplicationVO> pendingApplications(Long userId) {
-        userAccessService.requireRole(userId, 2);
-        return matchPairMapper.selectPendingApplications(userId).stream()
-                .map(row -> objectMapper.convertValue(row, PendingApplicationVO.class))
-                .toList();
+    public List<MatchPairVO> pendingApplications(Long userId) {
+        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
+        return matchPairMapper.selectPendingApplications(userId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void process(Long userId, Long applicationId, ProcessRequest request) {
-        userAccessService.requireRole(userId, 2);
+    public void process(Long userId, Long applicationId, ProcessMatchRequest request) {
+        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
         MatchPair pair = matchPairMapper.selectOne(
                 new LambdaQueryWrapper<MatchPair>()
                         .eq(MatchPair::getId, applicationId)
@@ -129,7 +133,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         if (pair == null) {
             throw new BizException("申请不存在");
         }
-        if (!Integer.valueOf(0).equals(pair.getMatchStatus())) {
+        if (!Integer.valueOf(MatchStatus.APPLIED.getCode()).equals(pair.getMatchStatus())) {
             throw new BizException("仅待处理申请可审核");
         }
         Long studentId = pair.getStudentId();
@@ -138,12 +142,12 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                     null,
                     new LambdaUpdateWrapper<MatchPair>()
                             .eq(MatchPair::getId, applicationId)
-                            .set(MatchPair::getMatchStatus, 1)
+                            .set(MatchPair::getMatchStatus, MatchStatus.ACCEPTED.getCode())
                             .set(MatchPair::getAcceptTime, LocalDateTime.now())
             );
             NotificationEvent event = new NotificationEvent();
             event.setUserId(studentId);
-            event.setType(1);
+            event.setType(NotificationType.MATCH_ACCEPT.getCode());
             event.setTitle("结对申请已通过");
             event.setContent("志愿者已通过你的结对申请");
             event.setParamsJson("{\"applicationId\":" + applicationId + "}");
@@ -153,12 +157,12 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                     null,
                     new LambdaUpdateWrapper<MatchPair>()
                             .eq(MatchPair::getId, applicationId)
-                            .set(MatchPair::getMatchStatus, 2)
+                            .set(MatchPair::getMatchStatus, MatchStatus.REJECTED.getCode())
                             .set(MatchPair::getRejectReason, request.getReason())
             );
             NotificationEvent event = new NotificationEvent();
             event.setUserId(studentId);
-            event.setType(2);
+            event.setType(NotificationType.MATCH_REJECT.getCode());
             event.setTitle("结对申请被拒绝");
             event.setContent(request.getReason() == null ? "志愿者拒绝了你的申请" : request.getReason());
             event.setParamsJson("{\"applicationId\":" + applicationId + "}");
@@ -168,14 +172,14 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     }
 
     @Override
-    public List<PairDetailVO> myPairs(Long userId, Integer status) {
+    public List<MatchPairVO> myPairs(Long userId, Integer status) {
         User user = userMapper.selectById(userId);
         Integer role = user == null ? null : user.getRole();
-        if (role == null || (role != 2 && role != 3)) {
+        if (role == null || (role != UserRole.TEACHER.getCode() && role != UserRole.STUDENT.getCode())) {
             throw new BizException("无权限操作");
         }
         LambdaQueryWrapper<MatchPair> wrapper = new LambdaQueryWrapper<>();
-        if (role == 2) {
+        if (role == UserRole.TEACHER.getCode()) {
             wrapper.eq(MatchPair::getTeacherId, userId);
         } else {
             wrapper.eq(MatchPair::getStudentId, userId);
@@ -186,7 +190,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         wrapper.orderByDesc(MatchPair::getId);
         return matchPairMapper.selectList(wrapper).stream()
                 .map(pair -> {
-                    PairDetailVO vo = new PairDetailVO();
+                    MatchPairVO vo = new MatchPairVO();
                     vo.setId(pair.getId());
                     vo.setStudentId(pair.getStudentId());
                     vo.setTeacherId(pair.getTeacherId());
@@ -209,7 +213,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         if (pair == null) {
             throw new BizException("结对不存在");
         }
-        if (!Integer.valueOf(1).equals(pair.getMatchStatus())) {
+        if (!Integer.valueOf(MatchStatus.ACCEPTED.getCode()).equals(pair.getMatchStatus())) {
             throw new BizException("仅生效中的结对可发起解绑");
         }
         Long studentId = pair.getStudentId();
@@ -225,7 +229,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                 null,
                 new LambdaUpdateWrapper<MatchPair>()
                         .eq(MatchPair::getId, pairId)
-                        .set(MatchPair::getMatchStatus, 3)
+                        .set(MatchPair::getMatchStatus, MatchStatus.UNBIND_CONFIRMING.getCode())
                         .set(MatchPair::getUnbindRequestBy, userId)
                         .set(MatchPair::getUnbindRequestTime, LocalDateTime.now())
                         .set(MatchPair::getStudentUnbindConfirm, 0)
@@ -248,7 +252,8 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         if (pair == null) {
             throw new BizException("结对不存在");
         }
-        if (!Integer.valueOf(3).equals(pair.getMatchStatus()) && !Integer.valueOf(5).equals(pair.getMatchStatus())) {
+        if (!Integer.valueOf(MatchStatus.UNBIND_CONFIRMING.getCode()).equals(pair.getMatchStatus())
+                && !Integer.valueOf(MatchStatus.UNBIND_REJECTED.getCode()).equals(pair.getMatchStatus())) {
             throw new BizException("当前状态不允许解绑确认");
         }
         Long studentId = pair.getStudentId();
@@ -263,7 +268,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                     null,
                     new LambdaUpdateWrapper<MatchPair>()
                             .eq(MatchPair::getId, pairId)
-                            .set(MatchPair::getMatchStatus, 5)
+                            .set(MatchPair::getMatchStatus, MatchStatus.UNBIND_REJECTED.getCode())
                             .set(MatchPair::getUnbindRejectBy, userId)
                             .set(MatchPair::getUnbindRejectReason, request.getRejectReason())
                             .set(MatchPair::getUnbindRejectTime, LocalDateTime.now())
@@ -286,12 +291,12 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                 && Integer.valueOf(1).equals(now.getAdminUnbindConfirm());
         if (done) {
             matchPairMapper.update(null, new LambdaUpdateWrapper<MatchPair>().eq(MatchPair::getId, pairId)
-                    .set(MatchPair::getMatchStatus, 4).set(MatchPair::getUnbindAcceptTime, LocalDateTime.now()));
+                    .set(MatchPair::getMatchStatus, MatchStatus.UNBOUND.getCode()).set(MatchPair::getUnbindAcceptTime, LocalDateTime.now()));
         }
     }
 
     @Override
-    public UnbindProgressVO unbindProgress(Long userId, Long pairId) {
+    public MatchPairVO unbindProgress(Long userId, Long pairId) {
         MatchPair pair = matchPairMapper.selectById(pairId);
         if (pair == null) {
             throw new BizException("结对不存在");
@@ -302,7 +307,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         if (!userId.equals(studentId) && !userId.equals(teacherId) && (adminId == null || !userId.equals(adminId))) {
             throw new BizException("无权查看解绑进度");
         }
-        UnbindProgressVO vo = new UnbindProgressVO();
+        MatchPairVO vo = new MatchPairVO();
         vo.setPairId(pair.getId());
         vo.setMatchStatus(pair.getMatchStatus());
         vo.setStudentUnbindConfirm(pair.getStudentUnbindConfirm());
@@ -318,7 +323,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     }
 
     @Override
-    public PairDetailVO pairDetail(Long userId, Long pairId) {
+    public MatchPairVO pairDetail(Long userId, Long pairId) {
         MatchPair pair = matchPairMapper.selectById(pairId);
         if (pair == null) {
             throw new BizException("结对不存在");
@@ -328,10 +333,10 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         Long adminId = pair.getUnbindAdminId();
         User user = userMapper.selectById(userId);
         Integer userRole = user == null ? null : user.getRole();
-        if (!userId.equals(studentId) && !userId.equals(teacherId) && !Integer.valueOf(0).equals(userRole) && (adminId == null || !userId.equals(adminId))) {
+        if (!userId.equals(studentId) && !userId.equals(teacherId) && !Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(userRole) && (adminId == null || !userId.equals(adminId))) {
             throw new BizException("无权查看结对详情");
         }
-        PairDetailVO vo = new PairDetailVO();
+        MatchPairVO vo = new MatchPairVO();
         vo.setId(pair.getId());
         vo.setStudentId(pair.getStudentId());
         vo.setTeacherId(pair.getTeacherId());
