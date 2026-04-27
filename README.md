@@ -9,16 +9,19 @@
 copy .env.example .env
 ```
 
+> [!IMPORTANT]
+> 安全提醒：请把敏感配置（如 `JWT_SECRET`、`WX_MINIAPP_APPID`、`WX_MINIAPP_SECRET`）只写在本机 `.env`。
+> `docker-compose.yml` 会进入版本库，不能填写真实密钥。
+
 2. 启动 MySQL + Redis + RabbitMQ + 后端（会自动执行 `design/init.sql` 初始化库表）
 
 ```bash
 docker compose up --build
 ```
 
-3. 健康检查
+3. 接口访问
 
 后端启动后访问：
-- `GET http://localhost:8080/api/v1/health`
 - Swagger：`http://localhost:8080/api/v1/swagger-ui.html`
 
 RabbitMQ 管理台：

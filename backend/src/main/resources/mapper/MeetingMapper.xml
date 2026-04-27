@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rural.education.model.mapper.MeetingMapper">
+
+    <sql id="meetingColumns">
+        m.id,
+        m.match_pair_id AS matchPairId,
+        m.topic,
+        m.start_time AS startTime,
+        m.end_time AS endTime,
+        m.meeting_link AS meetingLink,
+        m.created_by AS createdBy,
+        m.status,
+        m.update_time AS updateTime
+    </sql>
+
+    <select id="selectMeetingDetail" parameterType="long" resultType="com.rural.education.vo.MeetingVO">
+        SELECT
+        <include refid="meetingColumns"/>,
+        mp.student_id AS studentId,
+        mp.teacher_id AS teacherId
+        FROM meeting m
+        JOIN match_pair mp ON m.match_pair_id = mp.id
+        WHERE m.id = #{meetingId}
+    </select>
+
+    <select id="selectTeacherMeetings" parameterType="long" resultType="com.rural.education.vo.MeetingVO">
+        SELECT
+        <include refid="meetingColumns"/>
+        FROM meeting m
+        JOIN match_pair mp ON m.match_pair_id = mp.id
+        WHERE mp.teacher_id = #{userId}
+        ORDER BY m.start_time DESC
+    </select>
+
+    <select id="selectStudentMeetings" parameterType="long" resultType="com.rural.education.vo.MeetingVO">
+        SELECT
+        <include refid="meetingColumns"/>
+        FROM meeting m
+        JOIN match_pair mp ON m.match_pair_id = mp.id
+        WHERE mp.student_id = #{userId}
+        ORDER BY m.start_time DESC
+    </select>
+
+</mapper>

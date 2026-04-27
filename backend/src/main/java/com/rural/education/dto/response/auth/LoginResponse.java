@@ -16,6 +16,9 @@ public class LoginResponse {
         private String username;
         private Integer role;
         private String avatar;
+        private String phone;
         private Boolean hasProfile;
+        private Boolean roleApplied;
     }
 }
+

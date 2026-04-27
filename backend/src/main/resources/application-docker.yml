@@ -22,3 +22,8 @@ mybatis-plus:
 jwt:
   secret: ${JWT_SECRET:change-me-in-env}
 
+wx:
+  miniapp:
+    appid: ${WX_MINIAPP_APPID:wxbd4c9add97038750}
+    secret: ${WX_MINIAPP_SECRET:default-secret}
+

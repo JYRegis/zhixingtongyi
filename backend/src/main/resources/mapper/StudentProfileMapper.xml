@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rural.education.model.mapper.StudentProfileMapper">
+
+    <sql id="studentProfileColumns">
+        sp.id,
+        sp.user_id AS userId,
+        sp.real_name AS realName,
+        sp.school_id AS schoolId,
+        sp.grade,
+        sp.subjects_needed AS subjectsNeeded,
+        sp.free_time AS freeTime,
+        sp.personality_desc AS personalityDesc,
+        sp.profile_status AS profileStatus,
+        sp.bind_admin_id AS bindAdminId,
+        sp.audit_status AS auditStatus,
+        sp.audit_time AS auditTime,
+        sp.audit_notes AS auditNotes,
+        sp.update_time AS updateTime
+    </sql>
+
+    <select id="selectManagedStudents" parameterType="long" resultType="com.rural.education.vo.StudentVO">
+        SELECT
+        <include refid="studentProfileColumns"/>,
+        u.username,
+        u.phone
+        FROM student_profile sp
+        JOIN user u ON sp.user_id = u.id
+        WHERE sp.bind_admin_id = #{adminId}
+        ORDER BY sp.update_time DESC
+    </select>
+
+</mapper>

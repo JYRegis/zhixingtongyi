@@ -113,12 +113,15 @@ CREATE TABLE `student_profile` (
   `real_name` varchar(64) NOT NULL COMMENT '真实姓名',
   `school_id` bigint NOT NULL COMMENT '所在学校ID',
   `grade` varchar(32) NOT NULL COMMENT '年级（如：初三）',
-  `emergency_weight` int NOT NULL DEFAULT '0' COMMENT '需求紧急程度权重（系统计算）',
-  `subjects_needed` json NOT NULL COMMENT '需要辅导的科目（JSON数组）',
-  `free_time` json NOT NULL COMMENT '可上课时间段（JSON数组）',
+  `emergency_weight` int DEFAULT NULL COMMENT '需求紧急程度权重（系统计算）',
+  `subjects_needed` json DEFAULT NULL COMMENT '需要辅导的科目（JSON数组）',
+  `free_time` json DEFAULT NULL COMMENT '可上课时间段（JSON数组）',
+  `profile_status` tinyint NOT NULL DEFAULT '0' COMMENT '资料状态：0-草稿，1-可发起配对',
   `personality_desc` text COMMENT '性格描述',
-  `bind_admin_id` bigint DEFAULT NULL COMMENT '绑定的二级管理员用户ID（老师代管）',
-  `independent` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否独立操作（1-是，0-否）',
+  `bind_admin_id` bigint NOT NULL COMMENT '绑定的二级管理员用户ID（老师代管）',
+  `audit_status` tinyint NOT NULL DEFAULT '0' COMMENT '学生审核状态：0-待审核，1-通过，2-拒绝',
+  `audit_time` datetime DEFAULT NULL COMMENT '学生审核时间',
+  `audit_notes` varchar(512) DEFAULT NULL COMMENT '学生审核备注',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
@@ -139,13 +142,23 @@ CREATE TABLE `match_pair` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `student_id` bigint NOT NULL COMMENT '学员用户ID',
   `teacher_id` bigint NOT NULL COMMENT '志愿者用户ID',
-  `match_status` tinyint NOT NULL DEFAULT '0' COMMENT '匹配状态：0-已申请，1-已接受，2-已拒绝，3-解绑申请中，4-已解绑，5-已禁用',
+  `match_status` tinyint NOT NULL DEFAULT '0' COMMENT '匹配状态：0-已申请，1-已接受，2-已拒绝，3-解绑确认中，4-已解绑，5-已禁用',
   `apply_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申请时间',
   `accept_time` datetime DEFAULT NULL COMMENT '接受时间',
   `reject_reason` varchar(512) DEFAULT NULL COMMENT '拒绝理由（志愿者填写）',
   `unbind_request_by` bigint DEFAULT NULL COMMENT '解绑发起方用户ID',
   `unbind_request_time` datetime DEFAULT NULL COMMENT '解绑申请时间',
-  `unbind_accept_time` datetime DEFAULT NULL COMMENT '解绑同意时间',
+  `student_unbind_confirm` tinyint(1) NOT NULL DEFAULT '0' COMMENT '学生是否确认解绑',
+  `student_unbind_confirm_time` datetime DEFAULT NULL COMMENT '学生确认时间',
+  `teacher_unbind_confirm` tinyint(1) NOT NULL DEFAULT '0' COMMENT '志愿者是否确认解绑',
+  `teacher_unbind_confirm_time` datetime DEFAULT NULL COMMENT '志愿者确认时间',
+  `admin_unbind_confirm` tinyint(1) NOT NULL DEFAULT '0' COMMENT '二级管理员是否确认解绑',
+  `admin_unbind_confirm_time` datetime DEFAULT NULL COMMENT '二级管理员确认时间',
+  `unbind_admin_id` bigint DEFAULT NULL COMMENT '负责该结对解绑确认的二级管理员',
+  `unbind_reject_by` bigint DEFAULT NULL COMMENT '解绑拒绝方用户ID',
+  `unbind_reject_reason` varchar(512) DEFAULT NULL COMMENT '解绑拒绝原因',
+  `unbind_reject_time` datetime DEFAULT NULL COMMENT '解绑拒绝时间',
+  `unbind_accept_time` datetime DEFAULT NULL COMMENT '三方确认完成时间',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
@@ -153,9 +166,13 @@ CREATE TABLE `match_pair` (
   KEY `idx_match_status` (`match_status`),
   KEY `idx_teacher_status` (`teacher_id`,`match_status`),
   KEY `idx_student_status` (`student_id`,`match_status`),
+  KEY `idx_unbind_admin_id` (`unbind_admin_id`),
+  KEY `idx_unbind_reject_by` (`unbind_reject_by`),
   CONSTRAINT `fk_match_student_id` FOREIGN KEY (`student_id`) REFERENCES `user` (`id`),
   CONSTRAINT `fk_match_teacher_id` FOREIGN KEY (`teacher_id`) REFERENCES `user` (`id`),
-  CONSTRAINT `fk_match_unbind_by` FOREIGN KEY (`unbind_request_by`) REFERENCES `user` (`id`)
+  CONSTRAINT `fk_match_unbind_by` FOREIGN KEY (`unbind_request_by`) REFERENCES `user` (`id`),
+  CONSTRAINT `fk_match_unbind_admin_id` FOREIGN KEY (`unbind_admin_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `fk_match_unbind_reject_by` FOREIGN KEY (`unbind_reject_by`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='学员与志愿者匹配结对表';
 
 -- ----------------------------
@@ -219,10 +236,36 @@ CREATE TABLE `chat_message` (
   PRIMARY KEY (`id`),
   KEY `idx_match_pair_id` (`match_pair_id`),
   KEY `idx_sender_id` (`sender_id`),
+  KEY `idx_pair_sender` (`match_pair_id`,`sender_id`),
   KEY `idx_send_time` (`send_time`),
   CONSTRAINT `fk_chat_match_pair` FOREIGN KEY (`match_pair_id`) REFERENCES `match_pair` (`id`),
   CONSTRAINT `fk_chat_sender_id` FOREIGN KEY (`sender_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='内置聊天消息表';
+
+-- ----------------------------
+-- 9.1 聊天参与者表 (chat_participant)
+-- ----------------------------
+DROP TABLE IF EXISTS `chat_participant`;
+CREATE TABLE `chat_participant` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `match_pair_id` bigint NOT NULL COMMENT '关联的匹配结对ID',
+  `user_id` bigint NOT NULL COMMENT '参与者用户ID',
+  `participant_role` tinyint NOT NULL COMMENT '参与者角色：1-二级管理员，2-志愿者，3-学生',
+  `is_default_member` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否默认参与者（如绑定管理员）',
+  `joined_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '加入时间',
+  `left_time` datetime DEFAULT NULL COMMENT '退出时间（为空表示仍在会话）',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_pair_user` (`match_pair_id`,`user_id`),
+  KEY `idx_user_role` (`user_id`,`participant_role`),
+  CONSTRAINT `fk_chat_participant_pair` FOREIGN KEY (`match_pair_id`) REFERENCES `match_pair` (`id`),
+  CONSTRAINT `fk_chat_participant_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='聊天参与者表（支持管理员加入）';
+
+ALTER TABLE `chat_message`
+ADD CONSTRAINT `fk_chat_sender_participant`
+FOREIGN KEY (`match_pair_id`,`sender_id`) REFERENCES `chat_participant` (`match_pair_id`,`user_id`);
 
 -- ----------------------------
 -- 10. 算法权重配置表 (algorithm_weight_config)
@@ -252,7 +295,9 @@ CREATE TABLE `volunteer_record` (
   `meeting_id` bigint DEFAULT NULL COMMENT '关联的内部会议ID（外部会议可为空）',
   `duration` int NOT NULL COMMENT '服务时长（单位：分钟）',
   `meeting_date` date NOT NULL COMMENT '服务日期',
-  `ai_summary` text NOT NULL COMMENT 'AI生成的会议纪要/教学总结',
+  `service_desc` text NOT NULL COMMENT '志愿者提交的服务描述',
+  `evidence_images` json DEFAULT NULL COMMENT '服务凭证图片URL数组',
+  `ai_summary` text DEFAULT NULL COMMENT 'AI生成的会议纪要/教学总结',
   `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态：0-待学生确认，1-待管理员审核，2-审核通过，3-审核拒绝，4-学生拒绝',
   `reject_reason` varchar(512) DEFAULT NULL COMMENT '拒绝理由',
   `student_confirm_time` datetime DEFAULT NULL COMMENT '学生确认时间',

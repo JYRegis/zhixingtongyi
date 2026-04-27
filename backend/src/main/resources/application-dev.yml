@@ -15,6 +15,7 @@ spring:
     password: admin
 
 mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
@@ -22,7 +23,7 @@ mybatis-plus:
 jwt:
   secret: ${JWT_SECRET:change-me-in-env}
 
-wechat:
+wx:
   miniapp:
-    appid: ${WX_MINIAPP_APPID:default-appid}
+    appid: ${WX_MINIAPP_APPID:wxbd4c9add97038750}
     secret: ${WX_MINIAPP_SECRET:default-secret}

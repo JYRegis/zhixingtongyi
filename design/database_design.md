@@ -51,7 +51,7 @@
 | real_name | varchar(64) | NOT NULL | 真实姓名 |
 | school_id | bigint | FOREIGN KEY (school_id) REFERENCES school(id) | 管理的学校ID（二级管理员必填） |
 | region_code | varchar(32) | | 管理区域编码（可多级） |
-| permissions | json | | 权限配置（JSON数组，如包含 "volunteer_record_audit" 表示拥有时长审核权限） |
+| permissions | json | | 权限配置（JSON数组，仅支持 `student_manage`、`teacher_audit`） |
 | create_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP | 创建时间 |
 | update_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新时间 |
 
@@ -96,12 +96,15 @@
 | real_name | varchar(64) | NOT NULL | 真实姓名 |
 | school_id | bigint | NOT NULL, FOREIGN KEY (school_id) REFERENCES school(id) | 所在学校ID |
 | grade | varchar(32) | NOT NULL | 年级（如：初三） |
-| emergency_weight | int | NOT NULL DEFAULT 0 | 需求紧急程度权重（系统计算） |
-| subjects_needed | json | NOT NULL | 需要辅导的科目（JSON数组） |
-| free_time | json | NOT NULL | 可上课时间段（JSON数组） |
+| emergency_weight | int | DEFAULT NULL | 需求紧急程度权重（系统计算） |
+| subjects_needed | json | | 需要辅导的科目（JSON数组） |
+| free_time | json | | 可上课时间段（JSON数组） |
+| profile_status | tinyint | NOT NULL DEFAULT 0 | 资料状态：0-草稿，1-可发起配对 |
 | personality_desc | text | | 性格描述 |
-| bind_admin_id | bigint | FOREIGN KEY (bind_admin_id) REFERENCES user(id) | 绑定的二级管理员用户ID（如果由老师代管） |
-| independent | tinyint(1) | NOT NULL DEFAULT 1 | 是否独立操作（1-是，0-否） |
+| bind_admin_id | bigint | NOT NULL, FOREIGN KEY (bind_admin_id) REFERENCES user(id) | 绑定的二级管理员用户ID（如果由老师代管） |
+| audit_status | tinyint | NOT NULL DEFAULT 0 | 学生审核状态：0-待审核，1-通过，2-拒绝 |
+| audit_time | datetime | | 学生审核时间 |
+| audit_notes | varchar(512) | | 学生审核备注 |
 | create_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP | 创建时间 |
 | update_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新时间 |
 
@@ -119,13 +122,23 @@
 | id | bigint | PRIMARY KEY, AUTO_INCREMENT | 主键 |
 | student_id | bigint | NOT NULL, FOREIGN KEY (student_id) REFERENCES user(id) | 学员用户ID |
 | teacher_id | bigint | NOT NULL, FOREIGN KEY (teacher_id) REFERENCES user(id) | 志愿者用户ID |
-| match_status | tinyint | NOT NULL DEFAULT 0 | 匹配状态：0-已申请，1-已接受，2-已拒绝，3-解绑申请中，4-已解绑，5-已禁用 |
+| match_status | tinyint | NOT NULL DEFAULT 0 | 匹配状态：0-已申请，1-已接受，2-已拒绝，3-解绑确认中，4-已解绑，5-已禁用 |
 | apply_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP | 申请时间 |
 | accept_time | datetime | | 接受时间 |
 | reject_reason | varchar(512) | | 拒绝理由（志愿者填写） |
 | unbind_request_by | bigint | FOREIGN KEY (unbind_request_by) REFERENCES user(id) | 解绑发起方用户ID |
 | unbind_request_time | datetime | | 解绑申请时间 |
-| unbind_accept_time | datetime | | 解绑同意时间 |
+| student_unbind_confirm | tinyint(1) | NOT NULL DEFAULT 0 | 学生是否确认解绑 |
+| student_unbind_confirm_time | datetime | | 学生确认时间 |
+| teacher_unbind_confirm | tinyint(1) | NOT NULL DEFAULT 0 | 志愿者是否确认解绑 |
+| teacher_unbind_confirm_time | datetime | | 志愿者确认时间 |
+| admin_unbind_confirm | tinyint(1) | NOT NULL DEFAULT 0 | 二级管理员是否确认解绑 |
+| admin_unbind_confirm_time | datetime | | 二级管理员确认时间 |
+| unbind_admin_id | bigint | FOREIGN KEY (unbind_admin_id) REFERENCES user(id) | 对应二级管理员用户ID |
+| unbind_reject_by | bigint | FOREIGN KEY (unbind_reject_by) REFERENCES user(id) | 解绑拒绝方用户ID |
+| unbind_reject_reason | varchar(512) | | 解绑拒绝原因 |
+| unbind_reject_time | datetime | | 解绑拒绝时间 |
+| unbind_accept_time | datetime | | 三方确认完成时间 |
 | create_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP | 创建时间 |
 | update_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新时间 |
 
@@ -134,6 +147,8 @@
 - KEY `idx_match_status` (`match_status`)
 - KEY `idx_teacher_status` (`teacher_id`, `match_status`)
 - KEY `idx_student_status` (`student_id`, `match_status`)
+- KEY `idx_unbind_admin_id` (`unbind_admin_id`)
+- KEY `idx_unbind_reject_by` (`unbind_reject_by`)
 
 ### 7. 消息通知表 (message_notification)
 存储系统内站内信及微信订阅消息发送记录（完整恢复原有字段，并增加新状态）。
@@ -190,11 +205,32 @@
 | content | text | NOT NULL | 消息内容（文本内容或文件URL） |
 | send_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP | 发送时间 |
 | read_time | datetime | | 阅读时间 |
+| (match_pair_id, sender_id) | 复合外键 | REFERENCES chat_participant(match_pair_id, user_id) | 发送者必须是该会话参与者 |
 
 **索引：**
 - KEY `idx_match_pair_id` (`match_pair_id`)
 - KEY `idx_sender_id` (`sender_id`)
+- KEY `idx_pair_sender` (`match_pair_id`, `sender_id`)
 - KEY `idx_send_time` (`send_time`)
+
+### 9.1 聊天参与者表 (chat_participant)
+存储结对会话参与者，支持同校具备 `student_manage` 权限的二级管理员加入聊天。
+
+| 字段名 | 数据类型 | 约束 | 说明 |
+|--------|----------|------|------|
+| id | bigint | PRIMARY KEY, AUTO_INCREMENT | 主键 |
+| match_pair_id | bigint | NOT NULL, FOREIGN KEY (match_pair_id) REFERENCES match_pair(id) | 关联的匹配结对ID |
+| user_id | bigint | NOT NULL, FOREIGN KEY (user_id) REFERENCES user(id) | 参与者用户ID |
+| participant_role | tinyint | NOT NULL | 参与者角色：1-二级管理员，2-志愿者，3-学生 |
+| is_default_member | tinyint(1) | NOT NULL DEFAULT 0 | 是否默认成员（如学生绑定管理员） |
+| joined_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP | 加入时间 |
+| left_time | datetime | | 退出时间 |
+| create_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| update_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新时间 |
+
+**索引：**
+- UNIQUE KEY `uk_pair_user` (`match_pair_id`, `user_id`)
+- KEY `idx_user_role` (`user_id`, `participant_role`)
 
 ### 10. 算法权重配置表 (algorithm_weight_config)
 存储匹配算法中各项因素的权重配置，可由管理员调整。
@@ -224,7 +260,9 @@
 | meeting_id | bigint | FOREIGN KEY (meeting_id) REFERENCES meeting(id) | 关联的内部会议ID（若是外部会议可为空） |
 | duration | int | NOT NULL | 服务时长（单位：分钟） |
 | meeting_date | date | NOT NULL | 服务日期 |
-| ai_summary | text | NOT NULL | AI生成的会议纪要/教学总结 |
+| service_desc | text | NOT NULL | 志愿者提交的服务描述 |
+| evidence_images | json | | 服务凭证图片URL数组 |
+| ai_summary | text | | AI生成的会议纪要/教学总结 |
 | status | tinyint | NOT NULL DEFAULT 0 | 状态：0-待学生确认，1-待管理员审核，2-审核通过，3-审核拒绝，4-学生拒绝 |
 | reject_reason | varchar(512) | | 拒绝理由（学生或管理员填写） |
 | student_confirm_time| datetime | | 学生确认时间 |
