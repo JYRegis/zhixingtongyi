@@ -1,6 +1,9 @@
 const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
 const { addMeeting, canCreateMeetingRole, getPairOptionsForForm } = require("../../../utils/meetingStore");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
+const { USE_BACKEND_MEETING } = require("../../../config/demoBackend");
+const { matchApi, meetingApi } = require("../../../utils/api");
+const { pairDetailsToFormOptions, buildMeetingCreateRequest } = require("../../../utils/meetingDtoMappers");
 
 function pad2(n) {
   return (n < 10 ? "0" : "") + n;
@@ -22,9 +25,11 @@ Page({
     pairOptions: [],
     pairLineDisplay: "",
     pairRequired: false,
-    submitDisabled: false
+    submitDisabled: false,
+    _pairSource: "local"
   },
   onShow() {
+    const self = this;
     checkOnboardingOrRedirect("pages/meeting/create/index");
     mergeFromStorageIntoApp();
     const app = getApp();
@@ -38,6 +43,45 @@ Page({
       }, 400);
       return;
     }
+    const token = (app && app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    const pr = r === "student" || r === "teacher";
+    if (USE_BACKEND_MEETING && token && (r === "student" || r === "teacher")) {
+      matchApi
+        .myPairs(1)
+        .then(function (pairs) {
+          const options = pairDetailsToFormOptions(pairs);
+          if (!options.length) {
+            self.setData({
+              role: r,
+              pairOptions: [],
+              pairLineDisplay: "",
+              pairRequired: pr,
+              submitDisabled: true,
+              dateStr: self.data.dateStr || defaultDate(),
+              _pairSource: "api"
+            });
+            return;
+          }
+          const first = options[0] || {};
+          self.setData({
+            role: r,
+            pairOptions: options,
+            pairIndex: 0,
+            pairLineDisplay: (first && first.name) != null ? first.name : "选择结对",
+            pairRequired: pr,
+            dateStr: self.data.dateStr || defaultDate(),
+            submitDisabled: false,
+            _pairSource: "api"
+          });
+        })
+        .catch(function () {
+          self._applyLocalPairOptions(r, p, pr);
+        });
+      return;
+    }
+    this._applyLocalPairOptions(r, p, pr);
+  },
+  _applyLocalPairOptions(r, p, pr) {
     const options = getPairOptionsForForm(r, p) || [];
     if ((r === "student" || r === "teacher") && !options.length) {
       this.setData({
@@ -46,29 +90,28 @@ Page({
         pairLineDisplay: "",
         pairRequired: true,
         submitDisabled: true,
-        dateStr: this.data.dateStr || defaultDate()
+        dateStr: this.data.dateStr || defaultDate(),
+        _pairSource: "local"
       });
       return;
     }
-    if ((r === "admin_level_2" && (p.l2Scope === "recipient_side" || p.l2Scope === "volunteer_side")) && !options.length) {
+    if (r === "admin_level_2" && (p.l2Scope === "recipient_side" || p.l2Scope === "volunteer_side") && !options.length) {
       wx.showToast({ title: "本账号管辖范围内没有结对数据", icon: "none" });
       setTimeout(function () {
         wx.navigateBack();
       }, 500);
       return;
     }
-    const pairIndex = 0;
-    const first = options[pairIndex] || {};
-    const pairLineDisplay = first && first.name != null ? first.name : "选择结对";
-    const pr = r === "student" || r === "teacher";
+    const first = options[0] || {};
     this.setData({
       role: r,
       pairOptions: options,
-      pairIndex: pairIndex,
-      pairLineDisplay: pairLineDisplay,
+      pairIndex: 0,
+      pairLineDisplay: (first && first.name) != null ? first.name : "选择结对",
       pairRequired: pr,
       dateStr: this.data.dateStr || defaultDate(),
-      submitDisabled: pr && !options.length
+      submitDisabled: pr && !options.length,
+      _pairSource: "local"
     });
   },
   onText(e) {
@@ -131,6 +174,62 @@ Page({
     const pairId = pick && pick.id != null && pick.id !== "" ? String(pick.id) : "";
     if (this.data.pairRequired && !pairId) {
       wx.showToast({ title: "请选择结对口", icon: "none" });
+      return;
+    }
+    const token0 = (app && app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    const useRemote = USE_BACKEND_MEETING && token0 && (r === "student" || r === "teacher") && this.data._pairSource === "api";
+    const self = this;
+    if (useRemote) {
+      const link = String(this.data.roomLink || "").trim();
+      if (!link) {
+        wx.showToast({ title: "请填写会议链接", icon: "none" });
+        return;
+      }
+      const endMs = st + 60 * 60 * 1000;
+      const body = buildMeetingCreateRequest({
+        matchPairId: Number(pick.id),
+        topic: title,
+        startTimeMs: st,
+        endTimeMs: endMs,
+        meetingLink: link
+      });
+      wx.showLoading({ title: "提交中", mask: true });
+      meetingApi
+        .create(body)
+        .then(function () {
+          wx.hideLoading();
+          wx.showToast({ title: "已创建", icon: "success" });
+          setTimeout(function () {
+            wx.navigateBack();
+          }, 500);
+        })
+        .catch(function (err) {
+          wx.hideLoading();
+          const msg = (err && err.message) || "网络或服务异常";
+          wx.showModal({
+            title: "服务器保存失败",
+            content: msg + "\n是否改为仅保存到本机？",
+            confirmText: "本机保存",
+            cancelText: "取消",
+            success: function (res) {
+              if (res.confirm) {
+                addMeeting({
+                  title: title,
+                  startTimeMs: st,
+                  roomLink: self.data.roomLink,
+                  pairId: pairId,
+                  pairLine: (pick && pick.name) || (pairId ? "结对" : "不指定结对"),
+                  createdByPhone: phone,
+                  creatorRole: r
+                });
+                wx.showToast({ title: "已保存到本机", icon: "success" });
+                setTimeout(function () {
+                  wx.navigateBack();
+                }, 500);
+              }
+            }
+          });
+        });
       return;
     }
     addMeeting({

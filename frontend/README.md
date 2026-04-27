@@ -14,7 +14,38 @@
 |------|------|
 | `miniprogram/` | 小程序源码：首页选身份、工作台、匹配、聊天、会议、学校/平台管理等页面 |
 | `miniprogram/utils/env.js` | HTTP 请求封装与 `dev/test/prod` 基地址（占位域名需换成真实后端） |
-| `docs/` | 产品/前端说明；**Mock 与测试用数据**见 [docs/MOCK_DATA.md](docs/MOCK_DATA.md) |
+| `docs/` | 产品/前端说明；**Mock 与测试用数据**见 [docs/MOCK_DATA.md](docs/MOCK_DATA.md) ；**四角色界面色板与主题**见 [../docs/ROLE_UI_THEME.md](../docs/ROLE_UI_THEME.md)（`miniprogram/styles/role-theme.wxss` + `Page` 注入 `_roleThemeClass`） |
+
+## 与后端（如 `zhixingtongyi-zyh`）联调
+
+- **基地址**：`miniprogram/utils/env.js` 中 `dev` 默认为 `http://localhost:8080/api/v1`（与 Spring `context-path: /api/v1` 一致）。
+- **登录**：`pages/common/auth` 在点击「完成并进入/登录」时会请求 **`POST /auth/phone-login`**；注册且首页身份为**支教志愿者**时，在写入 Token 后依次调用 **`POST /auth/role-apply`（`targetRole: TEACHER`）** 与**第二次 `phone-login`**，以拿带教师角色的 JWT。学员注册不必再调 `role-apply`（后端新用户默认可视为学员 role=3）。
+- **管理端**（学校老师/平台运营）：若首页选了管理员，但手机账号在库中不是 role 0/1，会弹窗；可用「仅本机演示」回退为原有本地登录。**真实管理员**请在后端为手机号建好 role=0/1 的账号，再与首页选项一致时即可直接用手机号登录。
+- **退出登录**：`app.logout` 在存在 `token` 时会 **`POST /auth/logout`**（再清本地态）。
+- **其它业务**（**管理端待审/区域**等）大量仍以**本机** `onboardingStore` 等为主，与 `zhixingtongyi-zyh` 的 `AdminController` 并非一一对应，需另排期对齐。**入驻**在已登录且 `miniprogram/config/demoBackend.js` 中 `USE_BACKEND_ONBOARDING: true` 时，**学员/支教志愿者**会先用 JWT 调 **`POST/PUT /student|teacher/profile`**（学员再 **`POST /student/profile/submit`**），成功后再**双写**本机 `onboardingStore` + `userProfileStore`；接口失败可弹窗选择**仅本机保存**。
+- **演示配置**（`miniprogram/config/demoBackend.js`）：
+  - **`DEMO_L2_USER_ID`**：学员档案 `bindAdminId` 用的二级管理员 `user.id`，需与**你本机 MySQL** 中已有二级管理员主键一致（默认 `1`；不一致请改配置）。
+  - **学校与 mock**：`utils/schoolsMock.js` 中学校 `id` 为 **数字 1–10**（与库里 `school` 表主键**自行对齐**；联调前请保证库中存在对应行，否则 `schoolId` 会不合法）。
+  - **匹配**（`USE_BACKEND_MATCH`）：有 JWT 时，**学员**在匹配中心拉取 **`GET /match/recommendations`**，「申请结对」走 **`POST /match/apply`**（`teacherId`）；**支教志愿者**在「结对待办」拉取 **`GET /match/pending-applications`**，接受/拒绝走 **`PUT /match/application/{id}/process`**。失败时各页回退本地 mock/种子数据。后端仅对学员开放推荐接口，**志愿者侧推荐列表仍为本地演示**。
+  - **会议**（`USE_BACKEND_MEETING`）：有 JWT 时，**列表**走 **`GET /meetings/my`**；**新建**在结对下拉中使用 **`GET /match/my-pairs?status=1`**（`matchPairId` 为数据库**数字主键**，与本地 `pair_001` 类 mock **不同**），提交 **`POST /meetings`**（`topic`、开始/结束时间字符串、`meetingLink` 必填；结束时间取开始时间 +1 小时）。成功即返回列表，不双写本机；失败可选**仅本机**写入 `meetingStore`。无 JWT 或关闭开关时**全部**为原本地登记逻辑。
+  - **解绑**（`USE_BACKEND_UNBIND`）：有 JWT 时，**学员/志愿者**解绑页用 **`GET /match/my-pairs`** 与 **`unbindRequest` / `unbindConfirm` / `unbindProgress`**；结对 id 为**后端 Long**。**受援方 L2** 解绑待办仍走本机 `pairingStore` 演示。失败时回退本地结对数据。
+  - **通知**（`USE_BACKEND_NOTIFICATION`）：`设置 → 消息通知` 使用 **`GET /notifications`**、单条/批量已读；关闭或无 token 时仅提示说明文案。
+  - **支教·持续匹配**（`USE_BACKEND_TEACHER_CONTINUOUS_MATCH`）：`资料与账号` 页对**支教志愿者**显示开关，拉取 `GET /teacher/profile` 中 `continuousMatch`，变更时 **`PUT /teacher/continuous-match`**。以下接口仍仅封装于 `api.js`、**业务页未接**：`GET /match/{pairId}` 结对详情、`GET /meetings` 与 `GET /{id}` 详情及 `PUT .../status`（管理/详情流）、`POST /auth/wx-login`·`/mock-login`·`/auth/refresh` 等，见代码检索。
+
+## WeUI 扩展库（主路径示范 UI）
+
+- **如何开启**：`miniprogram/app.json` 中已配置 `"useExtendedLib": { "weui": true }`（[官方说明](https://developers.weixin.qq.com/miniprogram/dev/platform-capabilities/extended/weui/)），**不占用主包代码体积**，由基础能力提供 `weui-miniprogram/...` 路径。
+- **本工程已用组件**（在对应页的 `index.json` → `usingComponents` 中按页注册）：
+
+| 页面 | 文件路径 | 组件与用途（简述） |
+|------|----------|-------------------|
+| 首页 | `pages/common/home/index` | 选身份为**自建卡片列表**（非 WeUI Cell）；头部区 `mp-badge`、`mp-icon` 点缀 |
+| 注册/登录 | `pages/common/auth/index` | `mp-toptips` 校验与提示；`mp-cells` / `mp-cell` 身份摘要 |
+| 工作台 | `pages/common/workbench/index` | `mp-badge` 角标与数量；`mp-loading` 下拉刷新遮罩 |
+| 底栏 | `miniprogram/custom-tab-bar` | 仅 `wxss` 加强（毛玻璃、选中态 pill），**未**用 WeUI 图标组件，仍用原有 PNG 图标 |
+
+- **全局自建样式**（与四角色色板配合）：`miniprogram/app.wxss` 中 `.shell-mesh`、`.card-tier` 等分层背景与卡片壳；`styles/role-theme.wxss` 继续提供 `--ui-*` 变量。
+- **自测注意**：在开发者工具中打开**首页 / 注册登录 / 工作台**与**自定义底栏**各角色，确认首页 WeUI 点缀与 `mp-toptips` 等在真机/模拟器下展示正常。若与「增强编译」等选项冲突，可在「项目详情 → 本地设置」中关闭相关实验项后重试（与仓库内 `WAServiceMainContext` timeout 说明类同）。
 
 ## 主要页面入口
 

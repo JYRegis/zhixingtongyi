@@ -1,4 +1,4 @@
-<view class="page-shell">
+<view class="page-shell {{_roleThemeClass}}">
   <view class="container apply-page">
     <view class="page-hero">
       <view class="page-hero-title">{{headerTitle}}</view>
@@ -88,7 +88,7 @@
 
       <view class="field" wx:if="{{role === 'student'}}">
         <text class="field-label">可在线 / 希望上课时间 <text class="field-req">*</text></text>
-        <view class="field-chips field-chips--wrap" >
+        <view class="field-chips field-chips--wrap field-chips--time" >
           <view
             class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
             wx:for="{{weekChips}}"
@@ -97,7 +97,7 @@
             bindtap="onToggleWeek"
             >{{item.name}}</view>
         </view>
-        <view class="field-chips field-chips--wrap">
+        <view class="field-chips field-chips--wrap field-chips--time">
           <view
             class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
             wx:for="{{slotChips}}"
@@ -110,7 +110,7 @@
 
       <view class="field" wx:if="{{role === 'teacher' || role === 'admin_level_2'}}">
         <text class="field-label">{{timeBlockTitle}} <text class="field-req">*</text></text>
-        <view class="field-chips field-chips--wrap" >
+        <view class="field-chips field-chips--wrap field-chips--time" >
           <view
             class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
             wx:for="{{weekChips}}"
@@ -119,7 +119,7 @@
             bindtap="onToggleWeek"
             >{{item.name}}</view>
         </view>
-        <view class="field-chips field-chips--wrap">
+        <view class="field-chips field-chips--wrap field-chips--time">
           <view
             class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
             wx:for="{{slotChips}}"

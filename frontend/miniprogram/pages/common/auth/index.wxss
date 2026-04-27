@@ -1,8 +1,40 @@
 .auth-page {
+  position: relative;
   min-height: 100vh;
-  background: linear-gradient(180deg, #eef4ff 0%, #f5f7fa 30%, #f5f7fa 100%);
-  padding: 0 40rpx 80rpx;
+  background: linear-gradient(180deg, var(--ui-auth-bg-1) 0%, var(--ui-auth-bg-2) 32%, #f5f5f4 100%);
+  padding: 0 32rpx 80rpx;
   box-sizing: border-box;
+  overflow: hidden;
+}
+
+.auth-bg-orn {
+  position: absolute;
+  top: -20%;
+  right: -25%;
+  width: 80%;
+  height: 55%;
+  background: radial-gradient(ellipse, var(--ui-radial) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-content {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-toptips {
+  z-index: 12000;
+}
+
+.auth-digest {
+  margin: 0 0 20rpx;
+}
+
+.auth-digest-cells {
+  background: transparent !important;
+  border-radius: 24rpx;
+  overflow: hidden;
 }
 
 /* ---------- top: avatar + title ---------- */
@@ -11,8 +43,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 80rpx;
-  padding-bottom: 48rpx;
+  padding-top: 56rpx;
+  padding-bottom: 24rpx;
 }
 
 .auth-avatar-row {
@@ -69,7 +101,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  background: linear-gradient(135deg, var(--ui-auth-avatar-empty-1) 0%, var(--ui-auth-avatar-empty-2) 100%);
 }
 
 .auth-avatar-icon {
@@ -103,8 +135,8 @@
 .auth-top-role {
   margin-top: 12rpx;
   font-size: 26rpx;
-  color: #3b82f6;
-  background: #eff6ff;
+  color: var(--ui-link);
+  background: var(--ui-chip-bg);
   padding: 8rpx 24rpx;
   border-radius: 999rpx;
 }
@@ -215,13 +247,13 @@
 }
 
 .auth-saved-item--on {
-  background: #eff6ff;
-  color: #2563eb;
+  background: var(--ui-saved-on-bg);
+  color: var(--ui-saved-on-fg);
 }
 
 .auth-check-mark {
   font-size: 28rpx;
-  color: #2563eb;
+  color: var(--ui-link);
 }
 
 /* ---------- or divider ---------- */
@@ -253,12 +285,12 @@
   height: 96rpx;
   line-height: 96rpx;
   border-radius: 48rpx;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--ui-primary) 0%, var(--ui-primary-mid) 100%);
   color: #fff;
   font-size: 32rpx;
   font-weight: 700;
   border: none;
-  box-shadow: 0 16rpx 36rpx rgba(37, 99, 235, 0.25);
+  box-shadow: 0 16rpx 36rpx rgba(var(--ui-hero-shadow), 0.28);
 }
 
 .auth-submit-btn::after {
@@ -292,7 +324,7 @@
 
 .auth-flow-text {
   font-size: 28rpx;
-  color: #3b82f6;
+  color: var(--ui-link);
   text-decoration: underline;
   text-underline-offset: 6rpx;
 }

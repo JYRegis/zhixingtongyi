@@ -41,11 +41,13 @@ const TAB_PLATFORM = {
 };
 
 const { getByPhone } = require("../utils/userProfileStore");
+const { getRoleThemeClass, getEffectiveRoleForTheme, getPageRoleThemeClass } = require("../utils/roleTheme");
 
 Component({
   data: {
     list: TAB,
-    selected: 0
+    selected: 0,
+    themeClass: "theme-guest"
   },
   lifetimes: {
     attached() {
@@ -60,7 +62,7 @@ Component({
   methods: {
     sync() {
       const app = getApp();
-      const role = (app && app.globalData && app.globalData.role) || "";
+      const role = getEffectiveRoleForTheme() || "";
       const u = (app && app.globalData && app.globalData.userInfo) || {};
       const p = getByPhone(u.phone) || u;
       const l2NoMatchTab =
@@ -87,9 +89,11 @@ Component({
           break;
         }
       }
+      const themeClass = getPageRoleThemeClass();
       this.setData({
         list: list,
-        selected: selected >= 0 ? selected : 0
+        selected: selected >= 0 ? selected : 0,
+        themeClass: themeClass
       });
     },
     onSwitchTab(e) {

@@ -7,9 +7,43 @@ const {
   formatMeetingTime,
   canCreateMeetingRole
 } = require("../../utils/meetingStore");
+const { meetingItemVoToListRow } = require("../../utils/meetingDtoMappers");
+const { USE_BACKEND_MEETING } = require("../../config/demoBackend");
+const { meetingApi } = require("../../utils/api");
 
 const { to } = require("../../utils/nav");
 const { syncCustomTabBar } = require("../../utils/customTabBar");
+
+function renderMeetingPage(self, r, p, u, useServerList) {
+  const phone = u && u.phone ? String(u.phone) : "";
+  const list = useServerList
+    ? self._serverMeetingRows || []
+    : getMeetingsForUser(phone, r, p);
+  const { nextMeeting, history } = splitNextAndHistory(list, Date.now());
+  let next2 = null;
+  if (nextMeeting) {
+    next2 = {
+      ...nextMeeting,
+      startTime: formatMeetingTime(nextMeeting.startTimeMs)
+    };
+  }
+  const his = (history || []).map((h) => {
+    return {
+      ...h,
+      startTime: formatMeetingTime(h.startTimeMs)
+    };
+  });
+  const can = canCreateMeetingRole(r);
+  self.setData({
+    role: r,
+    roleName: ROLE_DISPLAY_NAME[r] || "用户",
+    canCreate: can,
+    nextMeeting: next2,
+    history: his,
+    empty: !next2 && (!his || his.length === 0)
+  });
+  syncCustomTabBar();
+}
 
 Page({
   data: {
@@ -20,7 +54,9 @@ Page({
     history: [],
     empty: false
   },
+  _serverMeetingRows: null,
   onShow() {
+    const self = this;
     checkOnboardingOrRedirect("pages/meeting/index");
     mergeFromStorageIntoApp();
     const app0 = getApp();
@@ -31,32 +67,26 @@ Page({
       wx.switchTab({ url: "/pages/common/workbench/index" });
       return;
     }
-    const phone = u && u.phone ? String(u.phone) : "";
-    const list = getMeetingsForUser(phone, r, p);
-    const { nextMeeting, history } = splitNextAndHistory(list, Date.now());
-    let next2 = null;
-    if (nextMeeting) {
-      next2 = {
-        ...nextMeeting,
-        startTime: formatMeetingTime(nextMeeting.startTimeMs)
-      };
+    const token = (app0.globalData && app0.globalData.token) || wx.getStorageSync("token") || "";
+    const tryRemote = USE_BACKEND_MEETING && token;
+    if (tryRemote) {
+      meetingApi
+        .myMeetings()
+        .then(function (rows) {
+          const list = (rows || []).map(function (vo) {
+            return meetingItemVoToListRow(vo);
+          });
+          self._serverMeetingRows = list;
+          renderMeetingPage(self, r, p, u, true);
+        })
+        .catch(function () {
+          self._serverMeetingRows = null;
+          renderMeetingPage(self, r, p, u, false);
+        });
+      return;
     }
-    const his = (history || []).map((h) => {
-      return {
-        ...h,
-        startTime: formatMeetingTime(h.startTimeMs)
-      };
-    });
-    const can = canCreateMeetingRole(r);
-    this.setData({
-      role: r,
-      roleName: ROLE_DISPLAY_NAME[r] || "用户",
-      canCreate: can,
-      nextMeeting: next2,
-      history: his,
-      empty: !next2 && (!his || his.length === 0)
-    });
-    syncCustomTabBar();
+    this._serverMeetingRows = null;
+    renderMeetingPage(this, r, p, u, false);
   },
   onCreate() {
     to("/pages/meeting/create/index");

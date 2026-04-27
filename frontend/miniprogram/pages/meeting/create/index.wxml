@@ -1,4 +1,4 @@
-<view class="page-shell create-page">
+<view class="page-shell create-page {{_roleThemeClass}}">
   <view class="container">
     <view class="card" style="margin-top: 16rpx;">
       <view class="title">新建会议</view>
@@ -19,10 +19,7 @@
       <view class="field field--control" wx:if="{{pairOptions.length}}">
         <text class="field-label">关联结对 <text class="field-req" wx:if="{{pairRequired}}">*</text></text>
         <picker mode="selector" range="{{pairOptions}}" range-key="name" value="{{pairIndex}}" bindchange="onPickPair">
-          <view
-            class="field-input apply-picker-line create-picker-line"
-            style="line-height: 1.4;"
-            >{{pairLineDisplay}}</view>
+          <view class="field-input create-picker-line">{{pairLineDisplay}}</view>
         </picker>
       </view>
       <view class="field field--control">

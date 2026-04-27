@@ -1,7 +1,7 @@
 const { to } = require("../../../utils/nav");
 const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
-const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
+const { getByPhone } = require("../../../utils/userProfileStore");
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
 
 const roleHeroMap = {
@@ -77,17 +77,34 @@ Page({
     nickname: "知行同驿",
     isLoggedIn: false,
     heroTitle: "",
-    menuList: []
+    menuList: [],
+    loading: false,
+    _roleThemeClass: ""
   },
   onShow() {
+    // checkOnboardingOrRedirect 内已 mergeFromStorageIntoApp；此处勿再于 check 后二次 merge，避免旧版 {remote,u} 合并覆盖档案里的 onboardingStatus
     checkOnboardingOrRedirect("pages/common/workbench/index");
     syncCustomTabBar();
-    mergeFromStorageIntoApp();
     this.syncPageData();
+    // 确保页面显示时更新主题颜色
+    const app = getApp();
+    const role = app.globalData.role || "";
+    const themeClass = require("../../../utils/roleTheme").getRoleThemeClass(role);
+    if (this.data._roleThemeClass !== themeClass) {
+      this.setData({ _roleThemeClass: themeClass });
+    }
   },
   onPullDownRefresh() {
+    this.setData({ loading: true });
     this.syncPageData();
-    wx.stopPullDownRefresh();
+    setTimeout(() => {
+      this.setData({ loading: false });
+      try {
+        wx.stopPullDownRefresh();
+      } catch (e) {
+        // ignore
+      }
+    }, 220);
   },
   syncPageData() {
     const app = getApp();

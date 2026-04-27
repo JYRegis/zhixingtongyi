@@ -1,6 +1,6 @@
 const { mergeFromStorageIntoApp } = require("./userProfileStore");
-const { ensureStatusFromApplications } = require("./onboardingStore");
-
+const { ingestDebugLog } = require("./debugSessionIngest");
+const { ensureStatusFromApplications, getApplications } = require("./onboardingStore");
 const ALLOWED_NO_ONBOARD = new Set([
   "pages/common/home/index",
   "pages/common/auth/index",
@@ -34,9 +34,27 @@ function checkOnboardingOrRedirect(pageRoute) {
   if (!r || !u || !u.phone) {
     return;
   }
-  ensureStatusFromApplications(String(u.phone));
+  const phone0 = String(u.phone);
+  ensureStatusFromApplications(phone0);
   const st = (app.globalData.userInfo && app.globalData.userInfo.onboardingStatus) || "none";
   const path = (pageRoute || "").replace(/^\//, "");
+  // #region agent log
+  try {
+    var apps = getApplications() || [];
+    var appCount = apps.filter(function (a) {
+      return String(a.applicantId) === String(phone0);
+    }).length;
+    ingestDebugLog({
+      hypothesisId: "H4",
+      location: "onboardingGuard.js:checkOnboardingOrRedirect",
+      message: "guard",
+      data: { st: st, path: path, appCountForPhone: appCount },
+      runId: "pre-fix"
+    });
+  } catch (e) {
+    // ignore
+  }
+  // #endregion
 
   if (st === "approved") {
     return;

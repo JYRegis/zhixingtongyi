@@ -1,5 +1,5 @@
 const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
-const { getPairedList } = require("../../../utils/chatPartners");
+const { getPairedListForUser } = require("../../../utils/chatPartners");
 const {
   getActivePair,
   getPairById,
@@ -15,6 +15,9 @@ const {
 } = require("../../../utils/pairingStore");
 const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
+const { USE_BACKEND_UNBIND } = require("../../../config/demoBackend");
+const { matchApi } = require("../../../utils/api");
+const { pairVosToUnbindList, unbindProgressToActiveRequest } = require("../../../utils/unbindDtoMappers");
 
 function formatCreatedAt(ts) {
   if (!ts) {
@@ -29,12 +32,13 @@ function formatCreatedAt(ts) {
 }
 
 /**
- * 与「聊天」列表同源的结对行 + pairId（学员 / 志愿者端）
+ * 与「聊天」列表同源的结对行 + pairId（学员 / 志愿者端，仅与当前账号演示身份相关的结对）
  * @param {string} role
+ * @param {string} phone
  * @returns {any[]}
  */
-function buildStudentTeacherPairList(role) {
-  const pl = getPairedList(role) || [];
+function buildStudentTeacherPairList(role, phone) {
+  const pl = getPairedListForUser(phone, role) || [];
   return pl.map((row) => {
     const pairId = getPairIdForRolePartner(role, row.partnerId);
     const meta = (pairId && getPairById(pairId)) || null;
@@ -66,6 +70,7 @@ Page({
     l2SelectedId: "",
     l2L2Name: "—",
     selectedPairId: "",
+    _unbindSource: "local",
     pairInfo: {
       partnerName: "",
       subject: "",
@@ -114,13 +119,65 @@ Page({
       this._buildL2RecipientView(prof2, r, u);
       return;
     }
-    const pairList = buildStudentTeacherPairList(r);
+    const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    const self = this;
+    if (USE_BACKEND_UNBIND && token && (r === "student" || r === "teacher")) {
+      matchApi
+        .myPairs()
+        .then(function (pairs) {
+          const pl = pairVosToUnbindList(pairs);
+          let selectedPairId = self.data.selectedPairId || "";
+          if (!selectedPairId && pl.length) {
+            selectedPairId = pl[0].pairId;
+          } else if (selectedPairId && !pl.some((x) => x.pairId === selectedPairId)) {
+            selectedPairId = (pl[0] && pl[0].pairId) || "";
+          }
+          self.setData({ _unbindSource: "api" });
+          self._applySelectionSt(
+            {
+              role: r,
+              roleName: ROLE_DISPLAY_NAME[r] || "用户",
+              canInitiateUnbind: r === "student" || r === "teacher",
+              isL2Recipient: false,
+              l2RequestList: [],
+              l2SelectedId: "",
+              pairList: pl
+            },
+            selectedPairId
+          );
+        })
+        .catch(function () {
+          const pairList = buildStudentTeacherPairList(r, u.phone || "");
+          let selectedPairId = self.data.selectedPairId || "";
+          if (!selectedPairId && pairList && pairList.length) {
+            selectedPairId = pairList[0].pairId;
+          } else if (selectedPairId && !pairList.some((x) => x.pairId === selectedPairId)) {
+            selectedPairId = (pairList[0] && pairList[0].pairId) || "";
+          }
+          self.setData({ _unbindSource: "local" });
+          self._applySelectionSt(
+            {
+              role: r,
+              roleName: ROLE_DISPLAY_NAME[r] || "用户",
+              canInitiateUnbind: r === "student" || r === "teacher",
+              isL2Recipient: false,
+              l2RequestList: [],
+              l2SelectedId: "",
+              pairList: pairList
+            },
+            selectedPairId
+          );
+        });
+      return;
+    }
+    const pairList = buildStudentTeacherPairList(r, u.phone || "");
     let selectedPairId = this.data.selectedPairId || "";
     if (!selectedPairId && pairList && pairList.length) {
       selectedPairId = pairList[0].pairId;
     } else if (selectedPairId && !pairList.some((x) => x.pairId === selectedPairId)) {
       selectedPairId = (pairList[0] && pairList[0].pairId) || "";
     }
+    this.setData({ _unbindSource: "local" });
     this._applySelectionSt(
       {
         role: r,
@@ -220,6 +277,10 @@ Page({
     this._applySelectionSt({}, id);
   },
   _applySelectionSt(mergeData, selectedPairId) {
+    if (this.data._unbindSource === "api") {
+      this._applySelectionApi(mergeData, selectedPairId);
+      return;
+    }
     const next = { ...(mergeData || {}) };
     if (selectedPairId) {
       next.selectedPairId = selectedPairId;
@@ -256,6 +317,59 @@ Page({
       l2Name: l2Phone ? "学校老师（" + l2Phone.slice(-4) + "）" : "无对口 / 本端可略"
     });
   },
+  _applySelectionApi(mergeData, selectedPairId) {
+    const self = this;
+    const next = { ...(mergeData || {}) };
+    if (selectedPairId) {
+      next.selectedPairId = selectedPairId;
+    } else if (next.selectedPairId == null) {
+      next.selectedPairId = this.data.selectedPairId;
+    }
+    const sid = String(next.selectedPairId || this.data.selectedPairId || "");
+    const pl = (mergeData && mergeData.pairList) != null ? mergeData.pairList : this.data.pairList;
+    const row = (pl || []).find(function (x) {
+      return x && String(x.pairId) === sid;
+    });
+    const p = row || {};
+    const pairInfo = {
+      studentName: p._studentId != null ? "学员（ID " + p._studentId + "）" : "—",
+      partnerName: p._teacherId != null ? "志愿者（ID " + p._teacherId + "）" : "—",
+      subject: "—",
+      startDate: "—",
+      status: p.status != null ? p.status : "—"
+    };
+    const app = getApp();
+    const u = (app && app.globalData && app.globalData.userInfo) || {};
+    this.setData({
+      ...next,
+      selectedPairId: sid,
+      pairInfo: pairInfo,
+      schoolId: p.schoolId,
+      l2Phone: "",
+      l2Name: "（远程）",
+      activeRequest: null
+    });
+    const pid = parseInt(sid, 10);
+    if (isNaN(pid) || pid <= 0) {
+      return;
+    }
+    matchApi
+      .unbindProgress(pid)
+      .then(function (prog) {
+        if (prog && (prog.matchStatus === 3 || prog.matchStatus === 5)) {
+          const ar = unbindProgressToActiveRequest(prog, {
+            studentId: p._studentId,
+            teacherId: p._teacherId
+          });
+          self.setData({ activeRequest: ar });
+        } else {
+          self.setData({ activeRequest: null });
+        }
+      })
+      .catch(function () {
+        self.setData({ activeRequest: null });
+      });
+  },
   onReasonInput(e) {
     this.setData({ reason: (e && e.detail && e.detail.value) || "" });
   },
@@ -271,6 +385,43 @@ Page({
     }
     if (!this.data.reason.trim()) {
       wx.showToast({ title: "请填写解绑原因", icon: "none" });
+      return;
+    }
+    const self = this;
+    if (this.data._unbindSource === "api") {
+      const row = (this.data.pairList || []).find(function (x) {
+        return x && String(x.pairId) === String(self.data.selectedPairId);
+      });
+      if (!row) {
+        wx.showToast({ title: "数据异常", icon: "none" });
+        return;
+      }
+      if (Number(row.matchStatus) === 3) {
+        wx.showToast({ title: "该结对已在解绑流程中", icon: "none" });
+        return;
+      }
+      if (Number(row.matchStatus) !== 1) {
+        wx.showToast({ title: "仅生效中的结对可发起解绑", icon: "none" });
+        return;
+      }
+      const pid = parseInt(self.data.selectedPairId, 10);
+      wx.showLoading({ title: "提交中", mask: true });
+      matchApi
+        .unbindRequest(pid)
+        .then(function () {
+          wx.hideLoading();
+          self.setData({ reason: "" });
+          wx.showToast({ title: "已提交解绑", icon: "success" });
+          self.onShow();
+        })
+        .catch(function (e) {
+          wx.hideLoading();
+          wx.showModal({
+            title: "提交失败",
+            content: (e && e.message) || "请稍后重试",
+            showCancel: false
+          });
+        });
       return;
     }
     const app = getApp();
@@ -304,6 +455,29 @@ Page({
     this._agree("l2");
   },
   onRejectUnbind() {
+    if (this.data._unbindSource === "api" && this.data.activeRequest && (this.data.role === "student" || this.data.role === "teacher")) {
+      const pairId = parseInt(this.data.selectedPairId, 10);
+      const r = this.data.role;
+      const roleStr = r === "student" ? "STUDENT" : "TEACHER";
+      const self = this;
+      wx.showLoading({ title: "处理中", mask: true });
+      matchApi
+        .unbindConfirm(pairId, {
+          action: "reject",
+          role: roleStr,
+          rejectReason: "有异议/暂不同意（小程序）"
+        })
+        .then(function () {
+          wx.hideLoading();
+          wx.showToast({ title: "已记录", icon: "none" });
+          self.onShow();
+        })
+        .catch(function (e) {
+          wx.hideLoading();
+          wx.showToast({ title: (e && e.message) || "失败", icon: "none" });
+        });
+      return;
+    }
     const re = this.data.activeRequest;
     if (!re || !re.id) {
       return;
@@ -316,6 +490,35 @@ Page({
   _agree(party) {
     const app = getApp();
     const r = this.data.role;
+    if (this.data._unbindSource === "api" && (party === "student" || party === "teacher")) {
+      if (party === "student" && r !== "student") {
+        wx.showToast({ title: "请用学员端确认", icon: "none" });
+        return;
+      }
+      if (party === "teacher" && r !== "teacher") {
+        wx.showToast({ title: "请用志愿者端确认", icon: "none" });
+        return;
+      }
+      const pairId = parseInt(this.data.selectedPairId, 10);
+      if (isNaN(pairId)) {
+        return;
+      }
+      const roleStr = r === "student" ? "STUDENT" : "TEACHER";
+      const self = this;
+      wx.showLoading({ title: "处理中", mask: true });
+      matchApi
+        .unbindConfirm(pairId, { action: "accept", role: roleStr })
+        .then(function () {
+          wx.hideLoading();
+          wx.showToast({ title: "已记录你的确认", icon: "success" });
+          self.onShow();
+        })
+        .catch(function (e) {
+          wx.hideLoading();
+          wx.showToast({ title: (e && e.message) || "失败", icon: "none" });
+        });
+      return;
+    }
     if (party === "student" && r !== "student") {
       wx.showToast({ title: "请用学员端确认", icon: "none" });
       return;

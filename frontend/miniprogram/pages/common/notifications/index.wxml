@@ -1,0 +1,35 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="notif-page container">
+    <view wx:if="{{!loggedIn}}" class="card" style="text-align: center; padding: 40rpx; color: #98a2b3;">
+      请先登录后查看系统通知
+    </view>
+    <block wx:elif="{{useApi}}">
+      <view class="notif-bar card" wx:if="{{list.length}}">
+        <button class="btn-secondary notif-btn-all" size="mini" bindtap="onMarkAllRead">全部标为已读</button>
+      </view>
+      <view class="card" wx:if="{{!list.length && !loading}}">
+        <view class="section-desc" style="text-align: center; color: #98a2b3; padding: 32rpx 0;">暂无通知</view>
+      </view>
+      <view class="notif-list">
+        <view
+          class="notif-item card"
+          wx:for="{{list}}"
+          wx:key="id"
+          data-id="{{item.id}}"
+          bindtap="onRowTap"
+        >
+          <view class="notif-item-title">{{item.titleText}}</view>
+          <view class="notif-item-body">{{item.contentText}}</view>
+          <view class="notif-item-meta">
+            <text class="notif-time">{{item.timeText}}</text>
+            <text class="notif-unread" wx:if="{{!item.isRead}}">未读</text>
+            <text class="notif-read" wx:else>已读</text>
+          </view>
+        </view>
+      </view>
+    </block>
+    <view wx:else class="card" style="text-align: center; padding: 40rpx; color: #98a2b3;">
+      已关闭「远程通知」或当前无网络，此处为占位；可在 config/demoBackend.js 中开启 USE_BACKEND_NOTIFICATION
+    </view>
+  </view>
+</view>

@@ -1,4 +1,4 @@
-<view class="page-shell">
+<view class="page-shell {{_roleThemeClass}}">
   <view class="settings-page">
     <view class="page-hero settings-main-hero">
       <view class="page-hero-title">{{heroTitle}}</view>
@@ -24,6 +24,10 @@
         <view class="settings-row settings-row-btn" bindtap="onGoAccountProfile">
           <text class="settings-row-title">资料与账号</text>
           <text class="settings-row-extra">头像、昵称、手机、资料表 →</text>
+        </view>
+        <view class="settings-row settings-row-btn" bindtap="onGoNotifications">
+          <text class="settings-row-title">消息通知</text>
+          <text class="settings-row-extra">系统通知列表 →</text>
         </view>
       </block>
     </view>

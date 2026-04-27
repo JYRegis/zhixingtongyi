@@ -1,4 +1,4 @@
-const { saveProfile, listL2Admins } = require("./userProfileStore");
+const { saveProfile, listL2Admins, getByPhone } = require("./userProfileStore");
 const { getSchoolName } = require("./schoolsMock");
 
 const APPS_KEY = "zhixing_onboarding_applications";
@@ -228,6 +228,11 @@ function ensureStatusFromApplications(phone) {
   if (!phone) {
     return;
   }
+  /** 后端或 _sync 已写入 approved 时，勿被本机旧申请队列覆盖为 pending */
+  const prof = getByPhone(String(phone));
+  if (prof && prof.onboardingStatus === "approved") {
+    return;
+  }
   const byUser = getApplications().filter((a) => a.applicantId === String(phone));
   if (byUser.length === 0) {
     return;
@@ -309,6 +314,19 @@ function getApprovedTeachersReviewedByVolunteerL2(phone, l2Profile) {
   });
 }
 
+/**
+ * 删除某手机号在本地队列中的入驻申请（避免与后端已审态互相覆盖；对接真后端登录后调用）
+ * @param {string} phone
+ */
+function removeApplicationsForApplicant(phone) {
+  if (!phone) {
+    return;
+  }
+  const p = String(phone);
+  const list = getApplications().filter((a) => String(a.applicantId) !== p);
+  setApplications(list);
+}
+
 module.exports = {
   getApplications,
   getPendingApplications,
@@ -321,6 +339,7 @@ module.exports = {
   getApprovedStudentsReviewedByRecipientL2,
   getApprovedTeachersReviewedByVolunteerL2,
   ensureStatusFromApplications,
+  removeApplicationsForApplicant,
   exportAllForDebug,
   replaceApplicationsForDev
 };

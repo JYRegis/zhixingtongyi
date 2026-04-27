@@ -48,7 +48,7 @@
 
 .match-proxy-row:active {
   background: #eff6ff;
-  border-color: #3b82f6;
+  border-color: var(--ui-link);
 }
 
 .match-proxy-head {

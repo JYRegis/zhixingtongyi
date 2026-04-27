@@ -1,4 +1,8 @@
 {
   "navigationBarTitleText": "知行同驿",
-  "navigationStyle": "default"
+  "navigationStyle": "default",
+  "usingComponents": {
+    "mp-badge": "weui-miniprogram/badge/badge",
+    "mp-icon": "weui-miniprogram/icon/icon"
+  }
 }

@@ -45,6 +45,13 @@ Page({
     }
     to("/pages/common/profile/index");
   },
+  onGoNotifications() {
+    if (!this.data.loggedIn) {
+      wx.showToast({ title: "请先登录", icon: "none" });
+      return;
+    }
+    to("/pages/common/notifications/index");
+  },
   onLogout() {
     wx.showModal({
       title: "退出登录",

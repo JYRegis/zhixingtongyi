@@ -40,7 +40,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--ui-primary) 0%, var(--ui-primary-mid) 100%);
   color: #fff;
   font-size: 44rpx;
   font-weight: 600;
@@ -193,4 +193,44 @@
 
 .profile-submit-btn {
   margin-top: 24rpx;
+}
+
+/* 时间选择控件样式 - 最终增强 */
+.profile-page .form-row--time-chips {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-page .form-time-chips-wrap {
+  margin-top: 10rpx;
+}
+
+.profile-page .form-time-chips-title {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+}
+
+.profile-page .form-time-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.profile-page .form-time-chip {
+  padding: 10rpx 20rpx;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #4b5563;
+  background-color: #f3f4f6;
+  min-width: 100rpx;
+  text-align: center;
+}
+
+.profile-page .form-time-chip--on {
+  border-color: var(--ui-primary) !important;
+  color: var(--ui-primary) !important;
+  background-color: var(--ui-chip-bg) !important;
 }

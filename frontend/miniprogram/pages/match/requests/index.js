@@ -1,5 +1,8 @@
 const { formatSavedTimeForDisplay } = require("../../../utils/classTimeOptions");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
+const { USE_BACKEND_MATCH } = require("../../../config/demoBackend");
+const { matchApi } = require("../../../utils/api");
+const { mapPendingApplicationsToRows } = require("../../../utils/matchDtoMappers");
 
 function formatApplyAt(ts) {
   if (ts == null) {
@@ -62,7 +65,8 @@ Page({
     pendingList: [],
     isVolunteer: true,
     rejectReason: "",
-    activeRejectId: null
+    activeRejectId: null,
+    _pendingSource: "seed"
   },
   onLoad() {
     this._pending = SEED.map((r) => ({ ...r }));
@@ -83,6 +87,37 @@ Page({
       return;
     }
     this._viewerRole = r;
+    const self = this;
+    const token = (app0.globalData && app0.globalData.token) || wx.getStorageSync("token") || "";
+    const useApi = USE_BACKEND_MATCH && token && r === "teacher";
+    if (useApi) {
+      matchApi
+        .pendingApplications()
+        .then(function (list) {
+          const rows = mapPendingApplicationsToRows(list);
+          self._pending = rows;
+          const sorted = rows.slice().sort((a, b) => (a.appliedAt || 0) - (b.appliedAt || 0));
+          self.setData({
+            isVolunteer: true,
+            pendingList: sorted.map((x) => mapItem(x, "teacher")),
+            _pendingSource: "api"
+          });
+        })
+        .catch(function () {
+          if (!self._pending) {
+            self._pending = SEED.map((x) => ({ ...x }));
+          }
+          const sorted0 = self._pending
+            .slice()
+            .sort((a, b) => (a.appliedAt || 0) - (b.appliedAt || 0));
+          self.setData({
+            isVolunteer: r === "teacher",
+            pendingList: sorted0.map((x) => mapItem(x, r)),
+            _pendingSource: "seed"
+          });
+        });
+      return;
+    }
     if (!this._pending) {
       this._pending = SEED.map((x) => ({ ...x }));
     }
@@ -91,7 +126,8 @@ Page({
       .sort((a, b) => (a.appliedAt || 0) - (b.appliedAt || 0));
     this.setData({
       isVolunteer: r === "teacher",
-      pendingList: sorted.map((x) => mapItem(x, r))
+      pendingList: sorted.map((x) => mapItem(x, r)),
+      _pendingSource: "seed"
     });
   },
   onAccept(e) {
@@ -99,6 +135,36 @@ Page({
       return;
     }
     const id = e.currentTarget.dataset.id;
+    const fromApi = this.data._pendingSource === "api";
+    if (fromApi) {
+      const self = this;
+      const aid = Number(id);
+      wx.showLoading({ title: "处理中", mask: true });
+      matchApi
+        .process(aid, { action: "accept" })
+        .then(function () {
+          wx.hideLoading();
+          return matchApi.pendingApplications();
+        })
+        .then(function (list) {
+          const rows = mapPendingApplicationsToRows(list);
+          self._pending = rows;
+          const sorted = rows.slice().sort((a, b) => (a.appliedAt || 0) - (b.appliedAt || 0));
+          self.setData({
+            pendingList: sorted.map((x) => mapItem(x, "teacher"))
+          });
+          wx.showToast({ title: "已接受", icon: "success" });
+        })
+        .catch(function (err) {
+          wx.hideLoading();
+          wx.showModal({
+            title: "操作失败",
+            content: (err && err.message) || "请稍后重试",
+            showCancel: false
+          });
+        });
+      return;
+    }
     if (!this._pending) {
       this._pending = SEED.map((r) => ({ ...r }));
     }
@@ -131,7 +197,7 @@ Page({
     });
   },
   onRejectConfirm() {
-    const { activeRejectId, rejectReason } = this.data;
+    const { activeRejectId, rejectReason, _pendingSource } = this.data;
     if (!activeRejectId) {
       return;
     }
@@ -140,6 +206,37 @@ Page({
         title: "请填写拒绝理由",
         icon: "none"
       });
+      return;
+    }
+    const self = this;
+    if (_pendingSource === "api") {
+      const aid = Number(activeRejectId);
+      wx.showLoading({ title: "处理中", mask: true });
+      matchApi
+        .process(aid, { action: "reject", reason: String(rejectReason).trim() })
+        .then(function () {
+          wx.hideLoading();
+          return matchApi.pendingApplications();
+        })
+        .then(function (list) {
+          const rows = mapPendingApplicationsToRows(list);
+          self._pending = rows;
+          const sorted2 = rows.slice().sort((a, b) => (a.appliedAt || 0) - (b.appliedAt || 0));
+          self.setData({
+            pendingList: sorted2.map((x) => mapItem(x, "teacher")),
+            activeRejectId: null,
+            rejectReason: ""
+          });
+          wx.showToast({ title: "已拒绝", icon: "none" });
+        })
+        .catch(function (err) {
+          wx.hideLoading();
+          wx.showModal({
+            title: "操作失败",
+            content: (err && err.message) || "请稍后重试",
+            showCancel: false
+          });
+        });
       return;
     }
     if (!this._pending) {

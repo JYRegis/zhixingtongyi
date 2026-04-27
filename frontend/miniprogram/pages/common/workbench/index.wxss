@@ -1,27 +1,113 @@
 .workbench-page {
   padding-bottom: 48rpx;
+  position: relative;
 }
 
-.workbench-hero {
+/* 下拉全屏轻遮罩，位于页面内、底栏之下由 z-index 控制 */
+.workbench-refresh-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.45);
+  pointer-events: auto;
+}
+
+.workbench-refresh-inner {
+  padding: 32rpx 40rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 20rpx 50rpx rgba(16, 24, 40, 0.12);
+}
+
+.workbench-hero--rich {
+  position: relative;
   overflow: hidden;
+}
+
+.workbench-hero-orb {
+  position: absolute;
+  right: -10%;
+  top: -30%;
+  width: 60%;
+  height: 90%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.2) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.workbench-hero--rich .page-hero-eyebrow,
+.workbench-hero--rich .page-hero-title,
+.workbench-hero--rich .workbench-hello,
+.workbench-hero--rich .workbench-hero-pills {
+  position: relative;
+  z-index: 1;
 }
 
 .workbench-hello {
   margin-top: 12rpx;
   font-size: 28rpx;
-  color: #475467;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.92);
 }
 
-.workbench-hero-meta {
-  margin-top: 20rpx;
+.workbench-hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 24rpx;
 }
 
-.workbench-empty {
+.workbench-hero-pill {
+  font-size: 22rpx;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.95);
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.workbench-hero-pill--accent {
+  background: rgba(255, 255, 255, 0.22);
+  font-weight: 600;
+}
+
+.workbench-sec {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.workbench-sec .section-title {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.workbench-sec-bdg {
+  flex-shrink: 0;
+}
+
+.workbench-sec-badge {
+  transform: scale(0.9);
+  transform-origin: center;
+}
+
+.workbench-guest--box {
   margin-top: 8rpx;
 }
 
-.workbench-login-btn {
-  margin-top: 24rpx;
+.workbench-guest-desc {
+  margin-top: 8rpx;
+  color: #667085;
 }
 
 .workbench-menu-list {
@@ -37,7 +123,7 @@
 
 .workbench-menu-card--featured {
   border-color: rgba(59, 130, 246, 0.32);
-  box-shadow: 0 14rpx 36rpx rgba(37, 99, 235, 0.12);
+  box-shadow: 0 4rpx 0 rgba(16, 24, 40, 0.02), 0 20rpx 40rpx rgba(37, 99, 235, 0.1);
 }
 
 .workbench-menu-card--featured::before {
@@ -46,27 +132,36 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 10rpx;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  height: 8rpx;
+  background: linear-gradient(90deg, var(--ui-primary) 0%, var(--ui-hero-start) 100%);
+  z-index: 1;
 }
 
 .workbench-menu-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 20rpx;
+  position: relative;
+  z-index: 2;
 }
 
-.workbench-menu-mark {
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 18rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26rpx;
-  font-weight: 700;
-  color: #175cd3;
-  background: #eef4ff;
+.workbench-menu-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.workbench-menu-kicker {
+  font-size: 22rpx;
+  color: #98a2b3;
+  letter-spacing: 1rpx;
+  margin-bottom: 4rpx;
+  text-transform: none;
+}
+
+.workbench-item-badge {
+  flex-shrink: 0;
+  margin-top: 4rpx;
 }
 
 .workbench-menu-top .workbench-menu-title {
@@ -76,28 +171,22 @@
   color: #101828;
 }
 
-.workbench-menu-desc {
-  margin-top: 12rpx;
-  font-size: 26rpx;
-  line-height: 1.7;
-  color: #667085;
-}
-
 .workbench-menu-foot {
   margin-top: 20rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20rpx;
-}
-
-.workbench-menu-tip {
-  font-size: 24rpx;
-  color: #175cd3;
+  position: relative;
+  z-index: 2;
 }
 
 .workbench-menu-arrow {
   font-size: 24rpx;
   font-weight: 600;
   color: #175cd3;
+}
+
+.workbench-login-btn {
+  margin-top: 24rpx;
 }

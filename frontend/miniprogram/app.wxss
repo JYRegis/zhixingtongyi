@@ -1,3 +1,5 @@
+@import "./styles/role-theme.wxss";
+
 page {
   background: #f5f7fa;
   color: #101828;
@@ -13,8 +15,8 @@ page {
 .page-shell {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 28%),
-    linear-gradient(180deg, #eef4ff 0%, #f5f7fa 24%, #f5f7fa 100%);
+    radial-gradient(circle at top right, var(--ui-radial), transparent 28%),
+    linear-gradient(180deg, var(--ui-page-bg-1) 0%, var(--ui-page-bg-2) 24%, #f5f7fa 100%);
 }
 
 .card {
@@ -41,8 +43,8 @@ page {
 .page-hero {
   padding: 32rpx;
   border-radius: 28rpx;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  box-shadow: 0 18rpx 48rpx rgba(37, 99, 235, 0.28);
+  background: linear-gradient(135deg, var(--ui-hero-start) 0%, var(--ui-hero-end) 100%);
+  box-shadow: 0 18rpx 48rpx rgba(var(--ui-hero-shadow), 0.28);
 }
 
 .page-hero-eyebrow {
@@ -117,7 +119,7 @@ page {
   min-height: 148rpx;
   border-radius: 20rpx;
   padding: 20rpx;
-  background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
+  background: linear-gradient(180deg, var(--ui-stat-top) 0%, var(--ui-stat-bot) 100%);
   border: 1rpx solid #e4e7ec;
   box-shadow: 0 8rpx 24rpx rgba(16, 24, 40, 0.05);
   box-sizing: border-box;
@@ -165,7 +167,7 @@ page {
 }
 
 .list-row-cta {
-  color: #3b82f6;
+  color: var(--ui-link);
   font-size: 26rpx;
   font-weight: 500;
 }
@@ -178,8 +180,8 @@ page {
 }
 
 .chip {
-  background: #eef4ff;
-  color: #175cd3;
+  background: var(--ui-chip-bg);
+  color: var(--ui-chip-text);
   padding: 8rpx 16rpx;
   border-radius: 999rpx;
   font-size: 24rpx;
@@ -266,15 +268,15 @@ page {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--ui-primary) 0%, var(--ui-primary-mid) 100%);
   color: #ffffff;
-  box-shadow: 0 12rpx 24rpx rgba(59, 130, 246, 0.22);
+  box-shadow: 0 12rpx 24rpx rgba(var(--ui-hero-shadow), 0.22);
 }
 
 .btn-secondary {
-  color: #175cd3;
-  background: #f8faff;
-  border: 1rpx solid #dbe7ff;
+  color: var(--ui-btn-secondary-fg);
+  background: var(--ui-btn-secondary-bg);
+  border: 1rpx solid var(--ui-btn-secondary-border);
 }
 
 .btn-primary[disabled],
@@ -305,8 +307,8 @@ page {
   margin-top: 20rpx;
   padding: 20rpx 22rpx;
   border-radius: 18rpx;
-  background: #eef4ff;
-  color: #175cd3;
+  background: var(--ui-surface-note-bg);
+  color: var(--ui-surface-note-text);
   font-size: 24rpx;
   line-height: 1.6;
 }
@@ -326,4 +328,44 @@ button:focus {
 
 button::after {
   border: none;
+}
+
+/**
+ * 示范期主路径：分层背景与卡片阶梯（与 role-theme 的 CSS 变量配合）
+ * 在页面根节点追加 class 即可，例如 `shell-mesh` / `card-tier`。
+ */
+.shell-mesh {
+  position: relative;
+  overflow: hidden;
+}
+
+.shell-mesh::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 120% 80% at 10% 0%, var(--ui-radial) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 60% at 100% 20%, var(--ui-radial) 0%, transparent 45%),
+    linear-gradient(180deg, var(--ui-page-bg-1) 0%, var(--ui-page-bg-2) 40%, #fafafa 100%);
+  opacity: 1;
+}
+
+.shell-mesh > view,
+.shell-mesh > scroll-view,
+.shell-mesh > form {
+  position: relative;
+  z-index: 1;
+}
+
+.card-tier {
+  position: relative;
+  border-radius: 28rpx;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1rpx solid rgba(234, 236, 240, 0.95);
+  box-shadow: 0 4rpx 0 rgba(16, 24, 40, 0.02), 0 24rpx 48rpx rgba(16, 24, 40, 0.08);
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }

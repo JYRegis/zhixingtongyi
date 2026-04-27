@@ -118,7 +118,7 @@
   font-size: 20rpx;
   padding: 2rpx 10rpx;
   border-radius: 8rpx;
-  color: #1d4ed8;
+  color: var(--ui-link);
   background: #dbeafe;
   font-weight: 600;
 }
@@ -144,7 +144,7 @@
 }
 
 .msg-avatar-text--vol {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--ui-primary) 0%, var(--ui-primary-mid) 100%);
 }
 
 .msg-bubble--l1stu {
@@ -205,7 +205,7 @@
   font-size: 30rpx;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--ui-primary) 0%, var(--ui-primary-mid) 100%);
   border-radius: 14rpx;
 }
 

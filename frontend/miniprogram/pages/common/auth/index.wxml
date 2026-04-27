@@ -1,4 +1,13 @@
-<view class="auth-page">
+<view class="auth-page {{_roleThemeClass}}">
+  <mp-toptips
+    msg="{{toptipMsg}}"
+    type="{{toptipType}}"
+    show="{{toptipShow}}"
+    ext-class="auth-toptips"
+    bindhide="onToptipHide"
+  />
+  <view class="auth-content">
+  <view class="auth-bg-orn"></view>
   <view class="auth-top">
     <view class="auth-avatar-row" wx:if="{{!isLogin}}">
       <button class="auth-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
@@ -10,7 +19,18 @@
       <text class="auth-avatar-hint">点击可更换图片</text>
     </view>
     <view class="auth-top-title">{{isLogin ? '登录' : '注册'}}</view>
-    <view class="auth-top-role">{{roleName}}</view>
+  </view>
+
+  <view class="auth-digest card-tier">
+    <mp-cells ext-class="auth-digest-cells">
+      <!-- 移除当前身份显示 -->
+      <!-- <mp-cell
+        title="当前身份"
+        value="{{roleName}}"
+        footer="{{isLogin ? '仅验证手机号' : '填写资料并注册'}}"
+        link="{{false}}"
+      /> -->
+    </mp-cells>
   </view>
 
   <view class="auth-form">
@@ -73,5 +93,6 @@
   <view class="auth-flow-switch" wx:if="{{!fromProfile}}">
     <text class="auth-flow-text" wx:if="{{isLogin}}" data-tologin="{{false}}" bindtap="onSwitchFlow">新用户，去完善资料</text>
     <text class="auth-flow-text" wx:else data-tologin="{{true}}" bindtap="onSwitchFlow">已有资料，用手机号快速登录</text>
+  </view>
   </view>
 </view>

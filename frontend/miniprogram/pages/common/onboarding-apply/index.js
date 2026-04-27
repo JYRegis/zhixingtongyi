@@ -4,6 +4,9 @@ const { matchClassTimeToForm, serializeTimeSelection, isValidTimeSelection } = r
 const { submitApplication, getApplications } = require("../../../utils/onboardingStore");
 const { getByPhone, saveProfile, mergeFromStorageIntoApp } = require("../../../utils/userProfileStore");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
+const { USE_BACKEND_ONBOARDING } = require("../../../config/demoBackend");
+const { studentApi, teacherApi } = require("../../../utils/api");
+const { buildStudentProfileRequest, buildTeacherProfileRequest } = require("../../../utils/dtoMappers");
 
 const ROLE_TITLES = {
   student: "乡村学员入驻",
@@ -17,7 +20,7 @@ function indexInSchoolList(schoolId, list) {
   if (!schoolId) {
     return 0;
   }
-  const j = (list || []).findIndex((s) => s.id === schoolId);
+  const j = (list || []).findIndex((s) => s.id == schoolId);
   return j >= 0 ? j : 0;
 }
 
@@ -374,6 +377,86 @@ Page({
       l2Note: String(l2Note || "").trim(),
       orgNote: String(orgNote || "").trim()
     };
+    const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    const tryRemote = USE_BACKEND_ONBOARDING && token && (role === "student" || role === "teacher");
+    if (tryRemote) {
+      const self = this;
+      const payload = {
+        realName: extra.name,
+        schoolId,
+        grade: extra.grade,
+        weekIds,
+        slotIds,
+        personalityDesc: (extra.applyNote || extra.l2Note || "").trim() || undefined
+      };
+      wx.showLoading({ title: "同步服务器", mask: true });
+      this._syncProfileToBackend(role, payload)
+        .then(function () {
+          wx.hideLoading();
+          self._afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote);
+        })
+        .catch(function (err) {
+          wx.hideLoading();
+          const msg = (err && err.message) || "接口失败";
+          wx.showModal({
+            title: "后端保存失败",
+            content: msg + "\n是否仍保存到本机演示数据？",
+            confirmText: "本机保存",
+            cancelText: "取消",
+            success: function (res) {
+              if (res.confirm) {
+                self._afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote);
+              }
+            }
+          });
+        });
+      return;
+    }
+    this._afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote);
+  },
+  _syncProfileToBackend(role, payload) {
+    if (role === "student") {
+      const body = buildStudentProfileRequest(payload, {});
+      return studentApi
+        .getProfile()
+        .then(
+          function (vo) {
+            if (vo && (vo.id != null || vo.userId != null)) {
+              return studentApi.updateProfile(body);
+            }
+            return studentApi.createProfile(body);
+          },
+          function (err) {
+            if (err && err.statusCode === 404) {
+              return studentApi.createProfile(body);
+            }
+            return Promise.reject(err);
+          }
+        )
+        .then(function () {
+          return studentApi.submitProfile();
+        });
+    }
+    if (role === "teacher") {
+      const body = buildTeacherProfileRequest(payload, {});
+      return teacherApi.getProfile().then(
+        function (vo) {
+          if (vo && (vo.id != null || vo.userId != null)) {
+            return teacherApi.updateProfile(body);
+          }
+          return teacherApi.createProfile(body);
+        },
+        function (err) {
+          if (err && err.statusCode === 404) {
+            return teacherApi.createProfile(body);
+          }
+          return Promise.reject(err);
+        }
+      );
+    }
+    return Promise.resolve();
+  },
+  _afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote) {
     const r = submitApplication({ applicantId: phone, role, schoolId, extra });
     if (!r || !r.ok) {
       wx.showToast({ title: (r && r.message) || "提交失败", icon: "none" });

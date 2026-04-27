@@ -4,6 +4,8 @@
 
 **各测试手机号、身份、是否过审的说明**（以 seed 为准，纯文字表）：[MOCK_ACCOUNTS.md](./MOCK_ACCOUNTS.md)
 
+**学员 / 支教志愿者「只看我自己的结对」（聊天列表、解绑选结对、新建会议选结对）**：演示数据下，按**手机号**稳定映射到 `pairingStore` 中的 `stu_001`～`stu_003` 或 `vol_001`～`vol_004`，只展示与当前账号**该身份**匹配的那条结对口（与全量演示表 `PAIRED_LIST` 中「同角色全部会话」区分）。实现见 `miniprogram/utils/chatPartners.js` 的 `getPairedListForUser`。
+
 ---
 
 ## 一、一键注入「完整测试包」

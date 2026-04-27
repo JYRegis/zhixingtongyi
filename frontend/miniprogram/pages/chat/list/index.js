@@ -1,5 +1,6 @@
 const {
   getPairedList,
+  getPairedListForUser,
   getPairedListForL1,
   getL1SchoolFilterOptions,
   getPairedListForRecipientL2,
@@ -87,7 +88,12 @@ Page({
       });
       return;
     }
-    const pairs = role ? getPairedList(role) : [];
+    const pairs =
+      role && (role === "student" || role === "teacher")
+        ? getPairedListForUser(String(u.phone || ""), role)
+        : role
+          ? getPairedList(role)
+          : [];
     var emptyHint3 = "";
     if (!pairs.length) {
       if (!role) {

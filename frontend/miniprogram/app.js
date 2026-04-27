@@ -28,12 +28,26 @@ App({
     try {
       const savedRole = wx.getStorageSync("role");
       const savedUserInfo = wx.getStorageSync("userInfo");
-      if (savedRole) {
-        this.globalData.role = savedRole;
-        const base = savedUserInfo || { nickname: "缓存用户", role: savedRole };
-        const p = base.phone && getByPhone(String(base.phone));
-        this.globalData.userInfo = p ? { ...p, ...base } : base;
-        wx.setStorageSync("userInfo", this.globalData.userInfo);
+      const savedToken = wx.getStorageSync("token");
+      if (savedToken) {
+        this.globalData.token = savedToken;
+        if (savedRole) {
+          this.globalData.role = savedRole;
+          const base = savedUserInfo || { nickname: "缓存用户", role: savedRole };
+          const p = base.phone && getByPhone(String(base.phone));
+          this.globalData.userInfo = p ? { ...p, ...base } : base;
+          wx.setStorageSync("userInfo", this.globalData.userInfo);
+        }
+      } else {
+        this.globalData.token = "";
+        this.globalData.role = "";
+        this.globalData.userInfo = null;
+        if (savedRole) {
+          wx.removeStorageSync("role");
+        }
+        if (savedUserInfo) {
+          wx.removeStorageSync("userInfo");
+        }
       }
     } catch (e) {
       if (console && console.error) {
@@ -51,6 +65,10 @@ App({
     }
     const phone = userInfo.phone != null && String(userInfo.phone).length === 11 ? String(userInfo.phone) : "";
     const u = { ...userInfo, role, userId: phone || userInfo.userId || "" };
+    if (userInfo.token) {
+      this.globalData.token = userInfo.token;
+      wx.setStorageSync("token", userInfo.token);
+    }
     if (phone) {
       const prev = getByPhone(phone) || {};
       const merged = { ...prev, ...u, role, phone, userId: phone };
@@ -67,10 +85,60 @@ App({
     }
   },
   logout() {
+    const token = this.globalData.token || wx.getStorageSync("token");
+    if (token) {
+      try {
+        const { authApi } = require("./utils/api");
+        authApi.logout().catch(function () {
+          // ignore
+        });
+      } catch (e) {
+        // ignore
+      }
+    }
     this.globalData.role = "";
     this.globalData.userInfo = null;
     this.globalData.token = "";
     wx.removeStorageSync("role");
     wx.removeStorageSync("userInfo");
+    wx.removeStorageSync("token");
   }
 });
+
+/** 为每页注入 _roleThemeClass，与 styles/role-theme.wxss 的 .theme-* 对应 */
+(function installRoleThemeOnPage() {
+  const { getPageRoleThemeClass } = require("./utils/roleTheme");
+  const origPage = Page;
+  /* eslint-disable no-global-assign, func-names */
+  Page = function (pageOptions) {
+    const d = pageOptions.data || {};
+    let initial = "theme-guest";
+    try {
+      initial = getPageRoleThemeClass();
+    } catch (e) {
+      // ignore
+    }
+    pageOptions.data = {
+      ...d,
+      _roleThemeClass: d._roleThemeClass != null ? d._roleThemeClass : initial
+    };
+    const userOnShow = pageOptions.onShow;
+    pageOptions.onShow = function onShowWithTheme() {
+      let c = "theme-guest";
+      try {
+        // 统一根据登录状态确定主题，无特殊页面例外
+        c = getPageRoleThemeClass();
+      } catch (e) {
+        // ignore
+      }
+      if (this.setData) {
+        this.setData({ _roleThemeClass: c });
+      }
+      if (typeof userOnShow === "function") {
+        userOnShow.call(this);
+      }
+    };
+    return origPage(pageOptions);
+  };
+  /* eslint-enable no-global-assign, func-names */
+})();

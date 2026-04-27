@@ -56,7 +56,23 @@ function mergeFromStorageIntoApp() {
   }
   const remote = getByPhone(u.phone);
   if (remote) {
-    app.globalData.userInfo = { ...remote, ...u };
+    // 先会话、后档案：onboardingStatus / l2Scope 等以 zhixing_user_profiles 为准；
+    // 再钉住本次登录字段，避免档案里旧 role/token 覆盖 JWT 会话（原 { remote, u } 会用 u 盖掉档案，曾导致「先工作台再被入驻页打回」）。
+    const phone = String(u.phone);
+    const merged = {
+      ...u,
+      ...remote,
+      phone: phone,
+      role: u.role,
+      userId: u.userId != null ? u.userId : phone
+    };
+    if (u.token) {
+      merged.token = u.token;
+    }
+    if (u.backendUserId != null) {
+      merged.backendUserId = u.backendUserId;
+    }
+    app.globalData.userInfo = merged;
     wx.setStorageSync("userInfo", app.globalData.userInfo);
   }
 }

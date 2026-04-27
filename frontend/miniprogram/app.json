@@ -9,6 +9,7 @@
     "pages/common/settings/index",
     "pages/common/review-submission-detail/index",
     "pages/common/profile/index",
+    "pages/common/notifications/index",
     "pages/common/template/index",
     "pages/match/center/index",
     "pages/match/requests/index",
@@ -73,5 +74,8 @@
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json",
-  "lazyCodeLoading": "requiredComponents"
+  "lazyCodeLoading": "requiredComponents",
+  "useExtendedLib": {
+    "weui": true
+  }
 }

@@ -35,7 +35,7 @@
 
 .form-picker-arrow {
   font-size: 24rpx;
-  color: #3b82f6;
+  color: var(--ui-link);
   font-weight: 600;
 }
 

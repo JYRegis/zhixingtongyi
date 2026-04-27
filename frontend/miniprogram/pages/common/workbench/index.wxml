@@ -1,16 +1,36 @@
-<view class="page-shell">
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="workbench-refresh-mask" wx:if="{{loading}}">
+    <view class="workbench-refresh-inner">
+      <mp-loading
+        type="circle"
+        show="{{true}}"
+        tips="正在同步"
+        ext-class="workbench-refresh-ld"
+      />
+    </view>
+  </view>
   <view class="container workbench-page">
-    <view class="page-hero workbench-hero">
+    <view class="page-hero workbench-hero workbench-hero--rich">
+      <view class="workbench-hero-orb" aria-hidden="true"></view>
+      <view class="page-hero-eyebrow" wx:if="{{isLoggedIn}}">工作台</view>
       <view class="page-hero-title">{{heroTitle}}</view>
       <view class="workbench-hello" wx:if="{{isLoggedIn}}">你好，{{nickname}}</view>
+      <view class="workbench-hero-pills" wx:if="{{isLoggedIn}}">
+        <view class="workbench-hero-pill">待办与入口会随角色变化</view>
+        <view class="workbench-hero-pill workbench-hero-pill--accent">下拉可快速刷新</view>
+      </view>
     </view>
 
-    <view class="section-header">
+    <view class="section-header workbench-sec">
       <view class="section-title">我的待办</view>
+      <view class="workbench-sec-bdg" wx:if="{{isLoggedIn && menuList.length}}">
+        <mp-badge ext-class="workbench-sec-badge" content="{{menuList.length}}"></mp-badge>
+      </view>
     </view>
 
-    <view wx:if="{{!isLoggedIn}}" class="card empty-state workbench-empty">
+    <view wx:if="{{!isLoggedIn}}" class="card empty-state workbench-guest card-tier workbench-guest--box">
       <view class="empty-title">尚未登录</view>
+      <view class="empty-desc workbench-guest-desc">先选择身份，再使用结对、聊天与待办</view>
       <button class="btn-primary workbench-login-btn" bindtap="onGoLogin">去选身份</button>
     </view>
 
@@ -18,13 +38,19 @@
       <view
         wx:for="{{menuList}}"
         wx:key="title"
-        class="card workbench-menu-card {{item.featured ? 'workbench-menu-card--featured' : ''}}"
+        class="card workbench-menu-card card-tier {{item.featured ? 'workbench-menu-card--featured' : ''}}"
         data-action="{{item.action}}"
         bindtap="onTapMenu"
       >
         <view class="workbench-menu-top">
-          <view class="workbench-menu-title">{{item.title}}</view>
-          <view class="badge {{item.featured ? 'badge-success' : 'badge-warning'}}">{{item.badge}}</view>
+          <view class="workbench-menu-left">
+            <view class="workbench-menu-kicker">{{item.featured ? '主入口' : '更多'}}</view>
+            <view class="workbench-menu-title">{{item.title}}</view>
+          </view>
+          <mp-badge
+            ext-class="workbench-item-badge"
+            content="{{item.badge}}"
+          />
         </view>
         <view class="workbench-menu-foot">
           <view class="workbench-menu-arrow">进入</view>

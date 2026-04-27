@@ -34,7 +34,7 @@
   font-size: 24rpx;
   font-weight: 600;
   color: #fff;
-  background: #3b82f6;
+  background: var(--ui-primary);
   flex-shrink: 0;
 }
 

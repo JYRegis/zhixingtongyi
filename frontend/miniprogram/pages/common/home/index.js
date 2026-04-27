@@ -1,11 +1,15 @@
 const { ROLE_HOME_CARDS } = require("../../../utils/roleLabels");
+const { getPageRoleThemeClass } = require("../../../utils/roleTheme");
 
 Page({
   data: {
-    cards: ROLE_HOME_CARDS
+    cards: ROLE_HOME_CARDS,
+    // 首页固定为访客蓝色主题
+    _roleThemeClass: "theme-guest"
   },
   onChooseRole(e) {
-    const role = e.currentTarget.dataset.role;
+    const t = e && e.currentTarget;
+    const role = (t && t.dataset && t.dataset.role) || (e && e.target && e.target.dataset && e.target.dataset.role);
     if (!role) {
       return;
     }

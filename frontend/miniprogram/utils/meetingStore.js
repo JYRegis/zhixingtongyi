@@ -3,7 +3,7 @@
  * 建会：任意会议链接可粘贴（腾讯会议/课堂等）；不做腾讯 API 内嵌创建（见 README）。
  */
 const { getPairById, getPairIdForRolePartner } = require("./pairingStore");
-const { getPairedList } = require("./chatPartners");
+const { getPairedListForUser } = require("./chatPartners");
 const { getByPhone } = require("./userProfileStore");
 
 const KEY = "zhixing_meetings_v1";
@@ -35,7 +35,7 @@ function getUserPairIdSet(phone, role) {
   if (role !== "student" && role !== "teacher") {
     return s;
   }
-  const pl = getPairedList(role) || [];
+  const pl = getPairedListForUser(phone, role) || [];
   for (let i = 0; i < pl.length; i += 1) {
     const r = pl[i];
     const pid = getPairIdForRolePartner(role, r && r.partnerId);
@@ -171,7 +171,16 @@ function canCreateMeetingRole(role) {
 function getPairOptionsForForm(role, prof) {
   const out = [];
   if (role === "student" || role === "teacher") {
-    const pl = getPairedList(role) || [];
+    let phone = (prof && prof.phone) != null ? String(prof.phone) : "";
+    if (!phone) {
+      try {
+        const u = (getApp() && getApp().globalData && getApp().globalData.userInfo) || {};
+        phone = u.phone != null ? String(u.phone) : "";
+      } catch (e) {
+        phone = "";
+      }
+    }
+    const pl = getPairedListForUser(phone, role) || [];
     for (let i = 0; i < pl.length; i += 1) {
       const r = pl[i];
       const pid = getPairIdForRolePartner(role, r && r.partnerId);

@@ -4,6 +4,7 @@
  */
 
 const { getSchoolName } = require("./schoolsMock");
+const { getActivePairList } = require("./pairingStore");
 const {
   getApprovedStudentsReviewedByRecipientL2,
   getApprovedTeachersReviewedByVolunteerL2
@@ -471,8 +472,77 @@ function getPairedList(role) {
   return PAIRED_LIST[role] || [];
 }
 
+/**
+ * 将手机号稳定映射到 stu_001～003 / vol_001～004，与 pairingStore 默认行对齐（演示用）
+ */
+function hashPhoneToNonNeg(phone) {
+  const s = String(phone || "0");
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
+}
+
+function getMockStudentEntityId(phone) {
+  const arr = ["stu_001", "stu_002", "stu_003"];
+  return arr[hashPhoneToNonNeg(phone) % 3];
+}
+
+function getMockVolunteerEntityId(phone) {
+  const arr = ["vol_001", "vol_002", "vol_003", "vol_004"];
+  return arr[hashPhoneToNonNeg(phone) % 4];
+}
+
+/**
+ * 与 getActivePairList 中某行的 studentId / teacherId 对应（用于「只显示与本人相关」的结对）
+ */
+function getRelevantActivePairRows(phone, role) {
+  if (role !== "student" && role !== "teacher") {
+    return [];
+  }
+  if (!phone) {
+    return [];
+  }
+  const all = getActivePairList() || [];
+  if (role === "student") {
+    const sid = getMockStudentEntityId(phone);
+    return all.filter((p) => p && p.status === "结对中" && p.studentId && String(p.studentId) === sid);
+  }
+  const vid = getMockVolunteerEntityId(phone);
+  return all.filter((p) => p && p.status === "结对中" && p.teacherId && String(p.teacherId) === vid);
+}
+
+/**
+ * 乡村学员 / 支教志愿者：仅返回与「当前账号在演示结对中身份」相关的会话行（与会议/解绑/结对选区一致，避免刷出与本人无关的全体演示结对）
+ * @param {string} phone
+ * @param {string} role
+ */
+function getPairedListForUser(phone, role) {
+  if (role !== "student" && role !== "teacher") {
+    return getPairedList(role);
+  }
+  if (!phone) {
+    return [];
+  }
+  const allRows = getPairedList(role) || [];
+  const rel = getRelevantActivePairRows(phone, role);
+  const allowPartner = new Set();
+  for (let i = 0; i < rel.length; i += 1) {
+    const p = rel[i];
+    if (role === "student" && p.teacherId) {
+      allowPartner.add(String(p.teacherId));
+    }
+    if (role === "teacher" && p.studentId) {
+      allowPartner.add(String(p.studentId));
+    }
+  }
+  return allRows.filter((row) => row && row.partnerId && allowPartner.has(String(row.partnerId)));
+}
+
 module.exports = {
   getPairedList,
+  getPairedListForUser,
   getPairedListForL1,
   getPairedListForRecipientL2,
   getPairedListForVolunteerL2,
