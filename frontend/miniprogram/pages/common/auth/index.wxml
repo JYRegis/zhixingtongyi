@@ -1,77 +1,35 @@
-<view class="auth-page {{_roleThemeClass}}">
-  <mp-toptips
-    msg="{{toptipMsg}}"
-    type="{{toptipType}}"
-    show="{{toptipShow}}"
-    ext-class="auth-toptips"
-    bindhide="onToptipHide"
-  />
-  <view class="auth-content">
-  <view class="auth-bg-orn"></view>
+<view class="auth-page">
   <view class="auth-top">
-    <view class="auth-avatar-row" wx:if="{{!isLogin}}">
-      <button class="auth-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-        <image wx:if="{{avatarUrl}}" class="auth-avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
-        <view wx:else class="auth-avatar-empty">
-          <view class="auth-avatar-icon"></view>
-        </view>
-      </button>
-      <text class="auth-avatar-hint">点击可更换图片</text>
-    </view>
-    <view class="auth-top-title">{{isLogin ? '登录' : '注册'}}</view>
-  </view>
-
-  <view class="auth-digest card-tier">
-    <mp-cells ext-class="auth-digest-cells">
-      <!-- 移除当前身份显示 -->
-      <!-- <mp-cell
-        title="当前身份"
-        value="{{roleName}}"
-        footer="{{isLogin ? '仅验证手机号' : '填写资料并注册'}}"
-        link="{{false}}"
-      /> -->
-    </mp-cells>
+    <button class="auth-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image wx:if="{{avatarUrl}}" class="auth-avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="auth-avatar-empty">头像</view>
+    </button>
+    <view class="auth-top-title">登录</view>
+    <view class="auth-top-tip">请选择一种方式继续</view>
   </view>
 
   <view class="auth-form">
-    <view class="auth-group" wx:if="{{!isLogin}}">
-      <view class="auth-group-title">昵称 <text class="field-req">*</text></view>
+    <view class="auth-group">
       <view class="auth-input-wrap">
         <input
           class="auth-input"
           type="nickname"
-          placeholder="输入昵称或同步微信昵称"
+          maxlength="20"
+          placeholder="请输入昵称（可选）"
           value="{{nickname}}"
           bindinput="onNicknameInput"
-          bindblur="onNicknameBlur"
         />
       </view>
-    </view>
-
-    <view class="auth-group">
-      <view class="auth-group-title">手机号 <text class="field-req">*</text></view>
-      <view class="auth-login-tip" wx:if="{{isLogin}}">登录仅需验证手机号。若本地有该号档案，将自动恢复昵称与头像；新号将以默认昵称进入，可稍后在「资料与账号」完善。</view>
-      <button class="auth-wx-phone-btn" open-type="getPhoneNumber" bindgetphonenumber="onGetPhoneNumber">
+      <view class="auth-login-tip">昵称与头像会随登录一起同步到账号资料。</view>
+      <button class="auth-wx-phone-btn" bindtap="onWxIdentityLogin">
         <view class="auth-wx-phone-inner">
-          <view class="auth-wx-phone-icon"></view>
-          <text>微信一键获取</text>
+          <text>微信登录</text>
         </view>
       </button>
-      <view wx:if="{{savedPhoneItems.length && !showManualPhone}}" class="auth-saved-phones">
-        <view
-          wx:for="{{savedPhoneItems}}"
-          wx:key="phone"
-          class="auth-saved-item {{selectedPhone === item.phone ? 'auth-saved-item--on' : ''}}"
-          data-phone="{{item.phone}}"
-          bindtap="onSelectSavedPhone"
-        >
-          <text>{{item.display}}</text>
-          <text wx:if="{{selectedPhone === item.phone}}" class="auth-check-mark">✓</text>
-        </view>
-      </view>
+
       <view class="auth-or">
         <view class="auth-or-line"></view>
-        <text class="auth-or-text">或手动输入</text>
+        <text class="auth-or-text">或</text>
         <view class="auth-or-line"></view>
       </view>
       <view class="auth-input-wrap">
@@ -82,17 +40,10 @@
           placeholder="请输入 11 位手机号"
           value="{{manualPhone}}"
           bindinput="onManualPhoneInput"
-          bindfocus="onShowManualInput"
         />
       </view>
+      <view class="auth-dev-tip">手机号登录仅用于开发测试</view>
+      <button class="auth-submit-btn" bindtap="onManualSubmit">手机号登录</button>
     </view>
-  </view>
-
-  <button class="auth-submit-btn" bindtap="onSubmit">{{isLogin ? '登录' : '完成并进入'}}</button>
-
-  <view class="auth-flow-switch" wx:if="{{!fromProfile}}">
-    <text class="auth-flow-text" wx:if="{{isLogin}}" data-tologin="{{false}}" bindtap="onSwitchFlow">新用户，去完善资料</text>
-    <text class="auth-flow-text" wx:else data-tologin="{{true}}" bindtap="onSwitchFlow">已有资料，用手机号快速登录</text>
-  </view>
   </view>
 </view>

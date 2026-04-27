@@ -88,9 +88,9 @@ Page({
     const app = getApp();
     const r = (query && query.role) || (app && app.globalData && app.globalData.role) || "";
     if (!r) {
-      wx.showToast({ title: "请重新选择身份", icon: "none" });
+      wx.showToast({ title: "请先选择角色", icon: "none" });
       setTimeout(() => {
-        wx.redirectTo({ url: "/pages/common/home/index" });
+        wx.redirectTo({ url: "/pages/common/role-select/index" });
       }, 400);
       return;
     }

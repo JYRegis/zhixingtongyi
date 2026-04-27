@@ -4,8 +4,14 @@ const { getSchoolsByKind, getSchoolName } = require("../../../utils/schoolsMock"
 const { matchGradeToPicker } = require("../../../utils/gradeOptions");
 const { matchClassTimeToForm, parseTimeSelection, serializeTimeSelection, isValidTimeSelection } = require("../../../utils/classTimeOptions");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
-const { USE_BACKEND_TEACHER_CONTINUOUS_MATCH } = require("../../../config/demoBackend");
-const { teacherApi } = require("../../../utils/api");
+const {
+  getStudentProfile,
+  saveStudentProfile,
+  submitStudentProfile,
+  getVolunteerProfile,
+  createVolunteerProfile,
+  updateVolunteerProfile
+} = require("../../../utils/backendApi");
 
 const roleFieldMap = {
   teacher: ["name", "workNo", "schoolId", "grade", "subjects", "personality", "availableTime"],
@@ -139,19 +145,15 @@ function buildSections(role, form) {
           fields: []
         };
       }
-      const existingFieldIndex = grouped[sectionKey].fields.findIndex(f => f.key === "studentAvailableTime");
-      if (existingFieldIndex === -1) {
-        grouped[sectionKey].fields.push({
-          key: "studentAvailableTime",
-          label: "可在线/希望上课时间",
-          type: "time_chips",
-          tfield: "studentAvailableTime",
-          weekChips: tm.weekChips,
-          slotChips: tm.slotChips,
-          hint: "",
-          singleLine: true
-        });
-      }
+      grouped[sectionKey].fields.push({
+        key: "studentAvailableTime",
+        label: "可在线/希望上课时间",
+        type: "time_chips",
+        tfield: "studentAvailableTime",
+        weekChips: tm.weekChips,
+        slotChips: tm.slotChips,
+        hint: ""
+      });
       return;
     }
     if (key === "availableTime" && role === "teacher") {
@@ -165,19 +167,15 @@ function buildSections(role, form) {
           fields: []
         };
       }
-      const existingFieldIndex = grouped[sectionKey].fields.findIndex(f => f.key === "availableTime");
-      if (existingFieldIndex === -1) {
-        grouped[sectionKey].fields.push({
-          key: "availableTime",
-          label: "可授课时间",
-          type: "time_chips",
-          tfield: "availableTime",
-          weekChips: tm.weekChips,
-          slotChips: tm.slotChips,
-          hint: "",
-          singleLine: true
-        });
-      }
+      grouped[sectionKey].fields.push({
+        key: "availableTime",
+        label: "可授课时间",
+        type: "time_chips",
+        tfield: "availableTime",
+        weekChips: tm.weekChips,
+        slotChips: tm.slotChips,
+        hint: ""
+      });
       return;
     }
     const meta = fieldMetaMap[key];
@@ -266,10 +264,11 @@ Page({
   onLoad() {
     this.syncPage();
   },
-  onShow() {
+  async onShow() {
     checkOnboardingOrRedirect("pages/common/profile/index");
     mergeFromStorageIntoApp();
     this.syncPage();
+    await this.trySyncProfileFromBackend();
   },
   onEditAccount() {
     const r = (this.data.role || (getApp().globalData && getApp().globalData.role) || "").trim();
@@ -321,149 +320,50 @@ Page({
         : dig.length > 0
           ? dig
           : "未填写手机号";
-    const sections = buildSections(role, form);
-    console.log("Syncing page with form data", form);
     this.setData({
       role,
       roleLabel: ROLE_DISPLAY_NAME[role] || "访客",
       visibleFields,
       heroTitle: roleMeta.title,
-      sections: sections,
+      sections: buildSections(role, form),
       form,
       accAvatarUrl: (u0.avatarUrl || "").trim(),
       accAvatarChar: nick0.length ? nick0.charAt(0) : "用",
       accNickname: nick0,
       accPhoneDisplay: accPhoneDisplay
     });
-    this._loadTeacherContinuousMatchIfNeeded();
   },
-  _loadTeacherContinuousMatchIfNeeded() {
-    const role = this.data.role;
-    const token = (getApp().globalData && getApp().globalData.token) || wx.getStorageSync("token") || "";
-    if (role !== "teacher" || !USE_BACKEND_TEACHER_CONTINUOUS_MATCH || !token) {
-      this.setData({
-        showTeacherContinuousMatch: false,
-        continuousMatchLoading: false
-      });
+  async trySyncProfileFromBackend() {
+    const role = this.data.role || "";
+    if (role !== "student" && role !== "teacher") {
       return;
     }
-    const self = this;
-    this.setData({ showTeacherContinuousMatch: true, continuousMatchLoading: true });
-    teacherApi
-      .getProfile()
-      .then(function (vo) {
-        const on =
-          vo && (vo.continuousMatch === 1 || vo.continuousMatch === true || String(vo.continuousMatch) === "1");
-        self.setData({
-          continuousMatchEnabled: !!on,
-          continuousMatchLoading: false
-        });
-      })
-      .catch(function () {
-        self.setData({
-          continuousMatchEnabled: false,
-          continuousMatchLoading: false
-        });
-      });
-  },
-  onContinuousMatchChange(e) {
-    const v = e && e.detail && e.detail.value;
-    if (this.data.continuousMatchLoading) {
-      return;
-    }
-    const self = this;
-    const prev = this.data.continuousMatchEnabled;
-    this.setData({ continuousMatchEnabled: v });
-    wx.showLoading({ title: "同步中", mask: true });
-    teacherApi
-      .updateContinuousMatch(!!v)
-      .then(function () {
-        wx.hideLoading();
-        wx.showToast({ title: "已保存", icon: "success" });
-      })
-      .catch(function (err) {
-        wx.hideLoading();
-        self.setData({ continuousMatchEnabled: prev });
-        wx.showModal({
-          title: "同步失败",
-          content: (err && err.message) || "请检查网络与后端，或稍后再试",
-          showCancel: false
-        });
-      });
-  },
-  onToggleProfileTime(e) {
-    const tfield = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tfield) || "";
-    const tkind = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tkind) || "";
-    const raw = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id) || "";
-    if (!tfield || (tkind !== "week" && tkind !== "slot")) {
-      console.error("Invalid time toggle event", e);
-      return;
-    }
-    const f = { ...this.data.form };
-    const { weekIds, slotIds } = parseTimeSelection(f[tfield] || "");
-    let wk = (weekIds || []).slice();
-    let sk = (slotIds || []).slice();
-    if (tkind === "week") {
-      const n = +raw;
-      if (n < 1 || n > 7) {
-        console.error("Invalid week ID", raw);
+    try {
+      const remote = role === "student" ? await getStudentProfile() : await getVolunteerProfile();
+      if (!remote) {
         return;
       }
-      const ix = wk.indexOf(n);
-      if (ix >= 0) {
-        wk.splice(ix, 1);
-      } else {
-        wk.push(n);
-        wk.sort((a, b) => a - b);
+      const f = { ...this.data.form };
+      f.name = remote.realName || f.name || "";
+      f.schoolId = remote.schoolId != null ? String(remote.schoolId) : (f.schoolId || "");
+      if (role === "teacher") {
+        f.school = remote.school || f.school || "";
       }
-    } else {
-      const s = String(raw);
-      if (["mor", "noon", "night"].indexOf(s) < 0) {
-        console.error("Invalid slot ID", raw);
-        return;
-      }
-      const j = sk.indexOf(s);
-      if (j >= 0) {
-        sk.splice(j, 1);
+      f.grade = remote.grade || f.grade || "";
+      f.personality = remote.personalityDesc || f.personality || "";
+      if (role === "student") {
+        const sub = Array.isArray(remote.subjectsNeeded) ? remote.subjectsNeeded.join("、") : "";
+        f.subjects = sub || f.subjects || "";
       } else {
-        sk.push(s);
+        const sub = Array.isArray(remote.skilledSubjects) ? remote.skilledSubjects.join("、") : "";
+        f.subjects = sub || f.subjects || "";
+      }
+      this.syncPage(f);
+    } catch (e) {
+      if (console && console.warn) {
+        console.warn("[profile] sync backend profile failed", e);
       }
     }
-    f[tfield] = serializeTimeSelection(wk, sk);
-    console.log("Updated time selection", tfield, wk, sk, f[tfield]);
-    // 手动更新时间选择芯片的选中状态
-    const sections = this.data.sections.map(section => {
-      const updatedFields = section.fields.map(field => {
-        if (field.type === 'time_chips' && field.tfield === tfield) {
-          if (tkind === "week") {
-            return {
-              ...field,
-              weekChips: field.weekChips.map(chip => ({
-                ...chip,
-                on: wk.includes(chip.id)
-              }))
-            };
-          } else {
-            return {
-              ...field,
-              slotChips: field.slotChips.map(chip => ({
-                ...chip,
-                on: sk.includes(chip.id)
-              }))
-            };
-          }
-        }
-        return field;
-      });
-      return {
-        ...section,
-        fields: updatedFields
-      };
-    });
-    this.setData({
-      sections: sections,
-      form: f
-    });
   },
   onPickSchool(e) {
     const ix = Number(e.detail.value);
@@ -485,6 +385,44 @@ Page({
     f.grade = g && g.id ? g.name : "";
     this.syncPage(f);
   },
+  onToggleProfileTime(e) {
+    const tfield = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tfield) || "";
+    const tkind = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.tkind) || "";
+    const raw = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id) || "";
+    if (!tfield || (tkind !== "week" && tkind !== "slot")) {
+      return;
+    }
+    const f = { ...this.data.form };
+    const { weekIds, slotIds } = parseTimeSelection(f[tfield] || "");
+    let wk = (weekIds || []).slice();
+    let sk = (slotIds || []).slice();
+    if (tkind === "week") {
+      const n = +raw;
+      if (n < 1 || n > 7) {
+        return;
+      }
+      const ix = wk.indexOf(n);
+      if (ix >= 0) {
+        wk.splice(ix, 1);
+      } else {
+        wk.push(n);
+        wk.sort((a, b) => a - b);
+      }
+    } else {
+      const s = String(raw);
+      if (["mor", "noon", "night"].indexOf(s) < 0) {
+        return;
+      }
+      const j = sk.indexOf(s);
+      if (j >= 0) {
+        sk.splice(j, 1);
+      } else {
+        sk.push(s);
+      }
+    }
+    f[tfield] = serializeTimeSelection(wk, sk);
+    this.syncPage(f);
+  },
   onInput(e) {
     const field = e.currentTarget.dataset.field;
     const value = e.detail.value;
@@ -494,7 +432,7 @@ Page({
     };
     this.syncPage(nextForm);
   },
-  onSubmit() {
+  async onSubmit() {
     const { form, visibleFields, role } = this.data;
     if (!form.name || !form.name.trim()) {
       wx.showToast({ title: "请填写姓名", icon: "none" });
@@ -565,9 +503,57 @@ Page({
       });
       saveProfile(String(u.phone), patch);
     }
-    wx.showToast({
-      title: "资料已保存",
-      icon: "success"
-    });
+    try {
+      if (role === "student") {
+        const t = parseTimeSelection(String(form.studentAvailableTime || ""));
+        const freeTime = [{ weekIds: t.weekIds, slotIds: t.slotIds }];
+        const payload = {
+          realName: String(form.name || "").trim(),
+          schoolId: form.schoolId ? Number(form.schoolId) : null,
+          grade: String(form.grade || "").trim(),
+          subjectsNeeded: String(form.subjects || "")
+            .split(/[，,\s]+/)
+            .map((x) => x.trim())
+            .filter(Boolean),
+          freeTime: freeTime,
+          personalityDesc: String(form.personality || "").trim() || null
+        };
+        await saveStudentProfile(payload);
+        await submitStudentProfile();
+      } else if (role === "teacher") {
+        const t = parseTimeSelection(String(form.availableTime || ""));
+        const freeTime = [{ weekIds: t.weekIds, slotIds: t.slotIds }];
+        const payload = {
+          realName: String(form.name || "").trim(),
+          school: String((form.schoolId && getSchoolName(form.schoolId)) || form.school || "").trim(),
+          grade: String(form.grade || "").trim(),
+          freeTime: freeTime,
+          skilledSubjects: String(form.subjects || "")
+            .split(/[，,\s]+/)
+            .map((x) => x.trim())
+            .filter(Boolean),
+          personalSkills: "",
+          personalityDesc: String(form.personality || "").trim() || null
+        };
+        const appUser = getApp().globalData.userInfo || {};
+        if (appUser.hasProfile) {
+          await updateVolunteerProfile(payload);
+        } else {
+          await createVolunteerProfile(payload);
+          appUser.hasProfile = true;
+          getApp().globalData.userInfo = appUser;
+          wx.setStorageSync("userInfo", appUser);
+        }
+      }
+      wx.showToast({
+        title: "资料已保存",
+        icon: "success"
+      });
+    } catch (err) {
+      wx.showToast({
+        title: (err && err.message) || "保存失败",
+        icon: "none"
+      });
+    }
   }
 });

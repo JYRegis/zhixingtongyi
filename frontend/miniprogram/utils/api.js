@@ -1,7 +1,22 @@
 const { request } = require("./env");
 
+/**
+ * env.request 已对 { code, data } 解包为内层 data；若中间层仍返回整段 ApiResponse 再取 .data
+ */
 function getData(promise) {
-  return promise.then((res) => (res ? res.data : null));
+  return promise.then((res) => {
+    if (res == null) {
+      return null;
+    }
+    if (
+      typeof res === "object" &&
+      Object.prototype.hasOwnProperty.call(res, "code") &&
+      Object.prototype.hasOwnProperty.call(res, "data")
+    ) {
+      return res.data;
+    }
+    return res;
+  });
 }
 
 const authApi = {

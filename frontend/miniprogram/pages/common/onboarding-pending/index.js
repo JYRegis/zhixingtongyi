@@ -40,12 +40,7 @@ Page({
   },
   onChangeAccount() {
     const app = getApp();
-    const r = (app && app.globalData && String(app.globalData.role || "")) || "";
     app.logout();
-    if (r) {
-      wx.reLaunch({ url: "/pages/common/auth/index?role=" + encodeURIComponent(r) + "&flow=register" });
-    } else {
-      wx.reLaunch({ url: "/pages/common/home/index" });
-    }
+    wx.reLaunch({ url: "/pages/common/auth/index?flow=login" });
   }
 });

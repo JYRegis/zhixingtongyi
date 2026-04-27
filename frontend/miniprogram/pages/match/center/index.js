@@ -4,9 +4,7 @@ const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { formatSavedTimeForDisplay } = require("../../../utils/classTimeOptions");
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
 const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
-const { USE_BACKEND_MATCH } = require("../../../config/demoBackend");
-const { matchApi } = require("../../../utils/api");
-const { mapRecommendationsToCenterRows } = require("../../../utils/matchDtoMappers");
+const { getRecommendations, applyMatch } = require("../../../utils/backendApi");
 
 var matchHeroMap = {
   student: { title: "志愿者推荐" },
@@ -116,11 +114,9 @@ Page({
     heroTitle: "",
     selectedCountText: "",
     renderList: [],
-    list: [],
-    _listSource: "mock"
+    list: []
   },
-  onShow: function () {
-    const self = this;
+  onShow: async function () {
     const role0 = (getApp().globalData && getApp().globalData.role) || "";
     mergeFromStorageIntoApp();
     if (role0 === "admin_level_1") {
@@ -137,46 +133,49 @@ Page({
     }
     checkOnboardingOrRedirect("pages/match/center/index");
     syncCustomTabBar();
-    const role = getApp().globalData.role || "";
-    const idx = typeof this.data.subjectIndex === "number" ? this.data.subjectIndex : 0;
-    const hero = matchHeroMap[role] || matchHeroMap.student;
-    const showSubjectFilter = role === "student" || role === "teacher";
-
-    const canUnbind =
-      role === "student" || role === "teacher" || (role === "admin_level_2" && isVolunteerSideL2());
-    const canPairTodo = role === "student" || role === "teacher" || (role === "admin_level_2" && isVolunteerSideL2());
-    const token = (getApp().globalData && getApp().globalData.token) || wx.getStorageSync("token") || "";
-
-    function finishList(fullList, source) {
-      const renderList = applySubjectFilter(fullList, idx);
-      self.setData({
-        role: role,
-        canUnbind: canUnbind,
-        canPairTodo: canPairTodo,
-        showSubjectFilter: showSubjectFilter,
-        roleName: ROLE_DISPLAY_NAME[role] || "学员",
-        heroTitle: hero.title,
-        list: fullList,
-        renderList: renderList,
-        selectedCountText: renderList.length + " 人",
-        subjectLineText: subjectOptions[idx] != null ? subjectOptions[idx] : "全部",
-        _listSource: source
-      });
-    }
-
-    if (USE_BACKEND_MATCH && token && role === "student") {
-      matchApi
-        .recommendations()
-        .then(function (rows) {
-          const mapped = mapRecommendationsToCenterRows(rows, role, enrichItem);
-          finishList(mapped, "api");
-        })
-        .catch(function () {
-          finishList(buildListForRole(role), "mock");
+    var role = getApp().globalData.role || "";
+    var fullList = buildListForRole(role);
+    if (role === "student") {
+      try {
+        const remote = await getRecommendations();
+        fullList = (Array.isArray(remote) ? remote : []).map(function (row, idx) {
+          return {
+            id: row.teacherId || idx + 1,
+            teacherId: row.teacherId,
+            asVolunteer: row.realName || "志愿者",
+            asStudent: "",
+            timeRaw: row.freeTime || "",
+            score: 90,
+            style: row.school || "",
+            subject: (row.grade || "综合")
+          };
         });
-      return;
+      } catch (e) {
+        if (console && console.warn) {
+          console.warn("[match-center] getRecommendations fallback to mock", e);
+        }
+      }
     }
-    finishList(buildListForRole(role), "mock");
+    var idx = typeof this.data.subjectIndex === "number" ? this.data.subjectIndex : 0;
+    var renderList = applySubjectFilter(fullList, idx);
+    var hero = matchHeroMap[role] || matchHeroMap.student;
+    var showSubjectFilter = role === "student" || role === "teacher";
+
+    var canUnbind =
+      role === "student" || role === "teacher" || (role === "admin_level_2" && isVolunteerSideL2());
+    var canPairTodo = role === "student" || role === "teacher" || (role === "admin_level_2" && isVolunteerSideL2());
+    this.setData({
+      role: role,
+      canUnbind: canUnbind,
+      canPairTodo: canPairTodo,
+      showSubjectFilter: showSubjectFilter,
+      roleName: ROLE_DISPLAY_NAME[role] || "学员",
+      heroTitle: hero.title,
+      list: fullList,
+      renderList: renderList,
+      selectedCountText: renderList.length + " 人",
+      subjectLineText: subjectOptions[idx] != null ? subjectOptions[idx] : "全部"
+    });
   },
   onPullDownRefresh: function () {
     this.onShow();
@@ -193,44 +192,25 @@ Page({
       subjectLineText: subjectOptions[idx] != null ? subjectOptions[idx] : "全部"
     });
   },
-  onApply: function (e) {
-    const id = e.currentTarget.dataset.id;
-    const one = this.data.renderList.find(function (item) {
-      return item.id == id;
+  onApply: async function (e) {
+    var id = e.currentTarget.dataset.id;
+    var one = this.data.renderList.find(function (item) {
+      return item.id === id;
     });
-    const role = this.data.role;
-    const token = (getApp().globalData && getApp().globalData.token) || wx.getStorageSync("token") || "";
-    const fromApi = USE_BACKEND_MATCH && token && role === "student" && this.data._listSource === "api";
-    if (fromApi) {
-      const tid = Number(id);
-      if (!tid) {
-        wx.showToast({ title: "数据异常", icon: "none" });
-        return;
+    try {
+      if (one && one.teacherId) {
+        await applyMatch(one.teacherId);
       }
-      wx.showLoading({ title: "提交中", mask: true });
-      matchApi
-        .apply({ teacherId: tid })
-        .then(function () {
-          wx.hideLoading();
-          wx.showToast({
-            title: "已申请" + (one && one.teacher ? " " + one.teacher : ""),
-            icon: "success"
-          });
-        })
-        .catch(function (err) {
-          wx.hideLoading();
-          wx.showModal({
-            title: "申请失败",
-            content: (err && err.message) || "请确认学员资料已提交且符合结对条件",
-            showCancel: false
-          });
-        });
-      return;
+      wx.showToast({
+        title: "已申请" + (one && one.teacher ? " " + one.teacher : ""),
+        icon: "success"
+      });
+    } catch (err) {
+      wx.showToast({
+        title: (err && err.message) || "申请失败",
+        icon: "none"
+      });
     }
-    wx.showToast({
-      title: "已申请" + (one && one.teacher ? " " + one.teacher : ""),
-      icon: "success"
-    });
   },
   toRequests: function () {
     to("/pages/match/requests/index");
