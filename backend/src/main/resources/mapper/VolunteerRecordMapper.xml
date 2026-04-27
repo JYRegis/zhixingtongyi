@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rural.education.model.mapper.VolunteerRecordMapper">
+
+    <sql id="recordColumns">
+        vr.id,
+        vr.match_pair_id AS matchPairId,
+        vr.teacher_id AS teacherId,
+        vr.student_id AS studentId,
+        vr.meeting_id AS meetingId,
+        vr.duration,
+        vr.meeting_date AS meetingDate,
+        vr.service_desc AS serviceDesc,
+        vr.evidence_images AS evidenceImages,
+        vr.ai_summary AS aiSummary,
+        vr.status,
+        vr.reject_reason AS rejectReason,
+        vr.student_confirm_time AS studentConfirmTime,
+        vr.admin_audit_time AS adminAuditTime,
+        vr.auditor_id AS auditorId,
+        vr.create_time AS createTime,
+        vr.update_time AS updateTime
+    </sql>
+
+    <select id="selectRecords" resultType="com.rural.education.vo.VolunteerRecordVO">
+        SELECT <include refid="recordColumns"/>,
+               t.real_name AS teacherName,
+               s.real_name AS studentName
+        FROM volunteer_record vr
+        LEFT JOIN teacher_profile t ON vr.teacher_id = t.user_id
+        LEFT JOIN student_profile s ON vr.student_id = s.user_id
+        <where>
+            <if test="teacherId != null">
+                AND vr.teacher_id = #{teacherId}
+            </if>
+            <if test="studentId != null">
+                AND vr.student_id = #{studentId}
+            </if>
+            <if test="status != null">
+                AND vr.status = #{status}
+            </if>
+            <if test="schoolId != null">
+                AND s.school_id = #{schoolId}
+            </if>
+        </where>
+        ORDER BY vr.create_time DESC
+    </select>
+
+    <select id="selectPendingBySchool" resultType="com.rural.education.vo.VolunteerRecordVO">
+        SELECT <include refid="recordColumns"/>,
+               t.real_name AS teacherName,
+               s.real_name AS studentName
+        FROM volunteer_record vr
+        LEFT JOIN teacher_profile t ON vr.teacher_id = t.user_id
+        LEFT JOIN student_profile s ON vr.student_id = s.user_id
+        WHERE s.school_id = #{schoolId}
+          AND vr.status = 1
+        ORDER BY vr.create_time DESC
+    </select>
+
+</mapper>

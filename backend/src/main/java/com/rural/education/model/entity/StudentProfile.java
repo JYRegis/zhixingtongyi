@@ -19,6 +19,7 @@ public class StudentProfile {
     private String subjectsNeeded;
     private String freeTime;
     private String personalityDesc;
+    private Integer emergencyWeight;
     private Integer profileStatus;
     private Long bindAdminId;
     private Integer auditStatus;
