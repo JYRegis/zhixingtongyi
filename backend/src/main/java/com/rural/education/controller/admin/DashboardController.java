@@ -57,18 +57,22 @@ public class DashboardController {
         Long userId = currentUserUtil.getCurrentUserId();
         userAccessService.requireAnyRole(userId, 0, 1);
 
+        java.util.List<Object> params = new java.util.ArrayList<>();
         StringBuilder whereClause = new StringBuilder();
         if (startDate != null && !startDate.isBlank()) {
-            whereClause.append(" AND apply_time >= '").append(startDate).append("'");
+            whereClause.append(" AND apply_time >= ?");
+            params.add(startDate);
         }
         if (endDate != null && !endDate.isBlank()) {
-            whereClause.append(" AND apply_time <= '").append(endDate).append(" 23:59:59'");
+            whereClause.append(" AND apply_time <= ?");
+            params.add(endDate + " 23:59:59");
         }
+        Object[] paramArray = params.toArray();
 
         Long total = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM match_pair WHERE match_status IN (0,1,2)" + whereClause, Long.class);
+                "SELECT COUNT(*) FROM match_pair WHERE match_status IN (0,1,2)" + whereClause, Long.class, paramArray);
         Long accepted = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM match_pair WHERE match_status = 1" + whereClause, Long.class);
+                "SELECT COUNT(*) FROM match_pair WHERE match_status = 1" + whereClause, Long.class, paramArray);
 
         BigDecimal rate = BigDecimal.ZERO;
         if (total != null && total > 0 && accepted != null) {

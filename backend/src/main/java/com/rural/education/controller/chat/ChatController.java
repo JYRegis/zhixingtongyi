@@ -1,6 +1,7 @@
 package com.rural.education.controller.chat;
 
 import com.rural.education.dto.common.ApiResponse;
+import com.rural.education.dto.request.chat.AddParticipantRequest;
 import com.rural.education.dto.request.chat.SendMessageRequest;
 import com.rural.education.model.entity.ChatParticipant;
 import com.rural.education.service.ChatService;
@@ -49,10 +50,9 @@ public class ChatController {
     }
 
     @PostMapping("/pairs/{pairId}/participants")
-    public ApiResponse<Void> addParticipant(@PathVariable Long pairId, @RequestBody java.util.Map<String, Long> body) {
+    public ApiResponse<Void> addParticipant(@PathVariable Long pairId, @Valid @RequestBody AddParticipantRequest request) {
         Long userId = currentUserUtil.getCurrentUserId();
-        Long targetUserId = body.get("userId");
-        chatService.addParticipant(userId, pairId, targetUserId);
+        chatService.addParticipant(userId, pairId, request.getUserId());
         return ApiResponse.success();
     }
 

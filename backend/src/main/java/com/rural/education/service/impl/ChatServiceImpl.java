@@ -79,9 +79,10 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                 new LambdaQueryWrapper<ChatParticipant>()
                         .eq(ChatParticipant::getMatchPairId, matchPairId)
                         .eq(ChatParticipant::getUserId, userId)
+                        .isNull(ChatParticipant::getLeftTime)
         );
         if (participant == null) {
-            throw new BizException("您不是该会话的参与者");
+            throw new BizException("您不是该会话的参与者或已退出会话");
         }
         int size = limit == null || limit <= 0 ? 50 : Math.min(limit, 200);
         LambdaQueryWrapper<ChatMessage> wrapper = new LambdaQueryWrapper<ChatMessage>()

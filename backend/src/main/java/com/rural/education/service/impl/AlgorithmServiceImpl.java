@@ -42,7 +42,7 @@ public class AlgorithmServiceImpl extends ServiceImpl<AlgorithmWeightConfigMappe
                 new LambdaUpdateWrapper<AlgorithmWeightConfig>()
                         .eq(AlgorithmWeightConfig::getId, configId)
                         .set(AlgorithmWeightConfig::getWeight, request.getWeight())
-                        .set(AlgorithmWeightConfig::getEnabled, request.getEnabled())
+                        .set(AlgorithmWeightConfig::getEnabled, Boolean.TRUE.equals(request.getEnabled()) ? 1 : 0)
         );
     }
 

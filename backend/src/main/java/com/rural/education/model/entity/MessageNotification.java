@@ -20,5 +20,6 @@ public class MessageNotification {
     private LocalDateTime readTime;
     private LocalDateTime sentTime;
     private Integer wechatSent;
+    private String wechatMsgId;
 }
 

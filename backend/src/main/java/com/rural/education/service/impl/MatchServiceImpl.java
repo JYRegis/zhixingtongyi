@@ -45,6 +45,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     private final TeacherProfileMapper teacherProfileMapper;
     private final StudentProfileMapper studentProfileMapper;
     private final UserMapper userMapper;
+    private final com.rural.education.model.mapper.ChatParticipantMapper chatParticipantMapper;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final NotificationAsyncPublisher notificationAsyncPublisher;
@@ -145,6 +146,8 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                             .set(MatchPair::getMatchStatus, MatchStatus.ACCEPTED.getCode())
                             .set(MatchPair::getAcceptTime, LocalDateTime.now())
             );
+            initChatParticipants(applicationId, pair.getStudentId(), pair.getTeacherId());
+
             NotificationEvent event = new NotificationEvent();
             event.setUserId(studentId);
             event.setType(NotificationType.MATCH_ACCEPT.getCode());
@@ -361,6 +364,38 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             return;
         }
         throw new BizException("解绑角色与当前登录用户不匹配");
+    }
+
+    private void initChatParticipants(Long pairId, Long studentId, Long teacherId) {
+        com.rural.education.model.entity.ChatParticipant teacher = new com.rural.education.model.entity.ChatParticipant();
+        teacher.setMatchPairId(pairId);
+        teacher.setUserId(teacherId);
+        teacher.setParticipantRole(com.rural.education.enums.UserRole.TEACHER.getCode());
+        teacher.setIsDefaultMember(1);
+        teacher.setJoinedTime(java.time.LocalDateTime.now());
+        chatParticipantMapper.insert(teacher);
+
+        com.rural.education.model.entity.ChatParticipant student = new com.rural.education.model.entity.ChatParticipant();
+        student.setMatchPairId(pairId);
+        student.setUserId(studentId);
+        student.setParticipantRole(com.rural.education.enums.UserRole.STUDENT.getCode());
+        student.setIsDefaultMember(1);
+        student.setJoinedTime(java.time.LocalDateTime.now());
+        chatParticipantMapper.insert(student);
+
+        com.rural.education.model.entity.StudentProfile studentProfile = studentProfileMapper.selectOne(
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.rural.education.model.entity.StudentProfile>()
+                        .eq(com.rural.education.model.entity.StudentProfile::getUserId, studentId)
+        );
+        if (studentProfile != null && studentProfile.getBindAdminId() != null) {
+            com.rural.education.model.entity.ChatParticipant admin = new com.rural.education.model.entity.ChatParticipant();
+            admin.setMatchPairId(pairId);
+            admin.setUserId(studentProfile.getBindAdminId());
+            admin.setParticipantRole(com.rural.education.enums.UserRole.L2_ADMIN.getCode());
+            admin.setIsDefaultMember(1);
+            admin.setJoinedTime(java.time.LocalDateTime.now());
+            chatParticipantMapper.insert(admin);
+        }
     }
 
     private void evictRecommendationCache(Long studentId) {

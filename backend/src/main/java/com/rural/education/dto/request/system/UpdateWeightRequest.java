@@ -11,5 +11,5 @@ public class UpdateWeightRequest {
     private BigDecimal weight;
 
     @NotNull(message = "enabled 不能为空")
-    private Integer enabled;
+    private Boolean enabled;
 }

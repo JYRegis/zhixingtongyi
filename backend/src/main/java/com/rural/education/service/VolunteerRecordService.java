@@ -14,7 +14,7 @@ public interface VolunteerRecordService extends IService<VolunteerRecord> {
 
     void studentConfirm(Long userId, Long recordId, StudentConfirmRequest request);
 
-    Page<VolunteerRecordVO> getPendingRecords(Long userId, Long page, Long size);
+    Page<VolunteerRecordVO> getPendingRecords(Long userId, Long schoolId, String regionCode, Long page, Long size);
 
     void auditRecord(Long userId, Long recordId, AdminAuditRecordRequest request);
 

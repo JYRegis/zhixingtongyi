@@ -15,8 +15,15 @@ import com.rural.education.enums.UserRole;
 import com.rural.education.event.event.RecordStatusChangedEvent;
 import com.rural.education.event.publisher.EventPublisher;
 import com.rural.education.exception.BizException;
-import com.rural.education.model.entity.*;
-import com.rural.education.model.mapper.*;
+import com.rural.education.model.entity.MatchPair;
+import com.rural.education.model.entity.StudentProfile;
+import com.rural.education.model.entity.TeacherProfile;
+import com.rural.education.model.entity.User;
+import com.rural.education.model.entity.VolunteerRecord;
+import com.rural.education.model.mapper.MatchPairMapper;
+import com.rural.education.model.mapper.StudentProfileMapper;
+import com.rural.education.model.mapper.TeacherProfileMapper;
+import com.rural.education.model.mapper.VolunteerRecordMapper;
 import com.rural.education.service.NotificationAsyncPublisher;
 import com.rural.education.service.UserAccessService;
 import com.rural.education.service.VolunteerRecordService;
@@ -75,13 +82,26 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
 
         eventPublisher.publish(new RecordStatusChangedEvent(record.getId(), record.getStatus(), userId));
 
-        NotificationEvent event = new NotificationEvent();
-        event.setUserId(pair.getStudentId());
-        event.setType(NotificationType.DURATION_STUDENT_CONFIRM.getCode());
-        event.setTitle("请确认服务记录");
-        event.setContent("志愿者提交了新的服务时长记录，请确认");
-        event.setParamsJson("{\"recordId\":" + record.getId() + "}");
-        notificationAsyncPublisher.publish(event);
+        NotificationEvent studentEvent = new NotificationEvent();
+        studentEvent.setUserId(pair.getStudentId());
+        studentEvent.setType(NotificationType.DURATION_STUDENT_CONFIRM.getCode());
+        studentEvent.setTitle("请确认服务记录");
+        studentEvent.setContent("志愿者提交了新的服务时长记录，请确认");
+        studentEvent.setParamsJson("{\"recordId\":" + record.getId() + "}");
+        notificationAsyncPublisher.publish(studentEvent);
+
+        StudentProfile studentProfile = studentProfileMapper.selectOne(
+                new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, pair.getStudentId())
+        );
+        if (studentProfile != null && studentProfile.getBindAdminId() != null) {
+            NotificationEvent adminEvent = new NotificationEvent();
+            adminEvent.setUserId(studentProfile.getBindAdminId());
+            adminEvent.setType(NotificationType.DURATION_STUDENT_CONFIRM.getCode());
+            adminEvent.setTitle("请确认服务记录");
+            adminEvent.setContent("志愿者为学生提交了新的服务时长记录，请提醒学生确认");
+            adminEvent.setParamsJson("{\"recordId\":" + record.getId() + "}");
+            notificationAsyncPublisher.publish(adminEvent);
+        }
     }
 
     @Override
@@ -136,23 +156,32 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     }
 
     @Override
-    public Page<VolunteerRecordVO> getPendingRecords(Long userId, Long page, Long size) {
-        userAccessService.requireL2WithPermission(userId, "student_manage");
-        StudentProfile adminProfile = studentProfileMapper.selectOne(
-                new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
-        );
-        Long schoolId = null;
-        if (adminProfile != null) {
-            schoolId = adminProfile.getSchoolId();
-        }
-        if (schoolId == null) {
-            throw new BizException("无法确定管理员的管辖学校");
-        }
+    public Page<VolunteerRecordVO> getPendingRecords(Long userId, Long schoolId, String regionCode, Long page, Long size) {
         long current = page == null || page < 1 ? 1 : page;
         long pageSize = size == null || size < 1 ? 10 : Math.min(size, 100);
+
+        User user = userAccessService.requireUser(userId);
+        Long filterSchoolId = schoolId;
+
+        if (user.getRole() == UserRole.L2_ADMIN.getCode()) {
+            userAccessService.requireL2WithPermission(userId, "student_manage");
+            if (filterSchoolId == null) {
+                StudentProfile adminProfile = studentProfileMapper.selectOne(
+                        new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
+                );
+                if (adminProfile != null) {
+                    filterSchoolId = adminProfile.getSchoolId();
+                }
+                if (filterSchoolId == null) {
+                    throw new BizException("无法确定管理员的管辖学校");
+                }
+            }
+        } else if (user.getRole() != UserRole.L1_ADMIN.getCode()) {
+            throw new BizException("无权限操作");
+        }
+
         Page<VolunteerRecordVO> mpPage = new Page<>(current, pageSize);
-        mpPage.setRecords(volunteerRecordMapper.selectPendingBySchool(schoolId));
-        mpPage.setTotal(mpPage.getRecords().size());
+        volunteerRecordMapper.selectPendingBySchool(mpPage, filterSchoolId);
         return mpPage;
     }
 
@@ -180,7 +209,10 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             record.setStatus(RecordStatus.APPROVED.getCode());
             record.setAdminAuditTime(LocalDateTime.now());
             record.setAuditorId(userId);
-            volunteerRecordMapper.updateById(record);
+            int updated = volunteerRecordMapper.updateById(record);
+            if (updated == 0) {
+                throw new BizException("记录已被其他管理员处理，请刷新后重试");
+            }
 
             TeacherProfile teacherProfile = teacherProfileMapper.selectOne(
                     new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, record.getTeacherId())
@@ -209,7 +241,10 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             record.setRejectReason(request.getRejectReason());
             record.setAdminAuditTime(LocalDateTime.now());
             record.setAuditorId(userId);
-            volunteerRecordMapper.updateById(record);
+            int updated = volunteerRecordMapper.updateById(record);
+            if (updated == 0) {
+                throw new BizException("记录已被其他管理员处理，请刷新后重试");
+            }
 
             eventPublisher.publish(new RecordStatusChangedEvent(recordId, record.getStatus(), userId));
 
@@ -245,12 +280,11 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
                 filterSchoolId = adminProfile.getSchoolId();
             }
         }
+
         long current = page == null || page < 1 ? 1 : page;
         long pageSize = size == null || size < 1 ? 10 : Math.min(size, 100);
-        java.util.List<VolunteerRecordVO> records = volunteerRecordMapper.selectRecords(filterTeacherId, filterStudentId, status, filterSchoolId);
         Page<VolunteerRecordVO> mpPage = new Page<>(current, pageSize);
-        mpPage.setRecords(records);
-        mpPage.setTotal(records.size());
+        volunteerRecordMapper.selectRecords(mpPage, filterTeacherId, filterStudentId, status, filterSchoolId);
         return mpPage;
     }
 }

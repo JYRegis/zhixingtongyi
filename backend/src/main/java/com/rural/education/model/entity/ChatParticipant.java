@@ -18,4 +18,6 @@ public class ChatParticipant {
     private Integer isDefaultMember;
     private LocalDateTime joinedTime;
     private LocalDateTime leftTime;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

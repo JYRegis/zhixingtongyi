@@ -24,10 +24,13 @@ public class RecordAdminController {
     private final VolunteerRecordService volunteerRecordService;
 
     @GetMapping("/pending")
-    public ApiResponse<PageResponse<VolunteerRecordVO>> pending(@RequestParam(required = false, defaultValue = "1") Long page,
+    public ApiResponse<PageResponse<VolunteerRecordVO>> pending(@RequestParam(required = false) Long schoolId,
+                                                                 @RequestParam(required = false) String regionCode,
+                                                                 @RequestParam(required = false, defaultValue = "1") Long page,
                                                                  @RequestParam(required = false, defaultValue = "10") Long size) {
         Long userId = currentUserUtil.getCurrentUserId();
-        return ApiResponse.success(PageResponse.from(volunteerRecordService.getPendingRecords(userId, page, size)));
+        return ApiResponse.success(PageResponse.from(
+                volunteerRecordService.getPendingRecords(userId, schoolId, regionCode, page, size)));
     }
 
     @PutMapping("/{recordId}/audit")
