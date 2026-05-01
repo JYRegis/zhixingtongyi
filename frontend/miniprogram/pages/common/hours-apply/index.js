@@ -33,7 +33,13 @@ function buildPairList() {
 function mapMyList(phone) {
   return (getMyHoursRequests(phone) || []).map((h) => ({
     ...h,
-    statusLabel: STATUS_LABEL[h.status] || h.status || "—"
+    statusLabel: STATUS_LABEL[h.status] || h.status || "—",
+    statusClass:
+      h.status === "approved"
+        ? "hours-status--approved"
+        : h.status === "rejected"
+          ? "hours-status--rejected"
+          : "hours-status--pending"
   }));
 }
 

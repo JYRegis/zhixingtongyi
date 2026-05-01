@@ -17,12 +17,13 @@
 }
 
 .region-student-card {
-  transition: border-color 0.2s ease;
+  padding: 28rpx;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .region-student-card--active {
-  border-color: rgba(59, 130, 246, 0.4);
-  box-shadow: 0 14rpx 36rpx rgba(37, 99, 235, 0.12);
+  border-color: rgba(255, 140, 0, 0.28);
+  box-shadow: 0 14rpx 36rpx rgba(255, 140, 0, 0.12);
 }
 
 .region-student-top {
@@ -34,14 +35,42 @@
 
 .region-student-name {
   font-size: 32rpx;
-  font-weight: 700;
-  color: #101828;
+  font-weight: 800;
+  color: #333333;
 }
 
 .region-student-action {
   font-size: 24rpx;
-  font-weight: 600;
-  color: #175cd3;
+  font-weight: 700;
+  color: var(--ui-primary);
+}
+
+.region-student-main {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  margin-bottom: 18rpx;
+}
+
+.region-student-avatar,
+.region-jump-icon {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--ui-primary);
+  font-size: 32rpx;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.region-student-school {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #999999;
 }
 
 .region-chip-row {
@@ -55,6 +84,26 @@
 /* 受援方：两个入口 */
 .region-recipient-hub {
   margin-top: 20rpx;
+}
+
+.region-empty-card {
+  margin-top: 20rpx;
+  padding: 44rpx 28rpx;
+  text-align: center;
+}
+
+.region-empty-icon {
+  width: 76rpx;
+  height: 76rpx;
+  margin: 0 auto 18rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--ui-primary);
+  font-size: 32rpx;
+  font-weight: 800;
 }
 
 .region-recipient-btns {
@@ -71,10 +120,11 @@ button.region-jump-item {
   font-weight: inherit;
   font-size: inherit;
   color: inherit;
-  padding: 24rpx 20rpx;
-  border: 1rpx solid #e4e7ec;
-  border-radius: 12rpx;
-  background: #f9fafb;
+  padding: 26rpx 22rpx;
+  border: 1rpx solid #f0f0f0;
+  border-radius: 28rpx;
+  background: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.04);
 }
 
 button.region-jump-item::after {
@@ -83,25 +133,30 @@ button.region-jump-item::after {
 
 .region-jump-top {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 8rpx;
+  gap: 18rpx;
+}
+
+.region-jump-main {
+  flex: 1;
+  min-width: 0;
 }
 
 .region-jump-name {
   font-size: 30rpx;
-  font-weight: 600;
-  color: #101828;
+  font-weight: 800;
+  color: #333333;
 }
 
 .region-jump-cta {
   font-size: 26rpx;
-  color: #175cd3;
-  font-weight: 600;
+  color: var(--ui-primary);
+  font-weight: 700;
 }
 
 .region-jump-meta {
+  margin-top: 8rpx;
   font-size: 24rpx;
-  color: #667085;
+  color: #999999;
   line-height: 1.4;
 }

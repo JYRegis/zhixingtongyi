@@ -3,7 +3,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  min-height: 100rpx;
+  min-height: 112rpx;
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 5000;
   box-sizing: border-box;
@@ -16,9 +16,9 @@
   right: 0;
   top: 0;
   bottom: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, #ffffff 28%);
-  border-top: 1rpx solid rgba(228, 231, 235, 0.95);
-  box-shadow: 0 -8rpx 32rpx rgba(16, 24, 40, 0.06);
+  background: rgba(255, 255, 255, 0.94);
+  border-top: 1rpx solid rgba(240, 240, 240, 0.92);
+  box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -27,9 +27,9 @@
   position: relative;
   z-index: 1;
   display: flex;
-  min-height: 100rpx;
+  min-height: 112rpx;
   align-items: stretch;
-  padding: 4rpx 8rpx 0;
+  padding: 8rpx 10rpx 0;
   box-sizing: border-box;
 }
 
@@ -41,7 +41,7 @@
   justify-content: center;
   padding: 0 0 2rpx;
   font-size: 20rpx;
-  color: #667085;
+  color: #999999;
   box-sizing: border-box;
 }
 
@@ -52,18 +52,18 @@
   justify-content: center;
   width: 100%;
   min-height: 88rpx;
-  padding: 4rpx 0 0;
+  padding: 6rpx 0 4rpx;
   border-radius: 999rpx;
   box-sizing: border-box;
   transition: background 0.18s ease, transform 0.12s ease;
 }
 
 .tab-bar-item--active {
-  color: #3b82f6;
+  color: #ff8c00;
 }
 
 .tab-bar-item--active .tab-bar-item-bubble {
-  background: rgba(59, 130, 246, 0.1);
+  background: #fff3df;
 }
 
 .tab-bar-item--active .tab-bar-icon {
@@ -71,9 +71,9 @@
 }
 
 .tab-bar-icon {
-  width: 48rpx;
-  height: 48rpx;
-  margin-bottom: 2rpx;
+  width: 46rpx;
+  height: 46rpx;
+  margin-bottom: 4rpx;
   transition: transform 0.15s ease;
 }
 
@@ -85,38 +85,38 @@
   white-space: nowrap;
   padding: 0 4rpx 4rpx;
   font-size: 20rpx;
-  font-weight: 500;
+  font-weight: 700;
 }
 
 /* 角色主题下的选中色（与 styles/role-theme.wxss 中 tab-bar 段一致，针对 pill 内文字/图标可继承） */
 .tab-bar.theme-guest .tab-bar-item--active {
-  color: #2563eb;
+  color: #ff8c00;
 }
 .tab-bar.theme-student .tab-bar-item--active {
   color: #ea580c;
 }
 .tab-bar.theme-teacher .tab-bar-item--active {
-  color: #0e7490;
+  color: #ff8c00;
 }
 .tab-bar.theme-l2 .tab-bar-item--active {
-  color: #3f6212;
+  color: #ff8c00;
 }
 .tab-bar.theme-l1 .tab-bar-item--active {
-  color: #6366f1;
+  color: #ff8c00;
 }
 
 .tab-bar.theme-guest .tab-bar-item--active .tab-bar-item-bubble {
-  background: rgba(37, 99, 235, 0.12);
+  background: #fff3df;
 }
 .tab-bar.theme-student .tab-bar-item--active .tab-bar-item-bubble {
   background: rgba(234, 88, 12, 0.1);
 }
 .tab-bar.theme-teacher .tab-bar-item--active .tab-bar-item-bubble {
-  background: rgba(8, 145, 178, 0.1);
+  background: #fff3df;
 }
 .tab-bar.theme-l2 .tab-bar-item--active .tab-bar-item-bubble {
-  background: rgba(63, 98, 18, 0.1);
+  background: #fff3df;
 }
 .tab-bar.theme-l1 .tab-bar-item--active .tab-bar-item-bubble {
-  background: rgba(99, 102, 241, 0.12);
+  background: #fff3df;
 }

@@ -38,7 +38,7 @@
       </view>
       <view class="list-row" wx:if="{{activeRequest.applicantPhone}}">
         <text>发起人手机尾号</text>
-        <text>{{activeRequest.applicantPhone.slice(-4)}}</text>
+        <text>{{activeRequest.applicantPhoneTail}}</text>
       </view>
       <view class="list-row">
         <text>解绑原因</text>

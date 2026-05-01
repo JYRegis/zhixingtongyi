@@ -1,17 +1,26 @@
-<view class="container page-shell {{_roleThemeClass}}" style="min-height: 100vh">
-  <view class="card">
-    <view class="title">结对待办</view>
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="container req-page">
+  <view class="page-hero">
+    <view class="page-hero-eyebrow">PAIRING TASKS</view>
+    <view class="page-hero-title">结对待办</view>
+    <view class="page-hero-desc">处理结对申请，确认双方时间与学习需求</view>
   </view>
 
-  <view wx:if="{{pendingList.length === 0}}" class="card" style="margin-top: 20rpx;">
-    <view class="desc" style="text-align: center;">暂无</view>
+  <view wx:if="{{pendingList.length === 0}}" class="card req-empty-card">
+    <view class="req-empty-icon">待</view>
+    <view class="empty-title">暂无待办</view>
+    <view class="empty-desc">新的结对申请会显示在这里</view>
   </view>
 
   <block wx:for="{{pendingList}}" wx:key="id">
-    <view class="card" style="margin-top: 20rpx;">
-      <view class="list-row">
-        <text>{{item.primaryLabel}}</text>
-        <text>{{item.primaryName}}</text>
+    <view class="card req-card">
+      <view class="req-card-head">
+        <view class="req-avatar">{{item.avatarText}}</view>
+        <view class="req-main">
+          <view class="req-name">{{item.primaryName}}</view>
+          <view class="req-sub">{{item.primaryLabel}}</view>
+        </view>
+        <view class="req-status">待处理</view>
       </view>
       <view class="list-row">
         <text wx:if="{{isVolunteer}}">对方希望上课时间</text>
@@ -24,7 +33,7 @@
       </view>
       <view class="list-row" wx:if="{{!isVolunteer}}">
         <text>状态</text>
-        <text>待志愿者处理</text>
+        <text class="req-status-inline">待志愿者处理</text>
       </view>
       <view class="actions" wx:if="{{isVolunteer}}">
         <button class="btn-primary" data-id="{{item.id}}" bindtap="onAccept">接受</button>
@@ -55,5 +64,6 @@
         <button class="btn-primary" bindtap="onRejectConfirm">确认拒绝</button>
       </view>
     </view>
+  </view>
   </view>
 </view>

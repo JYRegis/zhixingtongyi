@@ -29,10 +29,12 @@ function formatApplyAt(ts) {
  */
 function mapItem(row, viewerRole) {
   const isVolunteer = viewerRole === "teacher";
+  const primaryName = isVolunteer ? (row.studentName || "—") : (row.volunteerName && String(row.volunteerName).trim()) || "待分配";
   return {
     ...row,
     primaryLabel: isVolunteer ? "学员" : "支教老师",
-    primaryName: isVolunteer ? (row.studentName || "—") : (row.volunteerName && String(row.volunteerName).trim()) || "待分配",
+    primaryName: primaryName,
+    avatarText: primaryName && primaryName !== "—" ? String(primaryName).slice(0, 1) : "待",
     preferredTimeDisplay: formatSavedTimeForDisplay(row.timeRaw),
     appliedAtText: formatApplyAt(row.appliedAt)
   };

@@ -62,6 +62,7 @@ function pickDisplayName(item, role) {
 
 function enrichItem(item, role) {
   var displayName = pickDisplayName(item, role);
+  var avatarText = displayName && displayName !== "—" ? String(displayName).slice(0, 1) : "驿";
   var scoreTag = "可继续观察";
   if (item.score >= 90) {
     scoreTag = "优先推荐";
@@ -71,9 +72,11 @@ function enrichItem(item, role) {
   var timeDisplay = formatSavedTimeForDisplay(item.timeRaw);
   return {
     id: item.id,
+    teacherId: item.teacherId,
     subject: item.subject,
     /** 列表主标题：按身份为「志愿者名」或「结对学生名」 */
     teacher: displayName,
+    avatarText: avatarText,
     timeDisplay: timeDisplay,
     timeRaw: item.timeRaw,
     score: item.score,
@@ -139,7 +142,7 @@ Page({
       try {
         const remote = await getRecommendations();
         fullList = (Array.isArray(remote) ? remote : []).map(function (row, idx) {
-          return {
+          return enrichItem({
             id: row.teacherId || idx + 1,
             teacherId: row.teacherId,
             asVolunteer: row.realName || "志愿者",
@@ -148,7 +151,7 @@ Page({
             score: 90,
             style: row.school || "",
             subject: (row.grade || "综合")
-          };
+          }, role);
         });
       } catch (e) {
         if (console && console.warn) {

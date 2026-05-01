@@ -35,7 +35,7 @@
       <view class="card profile-section-card">
         <block wx:for="{{item.fields}}" wx:key="key" wx:for-item="field">
           <view class="field profile-field">
-            <text class="field-label">{{field.label}}</text>
+            <text wx:if="{{field.type !== 'time_chips'}}" class="field-label">{{field.label}}</text>
             <picker
               wx:if="{{field.type === 'picker_school'}}"
               mode="selector"
@@ -62,7 +62,7 @@
             </picker>
             <!-- 时间选择 -->
             <view wx:if="{{field.type === 'time_chips'}}" class="form-row form-row--time-chips">
-              <view class="form-label">{{field.label}}</view>
+              <view class="field-label form-label">{{field.label}}</view>
               <view class="form-time-chips-wrap">
                 <view class="form-time-chips-title">星期</view>
                 <view class="form-time-chips-row">

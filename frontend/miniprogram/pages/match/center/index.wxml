@@ -1,7 +1,9 @@
 <view class="page-shell {{_roleThemeClass}}">
   <view class="container match-page">
     <view class="page-hero">
+      <view class="page-hero-eyebrow">SMART MATCH</view>
       <view class="page-hero-title">{{heroTitle}}</view>
+      <view class="page-hero-desc">基于学科、时间与陪伴偏好，推荐更合适的支教结对</view>
     </view>
 
     <view wx:if="{{(canPairTodo || canUnbind)}}" class="card match-filter-card">
@@ -31,9 +33,12 @@
     <block wx:for="{{renderList}}" wx:key="id">
       <view class="card match-teacher-card {{item.highlight ? 'match-teacher-card--featured' : ''}}">
         <view class="match-teacher-top">
-          <view>
-            <view class="match-teacher-name">{{item.teacher}}</view>
-            <view class="match-teacher-subject">学科：<text class="match-subj-strong">{{item.subject}}</text> · {{item.style}}</view>
+          <view class="match-teacher-main">
+            <view class="match-teacher-avatar">{{item.avatarText}}</view>
+            <view class="match-teacher-info">
+              <view class="match-teacher-name">{{item.teacher}}</view>
+              <view class="match-teacher-subject">学科：<text class="match-subj-strong">{{item.subject}}</text> · {{item.style}}</view>
+            </view>
           </view>
           <view class="match-score-wrap">
             <view class="match-score-value">{{item.score}}</view>

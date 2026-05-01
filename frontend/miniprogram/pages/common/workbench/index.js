@@ -67,7 +67,28 @@ function getMenuListForCurrentRole(role) {
 
 function formatMenuList(role) {
   const raw = getMenuListForCurrentRole(role);
-  return raw.map((item, index) => ({ ...item, featured: index === 0 }));
+  const iconMap = {
+    toMatch: "配",
+    toChat: "聊",
+    toHoursApply: "时",
+    toPlatformAdmin: "管",
+    toRegionAdmin: "校",
+    toUnbind: "解"
+  };
+  const descMap = {
+    toMatch: "查看推荐结对与待处理申请",
+    toChat: "进入结对沟通与消息列表",
+    toHoursApply: "登记与提交公益服务时长",
+    toPlatformAdmin: "处理平台审核、风险与数据",
+    toRegionAdmin: "管理学校侧学生与志愿者事务",
+    toUnbind: "处理结对解绑与异常申请"
+  };
+  return raw.map((item, index) => ({
+    ...item,
+    featured: index === 0,
+    iconText: iconMap[item.action] || "驿",
+    desc: descMap[item.action] || "进入对应工作入口"
+  }));
 }
 
 Page({

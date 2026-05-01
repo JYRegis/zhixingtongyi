@@ -10,13 +10,15 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 28rpx;
-  border: 2rpx solid #e5e6eb;
+  padding: 28rpx;
+  border: 1rpx solid #f0f0f0;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06);
 }
 
 .unbind-pair--on {
-  border-color: #07c160;
-  background: #f0fff4;
+  border-color: rgba(255, 140, 0, 0.28);
+  background: #fffaf2;
+  box-shadow: 0 12rpx 36rpx rgba(255, 140, 0, 0.12);
 }
 
 .unbind-pair-main {
@@ -26,14 +28,15 @@
 }
 
 .unbind-pair-line {
-  font-size: 30rpx;
-  color: #1a1a1a;
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #333333;
   line-height: 1.4;
 }
 
 .unbind-pair-sub {
   font-size: 24rpx;
-  color: #8c8c8c;
+  color: #999999;
   margin-top: 6rpx;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -50,20 +53,21 @@
 
 .unbind-pair-chev {
   font-size: 24rpx;
-  color: #07c160;
+  color: var(--ui-primary);
+  font-weight: 700;
 }
 
 .em {
-  font-weight: 600;
-  color: #1a1a1a;
+  font-weight: 800;
+  color: #333333;
   text-align: right;
   max-width: 68%;
   word-break: break-all;
 }
 
 .badge-muted {
-  background: #f2f3f5;
-  color: #5c6b7a;
+  background: #f5f7fa;
+  color: #999999;
 }
 
 .list-row .cell-multiline {
@@ -71,17 +75,18 @@
   text-align: right;
   line-height: 1.4;
   font-size: 28rpx;
-  color: #1a1a1a;
+  color: #333333;
 }
 
 .dividing-line {
   height: 1rpx;
-  background: #e5e6eb;
+  background: #f0f0f0;
   margin: 24rpx 0 16rpx;
 }
 
 .mini-title {
   font-size: 26rpx;
-  color: #5c6b7a;
+  color: #666666;
+  font-weight: 800;
   margin-bottom: 12rpx;
 }

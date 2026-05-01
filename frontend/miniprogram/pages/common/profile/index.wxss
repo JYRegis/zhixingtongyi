@@ -4,6 +4,7 @@
 
 .profile-account-card {
   margin-top: 20rpx;
+  overflow: hidden;
 }
 
 .profile-account-section-title {
@@ -26,7 +27,7 @@
 .profile-account-avatar {
   width: 112rpx;
   height: 112rpx;
-  border-radius: 20rpx;
+  border-radius: 32rpx;
   overflow: hidden;
 }
 
@@ -43,7 +44,8 @@
   background: linear-gradient(135deg, var(--ui-primary) 0%, var(--ui-primary-mid) 100%);
   color: #fff;
   font-size: 44rpx;
-  font-weight: 600;
+  font-weight: 800;
+  box-shadow: 0 12rpx 28rpx rgba(var(--ui-hero-shadow), 0.18);
 }
 
 .profile-account-text {
@@ -53,21 +55,21 @@
 
 .profile-account-nick {
   font-size: 32rpx;
-  font-weight: 600;
-  color: #101828;
+  font-weight: 800;
+  color: #333333;
   line-height: 1.4;
 }
 
 .profile-account-phone {
   margin-top: 8rpx;
   font-size: 26rpx;
-  color: #667085;
+  color: #999999;
 }
 
 .profile-account-actions {
   margin-top: 20rpx;
   padding-top: 20rpx;
-  border-top: 1rpx solid #eaecf0;
+  border-top: 1rpx solid #f0f0f0;
 }
 
 .profile-section-card,
@@ -82,7 +84,7 @@
 .profile-field + .profile-field {
   margin-top: 24rpx;
   padding-top: 24rpx;
-  border-top: 1rpx solid #eaecf0;
+  border-top: 1rpx solid #f0f0f0;
 }
 
 /**
@@ -92,7 +94,7 @@
 .profile-field-input {
   height: 92rpx;
   line-height: 92rpx;
-  padding: 0 18rpx;
+  padding: 0 22rpx;
   box-sizing: border-box;
 }
 
@@ -104,13 +106,13 @@
   margin-top: 10rpx;
   font-size: 22rpx;
   line-height: 1.6;
-  color: #98a2b3;
+  color: #999999;
 }
 
 .time-pair-sublabel {
   display: block;
   font-size: 22rpx;
-  color: #98a2b3;
+  color: #999999;
   margin: 0 0 10rpx;
   line-height: 1.4;
 }
@@ -176,15 +178,15 @@
 }
 
 .profile-chip--on {
-  color: #175cd3;
-  background: #eff8ff;
-  border-color: #b2ddff;
-  font-weight: 500;
+  color: #b65f00;
+  background: #fff3df;
+  border-color: rgba(255, 140, 0, 0.28);
+  font-weight: 700;
 }
 
 /* 未选学校/年级：与 input placeholder 同一 token（form-placeholder-std），需盖过 profile-field-input 行高样式 */
 .profile-page .field-input.profile-field-input.form-placeholder-std {
-  color: #94a3b8;
+  color: #999999;
 }
 
 .profile-submit-title {
@@ -192,7 +194,7 @@
 }
 
 .profile-submit-btn {
-  margin-top: 24rpx;
+  margin-top: 0;
 }
 
 /* 时间选择控件样式 - 最终增强 */
@@ -202,12 +204,17 @@
 }
 
 .profile-page .form-time-chips-wrap {
-  margin-top: 10rpx;
+  margin-top: 4rpx;
+  padding: 22rpx;
+  border-radius: 28rpx;
+  background: #f8fafc;
+  border: 1rpx solid #f0f0f0;
 }
 
 .profile-page .form-time-chips-title {
-  font-size: 28rpx;
-  color: #666;
+  font-size: 24rpx;
+  color: #999999;
+  font-weight: 700;
   margin-bottom: 10rpx;
 }
 
@@ -219,18 +226,20 @@
 }
 
 .profile-page .form-time-chip {
-  padding: 10rpx 20rpx;
-  border: 2rpx solid #e5e7eb;
-  border-radius: 12rpx;
-  font-size: 28rpx;
-  color: #4b5563;
-  background-color: #f3f4f6;
-  min-width: 100rpx;
+  padding: 12rpx 22rpx;
+  border: 1rpx solid #f0f0f0;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  color: #666666;
+  background-color: #ffffff;
+  min-width: 96rpx;
   text-align: center;
+  box-shadow: 0 4rpx 14rpx rgba(0, 0, 0, 0.03);
 }
 
 .profile-page .form-time-chip--on {
-  border-color: var(--ui-primary) !important;
-  color: var(--ui-primary) !important;
-  background-color: var(--ui-chip-bg) !important;
+  border-color: rgba(255, 140, 0, 0.28) !important;
+  color: #b65f00 !important;
+  background-color: #fff3df !important;
+  font-weight: 800;
 }

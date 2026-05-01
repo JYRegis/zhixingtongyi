@@ -6,19 +6,28 @@
 
 .ob-pend-card {
   text-align: center;
+  padding: 52rpx 32rpx;
 }
 
 .ob-pend-ico {
-  font-size: 72rpx;
-  line-height: 1;
-  margin-bottom: 24rpx;
+  width: 96rpx;
+  height: 96rpx;
+  margin: 0 auto 24rpx;
+  border-radius: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--ui-primary);
+  font-size: 40rpx;
+  font-weight: 800;
 }
 
 .ob-pend-hint {
   margin-top: 20rpx;
   font-size: 26rpx;
-  color: #98a2b3;
-  text-align: left;
+  color: #999999;
+  text-align: center;
 }
 
 .ob-pend-actions {

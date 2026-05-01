@@ -1,17 +1,24 @@
 <view class="page-shell create-page {{_roleThemeClass}}">
   <view class="container">
-    <view class="card" style="margin-top: 16rpx;">
-      <view class="title">新建会议</view>
+    <view class="page-hero create-hero">
+      <view class="page-hero-eyebrow">CREATE MEETING</view>
+      <view class="page-hero-title">新建会议</view>
+      <view class="page-hero-desc">登记外部课堂链接，方便结对双方查看和进入</view>
+    </view>
+
+    <view class="card create-tip-card">
+      <view class="create-tip-icon">会</view>
       <view class="section-desc create-hint">
         在腾讯会议、课堂等自己开好会后，将入会链接或 URL 粘贴在下方。小程序不会代替您调腾讯会议创建房间。
       </view>
     </view>
 
-    <view class="card" style="margin-top: 20rpx;" wx:if="{{!pairOptions.length && (role === 'student' || role === 'teacher')}}">
-      <view class="section-desc" style="color: #b54708">当前没有可选结对口。请先完成结对后再排会议。</view>
+    <view class="card create-tip-card" wx:if="{{!pairOptions.length && (role === 'student' || role === 'teacher')}}">
+      <view class="create-tip-icon">!</view>
+      <view class="section-desc create-warn">当前没有可选结对口。请先完成结对后再排会议。</view>
     </view>
 
-    <view class="card" style="margin-top: 20rpx;" wx:else>
+    <view class="card create-form-card" wx:else>
       <view class="field">
         <text class="field-label">主题 <text class="field-req">*</text></text>
         <input class="field-input" value="{{title}}" data-k="title" bindinput="onText" placeholder="如：数学第 3 次辅导" />

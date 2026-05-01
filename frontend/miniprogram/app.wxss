@@ -2,66 +2,101 @@
 
 page {
   background: #f5f7fa;
-  color: #101828;
+  color: #333333;
   font-size: 28rpx;
   min-height: 100%;
 }
 
 .container {
-  padding: 32rpx;
+  padding: 32rpx 28rpx 140rpx;
   box-sizing: border-box;
 }
 
 .page-shell {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top right, var(--ui-radial), transparent 28%),
-    linear-gradient(180deg, var(--ui-page-bg-1) 0%, var(--ui-page-bg-2) 24%, #f5f7fa 100%);
+    radial-gradient(circle at 16% 0%, rgba(255, 165, 0, 0.1), transparent 28%),
+    radial-gradient(circle at 92% 10%, rgba(255, 140, 0, 0.08), transparent 24%),
+    linear-gradient(180deg, #ffffff 0%, #f5f7fa 28%, #f5f7fa 100%);
 }
 
 .card {
   background: #ffffff;
-  border-radius: 20rpx;
+  border-radius: 32rpx;
   padding: 24rpx;
-  border: 1rpx solid #eaecf0;
-  box-shadow: 0 10rpx 30rpx rgba(16, 24, 40, 0.06);
+  border: 1rpx solid rgba(240, 240, 240, 0.92);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
 }
 
 .title {
   font-size: 36rpx;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 12rpx;
-  color: #101828;
+  color: #333333;
   line-height: 1.35;
 }
 
 .desc {
-  color: #667085;
+  color: #999999;
   line-height: 1.7;
 }
 
 .page-hero {
-  padding: 32rpx;
-  border-radius: 28rpx;
+  position: relative;
+  min-height: 184rpx;
+  padding: 36rpx 34rpx;
+  border-radius: 32rpx;
   background: linear-gradient(135deg, var(--ui-hero-start) 0%, var(--ui-hero-end) 100%);
-  box-shadow: 0 18rpx 48rpx rgba(var(--ui-hero-shadow), 0.28);
+  box-shadow: 0 18rpx 44rpx rgba(var(--ui-hero-shadow), 0.24);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.page-hero::after {
+  content: "";
+  position: absolute;
+  right: -52rpx;
+  top: -44rpx;
+  width: 220rpx;
+  height: 220rpx;
+  border-radius: 70rpx;
+  background: rgba(255, 255, 255, 0.16);
+  transform: rotate(18deg);
+}
+
+.page-hero::before {
+  content: "";
+  position: absolute;
+  right: 34rpx;
+  bottom: 28rpx;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .page-hero-eyebrow {
+  position: relative;
+  z-index: 1;
   font-size: 22rpx;
   color: rgba(255, 255, 255, 0.8);
   letter-spacing: 2rpx;
 }
 
 .page-hero-title {
-  margin-top: 12rpx;
-  font-size: 44rpx;
+  position: relative;
+  z-index: 1;
+  margin-top: 8rpx;
+  font-size: 42rpx;
   line-height: 1.25;
   font-weight: 700;
   color: #ffffff;
 }
 
 .page-hero-desc {
+  position: relative;
+  z-index: 1;
   margin-top: 16rpx;
   font-size: 26rpx;
   line-height: 1.7;
@@ -86,21 +121,37 @@ page {
 }
 
 .section-header {
-  margin: 32rpx 0 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 34rpx 0 18rpx;
 }
 
 .section-title {
-  font-size: 32rpx;
+  position: relative;
+  padding-left: 18rpx;
+  font-size: 34rpx;
   font-weight: 700;
   margin: 0;
-  color: #101828;
+  color: #333333;
+}
+
+.section-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8rpx;
+  width: 6rpx;
+  height: 28rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(180deg, var(--ui-hero-start), var(--ui-hero-end));
 }
 
 .section-desc {
   margin-top: 8rpx;
   font-size: 24rpx;
   line-height: 1.6;
-  color: #667085;
+  color: #999999;
 }
 
 .stat-grid {
@@ -117,17 +168,17 @@ page {
 
 .stat-card {
   min-height: 148rpx;
-  border-radius: 20rpx;
+  border-radius: 28rpx;
   padding: 20rpx;
-  background: linear-gradient(180deg, var(--ui-stat-top) 0%, var(--ui-stat-bot) 100%);
-  border: 1rpx solid #e4e7ec;
-  box-shadow: 0 8rpx 24rpx rgba(16, 24, 40, 0.05);
+  background: #ffffff;
+  border: 1rpx solid #f0f0f0;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
   box-sizing: border-box;
 }
 
 .stat-label {
   font-size: 22rpx;
-  color: #667085;
+  color: #999999;
 }
 
 .stat-value {
@@ -135,22 +186,22 @@ page {
   font-size: 38rpx;
   line-height: 1.15;
   font-weight: 700;
-  color: #101828;
+  color: #333333;
 }
 
 .stat-note {
   margin-top: 10rpx;
   font-size: 22rpx;
   line-height: 1.5;
-  color: #667085;
+  color: #999999;
 }
 
 .list-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16rpx 0;
-  border-bottom: 1rpx solid #eaecf0;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .list-row:last-child {
@@ -180,16 +231,18 @@ page {
 }
 
 .chip {
-  background: var(--ui-chip-bg);
-  color: var(--ui-chip-text);
-  padding: 8rpx 16rpx;
+  background: #e6f0ff;
+  color: #0066ff;
+  padding: 8rpx 18rpx;
   border-radius: 999rpx;
-  font-size: 24rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .badge {
   display: inline-block;
-  padding: 6rpx 14rpx;
+  padding: 6rpx 16rpx;
   border-radius: 999rpx;
   font-size: 22rpx;
   margin-left: 8rpx;
@@ -216,19 +269,21 @@ page {
 
 .field-label {
   display: block;
-  font-size: 24rpx;
-  color: #344054;
-  margin-bottom: 8rpx;
+  font-size: 25rpx;
+  color: #666666;
+  margin-bottom: 12rpx;
+  font-weight: 600;
 }
 
 .field-input,
 .field-textarea {
   width: 100%;
-  border: 1rpx solid #d0d5dd;
-  background: #ffffff;
-  border-radius: 14rpx;
+  border: 1rpx solid #f0f0f0;
+  background: #f8fafc;
+  border-radius: 24rpx;
   padding: 18rpx 20rpx;
   box-sizing: border-box;
+  color: #333333;
 }
 
 .field-textarea {
@@ -241,7 +296,7 @@ page {
  * - 页面上可点的伪输入（picker 内 view）的未选态
  */
 .form-placeholder-std {
-  color: #94a3b8;
+  color: #999999;
 }
 
 .actions {
@@ -259,9 +314,9 @@ page {
 .btn-primary,
 .btn-secondary {
   margin-top: 0;
-  border-radius: 16rpx;
+  border-radius: 999rpx;
   font-size: 28rpx;
-  font-weight: 600;
+  font-weight: 700;
   height: 88rpx;
   line-height: 88rpx;
   padding: 0 28rpx;
@@ -270,7 +325,7 @@ page {
 .btn-primary {
   background: linear-gradient(135deg, var(--ui-primary) 0%, var(--ui-primary-mid) 100%);
   color: #ffffff;
-  box-shadow: 0 12rpx 24rpx rgba(var(--ui-hero-shadow), 0.22);
+  box-shadow: 0 14rpx 28rpx rgba(var(--ui-hero-shadow), 0.22);
 }
 
 .btn-secondary {
@@ -292,15 +347,15 @@ page {
 
 .empty-title {
   font-size: 32rpx;
-  font-weight: 600;
-  color: #101828;
+  font-weight: 700;
+  color: #333333;
 }
 
 .empty-desc {
   margin-top: 12rpx;
   font-size: 24rpx;
   line-height: 1.6;
-  color: #667085;
+  color: #999999;
 }
 
 .surface-note {
@@ -314,7 +369,7 @@ page {
 }
 
 .muted {
-  color: #98a2b3;
+  color: #999999;
 }
 
 button {
@@ -361,11 +416,39 @@ button::after {
 
 .card-tier {
   position: relative;
-  border-radius: 28rpx;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1rpx solid rgba(234, 236, 240, 0.95);
-  box-shadow: 0 4rpx 0 rgba(16, 24, 40, 0.02), 0 24rpx 48rpx rgba(16, 24, 40, 0.08);
+  border-radius: 32rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(240, 240, 240, 0.95);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06);
   overflow: hidden;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+}
+
+.ui-icon-box {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--ui-primary);
+  font-size: 34rpx;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.ui-capsule {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: #e6f0ff;
+  color: #0066ff;
+  font-size: 22rpx;
+  font-weight: 700;
+  box-sizing: border-box;
 }

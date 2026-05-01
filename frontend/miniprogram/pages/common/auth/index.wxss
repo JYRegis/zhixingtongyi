@@ -1,7 +1,10 @@
 /* 整体页面 - 渐变更柔和，背景更精致 */
 .auth-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f0f6ff 0%, #f8fafc 50%, #ffffff 100%);
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 165, 0, 0.14), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #f5f7fa 34%, #f5f7fa 100%);
+
   padding: 60rpx 32rpx 80rpx;
   box-sizing: border-box;
   position: relative;
@@ -26,16 +29,19 @@
   border-radius: 50%;
   overflow: hidden;
   background: #ffffff;
-  border: 4rpx solid #e0efff;
+  border: 4rpx solid #fff3df;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12rpx 32rpx rgba(37, 99, 235, 0.15);
+  box-shadow: 0 12rpx 32rpx rgba(255, 140, 0, 0.16);
+
   transition: all 0.2s ease;
 }
 .auth-avatar-btn:active {
   transform: scale(0.96);
-  box-shadow: 0 6rpx 16rpx rgba(37, 99, 235, 0.12);
+  box-shadow: 0 6rpx 16rpx rgba(255, 140, 0, 0.12);
+
 }
 .auth-avatar-btn::after {
   border: none;
@@ -91,9 +97,9 @@
   transition: all 0.2s ease;
 }
 .auth-input-wrap:focus-within {
-  border-color: #3b82f6;
+  border-color: #ff8c00;
   background: #ffffff;
-  box-shadow: 0 0 0 4rpx rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 4rpx rgba(255, 140, 0, 0.1);
 }
 
 /* 输入框内容 */
@@ -167,17 +173,17 @@
   height: 92rpx;
   line-height: 92rpx;
   border-radius: 18rpx;
-  background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);
   color: #ffffff;
   font-size: 30rpx;
   font-weight: 600;
   border: none;
-  box-shadow: 0 12rpx 28rpx rgba(37, 99, 235, 0.24);
+  box-shadow: 0 12rpx 28rpx rgba(255, 140, 0, 0.24);
   transition: all 0.2s ease;
 }
 .auth-submit-btn:active {
   transform: translateY(2rpx);
-  box-shadow: 0 6rpx 16rpx rgba(37, 99, 235, 0.18);
+  box-shadow: 0 6rpx 16rpx rgba(255, 140, 0, 0.18);
 }
 .auth-submit-btn::after {
   border: none;

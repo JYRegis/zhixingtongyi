@@ -10,11 +10,36 @@
 
 .chat-pair-card {
   margin-top: 16rpx;
-  padding: 24rpx;
+  padding: 28rpx;
 }
 
 .chat-pair-card:active {
   background: #f9fafb;
+}
+
+.chat-pair-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 18rpx;
+}
+
+.chat-pair-avatar {
+  width: 78rpx;
+  height: 78rpx;
+  border-radius: 26rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--ui-primary);
+  font-size: 34rpx;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.chat-pair-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .chat-pair-top {
@@ -25,33 +50,39 @@
 
 .chat-pair-name {
   font-size: 32rpx;
-  font-weight: 600;
-  color: #101828;
+  font-weight: 800;
+  color: #333333;
 }
 
 .chat-pair-time {
   font-size: 24rpx;
-  color: #98a2b3;
+  color: #999999;
 }
 
 .chat-pair-tag {
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  color: #175cd3;
+  display: inline-flex;
+  margin-top: 10rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #0066ff;
+  background: #e6f0ff;
 }
 
 .chat-pair-preview {
   margin-top: 12rpx;
   font-size: 26rpx;
-  color: #667085;
+  color: #999999;
   line-height: 1.45;
 }
 
 .chat-pair-action {
   margin-top: 18rpx;
   font-size: 24rpx;
-  font-weight: 600;
-  color: #175cd3;
+  font-weight: 700;
+  color: var(--ui-primary);
+  text-align: right;
 }
 
 .chat-empty {

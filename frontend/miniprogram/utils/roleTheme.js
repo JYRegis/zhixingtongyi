@@ -64,11 +64,11 @@ function getPageRoleThemeClass() {
 function getTabActiveColorHex() {
   const t = getPageRoleThemeClass();
   const map = {
-    "theme-guest": "#2563eb",
-    "theme-student": "#ea580c",
-    "theme-teacher": "#0e7490",
-    "theme-l2": "#3f6212",
-    "theme-l1": "#6366f1"
+    "theme-guest": "#ff8c00",
+    "theme-student": "#f57c00",
+    "theme-teacher": "#ff8c00",
+    "theme-l2": "#ff8c00",
+    "theme-l1": "#ff8c00"
   };
   return map[t] || map["theme-guest"];
 }

@@ -11,6 +11,16 @@ const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
 const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
 
+function enrichPairs(pairs) {
+  return (pairs || []).map(function (item) {
+    var name = item && item.name ? String(item.name) : "聊天";
+    return {
+      ...item,
+      avatarText: name.slice(0, 1)
+    };
+  });
+}
+
 Page({
   data: {
     role: "",
@@ -35,7 +45,7 @@ Page({
       }
       const all = getPairedListForL1();
       const schoolId = (l1FilterSchools[l1FilterIndex] && l1FilterSchools[l1FilterIndex].id) || "";
-      const pairs = schoolId ? all.filter((p) => p.schoolId === schoolId) : all;
+      const pairs = enrichPairs(schoolId ? all.filter((p) => p.schoolId === schoolId) : all);
       var emptyHint = "";
       if (!pairs.length) {
         emptyHint = schoolId
@@ -53,7 +63,7 @@ Page({
       return;
     }
     if (role === "admin_level_2" && profile.l2Scope === "recipient_side") {
-      const pairs = u.phone ? getPairedListForRecipientL2(String(u.phone), profile) : [];
+      const pairs = enrichPairs(u.phone ? getPairedListForRecipientL2(String(u.phone), profile) : []);
       var emptyHint2 = "";
       if (!u.phone) {
         emptyHint2 = "请先登录";
@@ -71,7 +81,7 @@ Page({
       return;
     }
     if (role === "admin_level_2" && profile.l2Scope === "volunteer_side") {
-      const pairs = u.phone ? getPairedListForVolunteerL2(String(u.phone), profile) : [];
+      const pairs = enrichPairs(u.phone ? getPairedListForVolunteerL2(String(u.phone), profile) : []);
       var emptyHintV = "";
       if (!u.phone) {
         emptyHintV = "请先登录";
@@ -88,12 +98,13 @@ Page({
       });
       return;
     }
-    const pairs =
+    const pairs = enrichPairs(
       role && (role === "student" || role === "teacher")
         ? getPairedListForUser(String(u.phone || ""), role)
         : role
           ? getPairedList(role)
-          : [];
+          : []
+    );
     var emptyHint3 = "";
     if (!pairs.length) {
       if (!role) {
@@ -122,7 +133,7 @@ Page({
     }
     const all = getPairedListForL1();
     const schoolId = (l1FilterSchools[ix] && l1FilterSchools[ix].id) || "";
-    const pairs = schoolId ? all.filter((p) => p.schoolId === schoolId) : all;
+    const pairs = enrichPairs(schoolId ? all.filter((p) => p.schoolId === schoolId) : all);
     var emptyHint3 = "";
     if (!pairs.length) {
       emptyHint3 = schoolId

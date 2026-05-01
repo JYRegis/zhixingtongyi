@@ -3,22 +3,22 @@
  */
 
 page {
-  --ui-primary: #2563eb;
-  --ui-primary-mid: #1d4ed8;
-  --ui-hero-start: #38bdf8;
-  --ui-hero-end: #2563eb;
-  --ui-hero-shadow: 37, 99, 235;
-  --ui-page-bg-1: #f0f9ff;
-  --ui-page-bg-2: #e0f2fe;
-  --ui-radial: rgba(56, 189, 248, 0.16);
-  --ui-link: #2563eb;
-  --ui-chip-bg: #dbeafe;
-  --ui-chip-text: #1e3a8a;
-  --ui-surface-note-bg: #eff6ff;
-  --ui-surface-note-text: #1d4ed8;
-  --ui-btn-secondary-fg: #1d4ed8;
-  --ui-btn-secondary-bg: #f0f9ff;
-  --ui-btn-secondary-border: #93c5fd;
+  --ui-primary: #ff8c00;
+  --ui-primary-mid: #ff9f1a;
+  --ui-hero-start: #ff8c00;
+  --ui-hero-end: #ffa500;
+  --ui-hero-shadow: 255, 140, 0;
+  --ui-page-bg-1: #f5f7fa;
+  --ui-page-bg-2: #f5f7fa;
+  --ui-radial: rgba(255, 165, 0, 0.12);
+  --ui-link: #ff8c00;
+  --ui-chip-bg: #fff3df;
+  --ui-chip-text: #b65f00;
+  --ui-surface-note-bg: #fff7ed;
+  --ui-surface-note-text: #b65f00;
+  --ui-btn-secondary-fg: #b65f00;
+  --ui-btn-secondary-bg: #fff7ed;
+  --ui-btn-secondary-border: #ffd596;
   --ui-stat-top: #ffffff;
   --ui-stat-bot: #e0f2fe;
   --ui-auth-bg-1: #f0f9ff;
@@ -31,22 +31,22 @@ page {
 
 /* 未登录 / 选角前：天蓝/蔚蓝（首页、落地选身份） - 增强 */
 .theme-guest {
-  --ui-primary: #1e88e5;
-  --ui-primary-mid: #1565c0;
-  --ui-hero-start: #4fc3f7;
-  --ui-hero-end: #1e88e5;
-  --ui-hero-shadow: 30, 136, 229;
-  --ui-page-bg-1: #e3f2fd;
-  --ui-page-bg-2: #bbdefb;
-  --ui-radial: rgba(79, 195, 247, 0.2);
-  --ui-link: #1e88e5;
-  --ui-chip-bg: #b3e5fc;
-  --ui-chip-text: #01579b;
-  --ui-surface-note-bg: #e1f5fe;
-  --ui-surface-note-text: #0277bd;
-  --ui-btn-secondary-fg: #0277bd;
-  --ui-btn-secondary-bg: #e3f2fd;
-  --ui-btn-secondary-border: #81d4fa;
+  --ui-primary: #ff8c00;
+  --ui-primary-mid: #ff9f1a;
+  --ui-hero-start: #ff8c00;
+  --ui-hero-end: #ffa500;
+  --ui-hero-shadow: 255, 140, 0;
+  --ui-page-bg-1: #f5f7fa;
+  --ui-page-bg-2: #f5f7fa;
+  --ui-radial: rgba(255, 165, 0, 0.12);
+  --ui-link: #ff8c00;
+  --ui-chip-bg: #fff3df;
+  --ui-chip-text: #b65f00;
+  --ui-surface-note-bg: #fff7ed;
+  --ui-surface-note-text: #b65f00;
+  --ui-btn-secondary-fg: #b65f00;
+  --ui-btn-secondary-bg: #fff7ed;
+  --ui-btn-secondary-border: #ffd596;
   --ui-stat-top: #ffffff;
   --ui-stat-bot: #e1f5fe;
   --ui-auth-bg-1: #e3f2fd;
@@ -64,8 +64,8 @@ page {
   --ui-hero-start: #ffa726;
   --ui-hero-end: #f57c00;
   --ui-hero-shadow: 245, 124, 0;
-  --ui-page-bg-1: #fff3e0;
-  --ui-page-bg-2: #ffe0b2;
+  --ui-page-bg-1: #f5f7fa;
+  --ui-page-bg-2: #f5f7fa;
   --ui-radial: rgba(255, 167, 38, 0.15);
   --ui-link: #f57c00;
   --ui-chip-bg: #ffe0b2;
@@ -87,22 +87,22 @@ page {
 
 /* 志愿者：青蓝 / 蓝绿，行动与连接感 - 增强 */
 .theme-teacher {
-  --ui-primary: #00acc1;
-  --ui-primary-mid: #00838f;
-  --ui-hero-start: #26c6da;
-  --ui-hero-end: #00acc1;
-  --ui-hero-shadow: 0, 172, 193;
-  --ui-page-bg-1: #e0f7fa;
-  --ui-page-bg-2: #b2ebf2;
-  --ui-radial: rgba(38, 198, 218, 0.15);
-  --ui-link: #00acc1;
-  --ui-chip-bg: #b2ebf2;
-  --ui-chip-text: #006064;
-  --ui-surface-note-bg: #e0f7fa;
-  --ui-surface-note-text: #00838f;
-  --ui-btn-secondary-fg: #00838f;
-  --ui-btn-secondary-bg: #e0f7fa;
-  --ui-btn-secondary-border: #80deea;
+  --ui-primary: #ff8c00;
+  --ui-primary-mid: #ff9f1a;
+  --ui-hero-start: #ff8c00;
+  --ui-hero-end: #ffa500;
+  --ui-hero-shadow: 255, 140, 0;
+  --ui-page-bg-1: #f5f7fa;
+  --ui-page-bg-2: #f5f7fa;
+  --ui-radial: rgba(255, 165, 0, 0.12);
+  --ui-link: #ff8c00;
+  --ui-chip-bg: #fff3df;
+  --ui-chip-text: #b65f00;
+  --ui-surface-note-bg: #fff7ed;
+  --ui-surface-note-text: #b65f00;
+  --ui-btn-secondary-fg: #b65f00;
+  --ui-btn-secondary-bg: #fff7ed;
+  --ui-btn-secondary-border: #ffd596;
   --ui-stat-top: #ffffff;
   --ui-stat-bot: #e0f7fa;
   --ui-auth-bg-1: #e0f7fa;
@@ -115,22 +115,22 @@ page {
 
 /* 学校老师：米白 + 墨绿/橄榄，书卷感 - 增强 */
 .theme-l2 {
-  --ui-primary: #388e3c;
-  --ui-primary-mid: #2e7d32;
-  --ui-hero-start: #66bb6a;
-  --ui-hero-end: #2e7d32;
-  --ui-hero-shadow: 46, 125, 50;
-  --ui-page-bg-1: #f1f8e9;
-  --ui-page-bg-2: #dcedc8;
-  --ui-radial: rgba(76, 175, 80, 0.12);
-  --ui-link: #388e3c;
-  --ui-chip-bg: #dcedc8;
-  --ui-chip-text: #1b5e20;
-  --ui-surface-note-bg: #f1f8e9;
-  --ui-surface-note-text: #2e7d32;
-  --ui-btn-secondary-fg: #2e7d32;
-  --ui-btn-secondary-bg: #f1f8e9;
-  --ui-btn-secondary-border: #c5e1a5;
+  --ui-primary: #ff8c00;
+  --ui-primary-mid: #ff9f1a;
+  --ui-hero-start: #ff8c00;
+  --ui-hero-end: #ffa500;
+  --ui-hero-shadow: 255, 140, 0;
+  --ui-page-bg-1: #f5f7fa;
+  --ui-page-bg-2: #f5f7fa;
+  --ui-radial: rgba(255, 165, 0, 0.12);
+  --ui-link: #ff8c00;
+  --ui-chip-bg: #fff3df;
+  --ui-chip-text: #b65f00;
+  --ui-surface-note-bg: #fff7ed;
+  --ui-surface-note-text: #b65f00;
+  --ui-btn-secondary-fg: #b65f00;
+  --ui-btn-secondary-bg: #fff7ed;
+  --ui-btn-secondary-border: #ffd596;
   --ui-stat-top: #ffffff;
   --ui-stat-bot: #f1f8e9;
   --ui-auth-bg-1: #f1f8e9;
@@ -143,22 +143,22 @@ page {
 
 /* 平台：中性灰 + 靛色单点，避免过暖 - 增强 */
 .theme-l1 {
-  --ui-primary: #5c6bc0;
-  --ui-primary-mid: #3949ab;
-  --ui-hero-start: #7986cb;
-  --ui-hero-end: #303f9f;
-  --ui-hero-shadow: 48, 63, 159;
-  --ui-page-bg-1: #e8eaf6;
-  --ui-page-bg-2: #c5cae9;
-  --ui-radial: rgba(92, 107, 192, 0.12);
-  --ui-link: #3949ab;
-  --ui-chip-bg: #c5cae9;
-  --ui-chip-text: #1a237e;
-  --ui-surface-note-bg: #e8eaf6;
-  --ui-surface-note-text: #3949ab;
-  --ui-btn-secondary-fg: #3949ab;
-  --ui-btn-secondary-bg: #e8eaf6;
-  --ui-btn-secondary-border: #9fa8da;
+  --ui-primary: #ff8c00;
+  --ui-primary-mid: #ff9f1a;
+  --ui-hero-start: #ff8c00;
+  --ui-hero-end: #ffa500;
+  --ui-hero-shadow: 255, 140, 0;
+  --ui-page-bg-1: #f5f7fa;
+  --ui-page-bg-2: #f5f7fa;
+  --ui-radial: rgba(255, 165, 0, 0.12);
+  --ui-link: #ff8c00;
+  --ui-chip-bg: #fff3df;
+  --ui-chip-text: #b65f00;
+  --ui-surface-note-bg: #fff7ed;
+  --ui-surface-note-text: #b65f00;
+  --ui-btn-secondary-fg: #b65f00;
+  --ui-btn-secondary-bg: #fff7ed;
+  --ui-btn-secondary-border: #ffd596;
   --ui-stat-top: #ffffff;
   --ui-stat-bot: #e8eaf6;
   --ui-auth-bg-1: #e8eaf6;
@@ -170,10 +170,10 @@ page {
 }
 
 /* ---------- 底栏选中（依赖 addGlobalClass，!important 以覆盖组件内默认蓝） ---------- */
-.tab-bar.theme-guest .tab-bar-item--active { color: #1e88e5 !important; }
+.tab-bar.theme-guest .tab-bar-item--active { color: #ff8c00 !important; }
 .tab-bar.theme-student .tab-bar-item--active { color: #f57c00 !important; }
-.tab-bar.theme-teacher .tab-bar-item--active { color: #00acc1 !important; }
-.tab-bar.theme-l2 .tab-bar-item--active { color: #388e3c !important; }
-.tab-bar.theme-l1 .tab-bar-item--active { color: #5c6bc0 !important; }
+.tab-bar.theme-teacher .tab-bar-item--active { color: #ff8c00 !important; }
+.tab-bar.theme-l2 .tab-bar-item--active { color: #ff8c00 !important; }
+.tab-bar.theme-l1 .tab-bar-item--active { color: #ff8c00 !important; }
 
 /* 与 app.wxss 的 .shell-mesh / .card-tier 共用本文件中的 --ui-page-bg、--ui-radial 等变量，分角色自动换色 */

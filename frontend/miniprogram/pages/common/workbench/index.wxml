@@ -43,14 +43,13 @@
         bindtap="onTapMenu"
       >
         <view class="workbench-menu-top">
+          <view class="workbench-menu-icon">{{item.iconText}}</view>
           <view class="workbench-menu-left">
             <view class="workbench-menu-kicker">{{item.featured ? '主入口' : '更多'}}</view>
             <view class="workbench-menu-title">{{item.title}}</view>
+            <view class="workbench-menu-desc">{{item.desc}}</view>
           </view>
-          <mp-badge
-            ext-class="workbench-item-badge"
-            content="{{item.badge}}"
-          />
+          <view class="workbench-item-capsule">{{item.badge}}</view>
         </view>
         <view class="workbench-menu-foot">
           <view class="workbench-menu-arrow">进入</view>

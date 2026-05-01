@@ -240,6 +240,7 @@ Page({
       isPending && req
         ? {
             ...req,
+            applicantPhoneTail: req.applicantPhone ? String(req.applicantPhone).slice(-4) : "",
             _createdAtText: (req && req._createdAtText) != null && req._createdAtText !== "" ? req._createdAtText : formatCreatedAt(req.createdAt)
           }
         : null;
@@ -296,6 +297,7 @@ Page({
       rawU && rawU.status === "pending_approval"
         ? {
             ...rawU,
+            applicantPhoneTail: rawU.applicantPhone ? String(rawU.applicantPhone).slice(-4) : "",
             initiatorLabel:
               rawU.initiatorLabel ||
               (rawU.fromRole === "teacher" ? "志愿者 " + (rawU.partnerName || "（未知）") : "学员 " + (rawU.studentName || "（未知）")),

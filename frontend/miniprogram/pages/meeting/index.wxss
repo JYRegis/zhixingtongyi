@@ -5,12 +5,10 @@
 .meeting-hero-hint {
   margin-top: 12rpx;
   font-size: 24rpx;
-  color: #667085;
+  color: rgba(255, 255, 255, 0.9);
   line-height: 1.5;
-  text-align: center;
-  max-width: 90%;
-  margin-left: auto;
-  margin-right: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .meeting-bar {
@@ -34,21 +32,46 @@
   display: inline-block;
   padding: 8rpx 16rpx;
   border-radius: 999rpx;
-  background: #eef4ff;
-  color: #175cd3;
+  background: #e6f0ff;
+  color: #0066ff;
   font-size: 22rpx;
+  font-weight: 700;
 }
 
 .meeting-next-title {
   margin-top: 18rpx;
   margin-bottom: 12rpx;
   font-size: 34rpx;
-  font-weight: 700;
-  color: #101828;
+  font-weight: 800;
+  color: #333333;
 }
 
 .meeting-history-title {
   font-size: 28rpx;
-  font-weight: 600;
-  color: #101828;
+  font-weight: 800;
+  color: #333333;
+}
+
+.meeting-link-empty {
+  color: #999999;
+}
+
+.meeting-empty-card {
+  margin-top: 20rpx;
+  padding: 44rpx 28rpx;
+  text-align: center;
+}
+
+.meeting-empty-icon {
+  width: 76rpx;
+  height: 76rpx;
+  margin: 0 auto 18rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--ui-primary);
+  font-size: 32rpx;
+  font-weight: 800;
 }

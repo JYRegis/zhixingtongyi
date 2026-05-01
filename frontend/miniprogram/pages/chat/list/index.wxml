@@ -1,7 +1,9 @@
 <view class="page-shell {{_roleThemeClass}}">
   <view class="chat-list-page">
     <view class="page-hero chat-list-hero">
+      <view class="page-hero-eyebrow">MESSAGES</view>
       <view class="page-hero-title">消息</view>
+      <view class="page-hero-desc">查看结对沟通、系统提醒与陪伴记录</view>
     </view>
 
     <view
@@ -34,6 +36,9 @@
         data-name="{{item.name}}"
         bindtap="onOpenRoom"
       >
+        <view class="chat-pair-main">
+          <view class="chat-pair-avatar">{{item.avatarText}}</view>
+          <view class="chat-pair-content">
         <view class="chat-pair-top">
           <text class="chat-pair-name">{{item.l1DuoLine || item.name}}</text>
           <text class="chat-pair-time">{{item.lastTime}}</text>
@@ -41,6 +46,8 @@
         <view class="chat-pair-tag" wx:if="{{role === 'admin_level_1' && item.schoolName}}">{{item.schoolName}} · 结对对聊</view>
         <view class="chat-pair-tag" wx:else>{{item.tag}}</view>
         <view class="chat-pair-preview">{{item.lastPreview}}</view>
+          </view>
+        </view>
         <view class="chat-pair-action">打开</view>
       </view>
     </block>

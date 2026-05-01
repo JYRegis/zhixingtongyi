@@ -20,14 +20,14 @@
 .match-overview-title {
   font-size: 32rpx;
   font-weight: 700;
-  color: #101828;
+  color: #333333;
 }
 
 .match-overview-desc {
   margin-top: 10rpx;
   font-size: 25rpx;
   line-height: 1.65;
-  color: #667085;
+  color: #999999;
 }
 
 .match-overview-note {
@@ -42,13 +42,13 @@
   margin-top: 16rpx;
   padding: 24rpx;
   border-radius: 18rpx;
-  border: 2rpx solid #eaecf0;
-  background: linear-gradient(180deg, #ffffff 0%, #fafcff 100%);
+  border: 1rpx solid #f0f0f0;
+  background: #ffffff;
 }
 
 .match-proxy-row:active {
-  background: #eff6ff;
-  border-color: var(--ui-link);
+  background: #fffaf2;
+  border-color: rgba(255, 140, 0, 0.28);
 }
 
 .match-proxy-head {
@@ -61,12 +61,12 @@
 .match-proxy-name {
   font-size: 30rpx;
   font-weight: 700;
-  color: #101828;
+  color: #333333;
 }
 
 .match-proxy-grade {
   font-size: 26rpx;
-  color: #667085;
+  color: #999999;
 }
 
 .match-proxy-meta {
@@ -87,7 +87,7 @@
 .match-link-text {
   font-size: 24rpx;
   font-weight: 600;
-  color: #175cd3;
+  color: var(--ui-primary);
 }
 
 .match-acting-bar {
@@ -103,13 +103,13 @@
 
 .match-acting-label {
   font-size: 24rpx;
-  color: #667085;
+  color: #999999;
 }
 
 .match-acting-name {
   font-size: 34rpx;
   font-weight: 700;
-  color: #101828;
+  color: #333333;
 }
 
 .match-change-btn {
@@ -122,14 +122,14 @@
 
 .match-list-count {
   font-size: 26rpx;
-  color: #667085;
+  color: #999999;
   margin: 0 0 8rpx 0;
   padding: 0 4rpx;
 }
 
 .match-subj-strong {
   font-weight: 700;
-  color: #175cd3;
+  color: var(--ui-primary);
 }
 
 .match-filter-row {
@@ -139,8 +139,8 @@
   justify-content: space-between;
   align-items: center;
   gap: 20rpx;
-  border-top: 1rpx solid #eaecf0;
-  border-bottom: 1rpx solid #eaecf0;
+  border-top: 1rpx solid #f0f0f0;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .match-filter-label {
@@ -153,19 +153,20 @@
   padding: 14rpx 20rpx;
   text-align: center;
   border-radius: 999rpx;
-  background: #eef4ff;
-  color: #175cd3;
+  background: #e6f0ff;
+  color: #0066ff;
   font-size: 24rpx;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .match-teacher-card {
   overflow: hidden;
+  padding: 28rpx;
 }
 
 .match-teacher-card--featured {
-  border-color: rgba(59, 130, 246, 0.36);
-  box-shadow: 0 16rpx 38rpx rgba(37, 99, 235, 0.12);
+  border-color: rgba(255, 140, 0, 0.28);
+  box-shadow: 0 12rpx 38rpx rgba(255, 140, 0, 0.13);
 }
 
 .match-teacher-top {
@@ -175,37 +176,65 @@
   gap: 20rpx;
 }
 
+.match-teacher-main {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.match-teacher-avatar {
+  width: 78rpx;
+  height: 78rpx;
+  border-radius: 26rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--ui-primary);
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.match-teacher-info {
+  flex: 1;
+  min-width: 0;
+}
+
 .match-teacher-name {
   font-size: 34rpx;
-  font-weight: 700;
-  color: #101828;
+  font-weight: 800;
+  color: #333333;
 }
 
 .match-teacher-subject {
   margin-top: 10rpx;
   font-size: 24rpx;
-  color: #667085;
+  color: #999999;
 }
 
 .match-score-wrap {
-  min-width: 112rpx;
+  min-width: 104rpx;
   text-align: center;
-  padding: 16rpx 14rpx;
-  border-radius: 18rpx;
-  background: #eff6ff;
+  padding: 14rpx 12rpx;
+  border-radius: 24rpx;
+  background: #e6f0ff;
+  flex-shrink: 0;
 }
 
 .match-score-value {
   font-size: 38rpx;
-  font-weight: 700;
-  color: #175cd3;
+  font-weight: 800;
+  color: #0066ff;
   line-height: 1;
 }
 
 .match-score-label {
   margin-top: 8rpx;
   font-size: 22rpx;
-  color: #475467;
+  color: #999999;
 }
 
 .match-chip-row {
@@ -216,7 +245,7 @@
   margin-top: 18rpx;
   font-size: 26rpx;
   line-height: 1.65;
-  color: #344054;
+  color: #666666;
 }
 
 .match-teacher-meta {

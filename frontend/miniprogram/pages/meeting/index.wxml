@@ -1,6 +1,7 @@
 <view class="page-shell {{_roleThemeClass}}">
   <view class="container meeting-page">
     <view class="page-hero">
+      <view class="page-hero-eyebrow">ONLINE CLASS</view>
       <view class="page-hero-title">会议</view>
       <view class="meeting-hero-hint">会议在腾讯会议/课堂等外部开好，在此登记时间与链接，便于结对双方查看；不替代腾讯建会。</view>
     </view>
@@ -15,7 +16,7 @@
       <view class="desc" wx:if="{{nextMeeting.pairLine}}">{{nextMeeting.pairLine}}</view>
       <view class="desc">{{nextMeeting.startTime}}</view>
       <view class="desc" wx:if="{{nextMeeting.roomLink}}">链接：{{nextMeeting.roomLink}}</view>
-      <view class="desc" style="color: #98a2b3" wx:else>尚未填写链接：请在腾讯会议中复制会邀，回到本小程序「新建会议」编辑同一条，或下一场新建时填上</view>
+      <view class="desc meeting-link-empty" wx:else>尚未填写链接：请在腾讯会议中复制会邀，回到本小程序「新建会议」编辑同一条，或下一场新建时填上</view>
       <view class="actions">
         <button class="btn-primary" disabled="{{!nextMeeting.roomLink}}" bindtap="onCopyLink">复制链接</button>
         <button class="btn-secondary" bindtap="onSubscribeNotice">提醒</button>
@@ -38,10 +39,10 @@
       </block>
     </view>
 
-    <view class="card" wx:if="{{empty}}" style="margin-top: 20rpx">
-      <view class="section-desc" style="text-align: center; color: #667085; padding: 20rpx 0;">
-        暂无已登记的会议。可点上方「新建会议」添加。
-      </view>
+    <view class="card meeting-empty-card" wx:if="{{empty}}">
+      <view class="meeting-empty-icon">会</view>
+      <view class="empty-title">暂无会议</view>
+      <view class="empty-desc">暂无已登记的会议。可点上方「新建会议」添加。</view>
     </view>
   </view>
 </view>

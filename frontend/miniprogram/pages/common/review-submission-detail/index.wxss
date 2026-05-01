@@ -3,7 +3,7 @@
 }
 
 .sub-detail-card {
-  margin-top: 0;
+  margin-top: 24rpx;
 }
 
 .sub-detail-row {
@@ -12,7 +12,7 @@
   align-items: flex-start;
   gap: 20rpx;
   padding: 20rpx 0;
-  border-bottom: 1rpx solid #f2f4f7;
+  border-bottom: 1rpx solid #f0f0f0;
   font-size: 28rpx;
 }
 
@@ -22,33 +22,64 @@
 
 .sub-detail-k {
   flex: 0 0 200rpx;
-  color: #475467;
+  color: #999999;
 }
 
 .sub-detail-v {
   flex: 1;
   text-align: right;
-  color: #101828;
+  color: #333333;
   line-height: 1.5;
   word-break: break-all;
 }
 
 .sub-detail-hero {
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 32rpx;
-  border: 1rpx solid #eaecf0;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);
+  border-radius: 32rpx;
+  padding: 34rpx 32rpx;
+  border: none;
   margin-top: 24rpx;
+  box-shadow: 0 18rpx 44rpx rgba(255, 140, 0, 0.24);
 }
 
 .sub-detail-hero .page-hero-title {
-  color: #101828;
-  font-size: 36rpx;
+  color: #ffffff;
+  font-size: 40rpx;
+}
+
+.sub-detail-hero .page-hero-eyebrow {
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .sub-detail-hint {
   font-size: 24rpx;
-  color: #98a2b3;
+  color: rgba(255, 255, 255, 0.9);
   margin-top: 16rpx;
   line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+
+.sub-detail-denied {
+  margin-top: 24rpx;
+  padding: 44rpx 28rpx;
+  text-align: center;
+}
+
+.sub-detail-denied-icon {
+  width: 76rpx;
+  height: 76rpx;
+  margin: 0 auto 18rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--ui-primary);
+  font-size: 32rpx;
+  font-weight: 800;
 }

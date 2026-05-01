@@ -1,3 +1,75 @@
+.req-page {
+  padding-bottom: 48rpx;
+}
+
+.req-card {
+  margin-top: 20rpx;
+  padding: 28rpx;
+}
+
+.req-card-head {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  margin-bottom: 10rpx;
+}
+
+.req-avatar,
+.req-empty-icon {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--ui-primary);
+  font-size: 32rpx;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.req-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.req-name {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #333333;
+}
+
+.req-sub {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.req-status,
+.req-status-inline {
+  min-height: 44rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  color: #0066ff;
+  background: #e6f0ff;
+  font-size: 22rpx;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.req-empty-card {
+  margin-top: 20rpx;
+  padding: 44rpx 28rpx;
+  text-align: center;
+}
+
+.req-empty-icon {
+  margin: 0 auto 18rpx;
+}
+
 .req-reject-mask {
   position: fixed;
   left: 0;
@@ -17,17 +89,17 @@
   width: 100%;
   max-width: 620rpx;
   background: #fff;
-  border-radius: 20rpx;
+  border-radius: 32rpx;
   padding: 28rpx 24rpx 32rpx;
-  border: 1rpx solid #eaecf0;
-  box-shadow: 0 20rpx 64rpx rgba(16, 24, 40, 0.12);
+  border: 1rpx solid #f0f0f0;
+  box-shadow: 0 20rpx 64rpx rgba(0, 0, 0, 0.12);
   box-sizing: border-box;
 }
 
 .req-reject-dialog .title {
   font-size: 32rpx;
-  font-weight: 600;
-  color: #101828;
+  font-weight: 800;
+  color: #333333;
   margin-bottom: 20rpx;
 }
 
@@ -38,7 +110,7 @@
 .req-reject-dialog .field-label {
   display: block;
   font-size: 26rpx;
-  color: #475467;
+  color: #666666;
   margin-bottom: 12rpx;
 }
 
@@ -48,7 +120,7 @@
   padding: 20rpx;
   box-sizing: border-box;
   background: #f5f7fa;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   font-size: 28rpx;
 }
 

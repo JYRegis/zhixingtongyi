@@ -28,6 +28,9 @@
 .workbench-hero--rich {
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .workbench-hero-orb {
@@ -107,23 +110,29 @@
 
 .workbench-guest-desc {
   margin-top: 8rpx;
-  color: #667085;
+  color: #999999;
 }
 
 .workbench-menu-list {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 22rpx;
 }
 
 .workbench-menu-card {
   position: relative;
   overflow: hidden;
+  padding: 28rpx;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.workbench-menu-card:active {
+  transform: scale(0.985);
 }
 
 .workbench-menu-card--featured {
-  border-color: rgba(59, 130, 246, 0.32);
-  box-shadow: 0 4rpx 0 rgba(16, 24, 40, 0.02), 0 20rpx 40rpx rgba(37, 99, 235, 0.1);
+  border-color: rgba(255, 140, 0, 0.22);
+  box-shadow: 0 10rpx 36rpx rgba(255, 140, 0, 0.12);
 }
 
 .workbench-menu-card--featured::before {
@@ -139,11 +148,25 @@
 
 .workbench-menu-top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 20rpx;
+  gap: 22rpx;
   position: relative;
   z-index: 2;
+}
+
+.workbench-menu-icon {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: var(--ui-primary);
+  font-size: 34rpx;
+  font-weight: 800;
+  flex-shrink: 0;
 }
 
 .workbench-menu-left {
@@ -153,22 +176,38 @@
 
 .workbench-menu-kicker {
   font-size: 22rpx;
-  color: #98a2b3;
+  color: #999999;
   letter-spacing: 1rpx;
   margin-bottom: 4rpx;
   text-transform: none;
 }
 
-.workbench-item-badge {
+.workbench-item-capsule {
   flex-shrink: 0;
-  margin-top: 4rpx;
+  min-height: 44rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6f0ff;
+  color: #0066ff;
+  font-size: 22rpx;
+  font-weight: 700;
 }
 
 .workbench-menu-top .workbench-menu-title {
   margin-top: 0;
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 700;
-  color: #101828;
+  color: #333333;
+}
+
+.workbench-menu-desc {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  line-height: 1.45;
+  color: #999999;
 }
 
 .workbench-menu-foot {
@@ -183,8 +222,8 @@
 
 .workbench-menu-arrow {
   font-size: 24rpx;
-  font-weight: 600;
-  color: #175cd3;
+  font-weight: 700;
+  color: var(--ui-primary);
 }
 
 .workbench-login-btn {

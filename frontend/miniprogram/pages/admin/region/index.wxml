@@ -1,8 +1,10 @@
 <view class="page-shell {{_roleThemeClass}}">
   <view class="container region-page">
     <view class="page-hero">
+      <view class="page-hero-eyebrow">REGION ADMIN</view>
       <view class="page-hero-title" wx:if="{{hasScope}}">{{regionName}}</view>
       <view class="page-hero-title" wx:else>区域</view>
+      <view class="page-hero-desc">集中处理学校侧审核、登记与服务记录</view>
     </view>
 
     <view class="section-header" wx:if="{{l2Scope === 'volunteer_side' && hasScope}}">
@@ -17,7 +19,13 @@
           <text>申请资料</text>
           <text class="list-row-cta">查看 ›</text>
         </view>
-        <view class="region-student-name">{{item.displayName}} · {{item.schoolName}}</view>
+        <view class="region-student-main">
+          <view class="region-student-avatar">审</view>
+          <view>
+            <view class="region-student-name">{{item.displayName}}</view>
+            <view class="region-student-school">{{item.schoolName}}</view>
+          </view>
+        </view>
         <view class="list-row" wx:if="{{item.workNo && item.workNo !== '—'}}">
           <text>学工号</text>
           <text>{{item.workNo}}</text>
@@ -41,11 +49,14 @@
           hover-stay-time="100"
         >
           <view class="region-jump-top">
-            <view class="region-jump-name">学生注册审核</view>
+            <view class="region-jump-icon">学</view>
+            <view class="region-jump-main">
+              <view class="region-jump-name">学生注册审核</view>
+              <view class="region-jump-meta" wx:if="{{studentRegCount > 0}}">待审 {{studentRegCount}} 条</view>
+              <view class="region-jump-meta" wx:else>暂无待审</view>
+            </view>
             <view class="region-jump-cta">进入</view>
           </view>
-          <view class="region-jump-meta" wx:if="{{studentRegCount > 0}}">待审 {{studentRegCount}} 条</view>
-          <view class="region-jump-meta" wx:else>暂无待审</view>
         </button>
         <button
           class="region-jump-item"
@@ -55,11 +66,14 @@
           hover-stay-time="100"
         >
           <view class="region-jump-top">
-            <view class="region-jump-name">认定义务时长</view>
+            <view class="region-jump-icon">时</view>
+            <view class="region-jump-main">
+              <view class="region-jump-name">认定义务时长</view>
+              <view class="region-jump-meta" wx:if="{{hoursCount > 0}}">待审 {{hoursCount}} 条</view>
+              <view class="region-jump-meta" wx:else>暂无待审</view>
+            </view>
             <view class="region-jump-cta">进入</view>
           </view>
-          <view class="region-jump-meta" wx:if="{{hoursCount > 0}}">待审 {{hoursCount}} 条</view>
-          <view class="region-jump-meta" wx:else>暂无待审</view>
         </button>
       </view>
     </view>

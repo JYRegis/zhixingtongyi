@@ -160,8 +160,8 @@
 }
 
 .apply-page .field-chip--on {
-  color: #175cd3;
-  background: #eff8ff;
-  border-color: #b2ddff;
-  font-weight: 500;
+  color: #b65f00;
+  background: #fff3df;
+  border-color: rgba(255, 140, 0, 0.28);
+  font-weight: 700;
 }
