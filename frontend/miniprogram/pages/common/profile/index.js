@@ -4,14 +4,8 @@ const { getSchoolsByKind, getSchoolName } = require("../../../utils/schoolsMock"
 const { matchGradeToPicker } = require("../../../utils/gradeOptions");
 const { matchClassTimeToForm, parseTimeSelection, serializeTimeSelection, isValidTimeSelection } = require("../../../utils/classTimeOptions");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
-const {
-  getStudentProfile,
-  saveStudentProfile,
-  submitStudentProfile,
-  getVolunteerProfile,
-  createVolunteerProfile,
-  updateVolunteerProfile
-} = require("../../../utils/backendApi");
+const { studentApi, teacherApi } = require("../../../utils/api");
+const { freeTimeMapsToSerializedString } = require("../../../utils/dtoMappers");
 
 const roleFieldMap = {
   teacher: ["name", "workNo", "schoolId", "grade", "subjects", "personality", "availableTime"],
@@ -339,7 +333,7 @@ Page({
       return;
     }
     try {
-      const remote = role === "student" ? await getStudentProfile() : await getVolunteerProfile();
+      const remote = role === "student" ? await studentApi.getProfile() : await teacherApi.getProfile();
       if (!remote) {
         return;
       }
@@ -354,9 +348,11 @@ Page({
       if (role === "student") {
         const sub = Array.isArray(remote.subjectsNeeded) ? remote.subjectsNeeded.join("、") : "";
         f.subjects = sub || f.subjects || "";
+        f.studentAvailableTime = Array.isArray(remote.freeTime) ? freeTimeMapsToSerializedString(remote.freeTime) : f.studentAvailableTime || "";
       } else {
         const sub = Array.isArray(remote.skilledSubjects) ? remote.skilledSubjects.join("、") : "";
         f.subjects = sub || f.subjects || "";
+        f.availableTime = Array.isArray(remote.freeTime) ? freeTimeMapsToSerializedString(remote.freeTime) : f.availableTime || "";
       }
       this.syncPage(f);
     } catch (e) {
@@ -518,8 +514,8 @@ Page({
           freeTime: freeTime,
           personalityDesc: String(form.personality || "").trim() || null
         };
-        await saveStudentProfile(payload);
-        await submitStudentProfile();
+        await studentApi.updateProfile(payload);
+        await studentApi.submitProfile();
       } else if (role === "teacher") {
         const t = parseTimeSelection(String(form.availableTime || ""));
         const freeTime = [{ weekIds: t.weekIds, slotIds: t.slotIds }];
@@ -537,9 +533,9 @@ Page({
         };
         const appUser = getApp().globalData.userInfo || {};
         if (appUser.hasProfile) {
-          await updateVolunteerProfile(payload);
+          await teacherApi.updateProfile(payload);
         } else {
-          await createVolunteerProfile(payload);
+          await teacherApi.createProfile(payload);
           appUser.hasProfile = true;
           getApp().globalData.userInfo = appUser;
           wx.setStorageSync("userInfo", appUser);

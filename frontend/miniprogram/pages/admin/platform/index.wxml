@@ -22,7 +22,7 @@
           <text>{{stats.pairCount}}</text>
         </view>
         <view class="list-row">
-          <text>待处理预警</text>
+          <text>累计服务时长</text>
           <text class="badge badge-danger">{{stats.pendingAlerts}}</text>
         </view>
       </view>

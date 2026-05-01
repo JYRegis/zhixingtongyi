@@ -29,6 +29,10 @@
           <view class="field-input create-picker-line">{{pairLineDisplay}}</view>
         </picker>
       </view>
+      <view class="field" wx:elif="{{role === 'admin_level_1' || role === 'admin_level_2'}}">
+        <text class="field-label">结对 ID <text class="field-req">*</text></text>
+        <input class="field-input" type="number" value="{{manualPairId}}" data-k="manualPairId" bindinput="onText" placeholder="请输入后端 match_pair.id" />
+      </view>
       <view class="field field--control">
         <text class="field-label">日期 <text class="field-req">*</text></text>
         <picker mode="date" value="{{dateStr}}" bindchange="onPickDate" start="2020-01-01" end="2040-12-31">

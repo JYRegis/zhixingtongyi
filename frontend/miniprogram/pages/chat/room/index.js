@@ -9,6 +9,36 @@ const {
 const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { getByPhone, mergeFromStorageIntoApp } = require("../../../utils/userProfileStore");
+const { chatApi } = require("../../../utils/api");
+
+function isRemotePairId(value) {
+  return /^\d+$/.test(String(value || ""));
+}
+
+function formatRemoteTime(v) {
+  if (!v) {
+    return "";
+  }
+  const t = Date.parse(String(v).replace(" ", "T"));
+  if (isNaN(t)) {
+    return String(v);
+  }
+  const d = new Date(t);
+  const z = (n) => (n < 10 ? "0" : "") + n;
+  return z(d.getHours()) + ":" + z(d.getMinutes());
+}
+
+function mapRemoteMessage(row, selfUserId) {
+  const isSelf = String(row.senderId) === String(selfUserId);
+  return {
+    id: row.id,
+    from: isSelf ? "我" : "对方",
+    text: row.content || "",
+    time: formatRemoteTime(row.sendTime),
+    isSelf,
+    avatarChar: isSelf ? "我" : "对"
+  };
+}
 
 Page({
   data: {
@@ -135,6 +165,32 @@ Page({
         : false;
     const isL1 = role0 === "admin_level_1";
     const observer = isL1 || isRecipientObserver || isVolunteerObserver;
+    const token = (app0.globalData && app0.globalData.token) || wx.getStorageSync("token") || "";
+    const selfUserId = (u0 && (u0.backendUserId || u0.id || u0.userId)) || "";
+    if (token && !observer && (role0 === "student" || role0 === "teacher") && isRemotePairId(this.partnerId)) {
+      chatApi
+        .messages({ matchPairId: Number(this.partnerId), limit: 50 })
+        .then((rows) => {
+          const messages = (Array.isArray(rows) ? rows : [])
+            .slice()
+            .reverse()
+            .map((row) => mapRemoteMessage(row, selfUserId));
+          const last = messages.length ? messages[messages.length - 1] : null;
+          this.setData({
+            l1ViewOnly: false,
+            messages,
+            scrollInto: last ? `msg-${last.id}` : ""
+          });
+        })
+        .catch(() => {
+          this._reloadLocalMessages(observer);
+        });
+      return;
+    }
+    this._reloadLocalMessages(observer);
+  },
+  _reloadLocalMessages(observer) {
+    const raw = loadThread(this.partnerId);
     const messages = observer
       ? mapThreadForL1View(this.partnerId, raw)
       : raw.map(function (m) {
@@ -178,6 +234,33 @@ Page({
     }
     const text = this.data.message.trim();
     if (!text || !this.partnerId) {
+      return;
+    }
+    const app = getApp();
+    const role = (app.globalData && app.globalData.role) || "";
+    const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    const userInfo = (app.globalData && app.globalData.userInfo) || {};
+    const selfUserId = userInfo.backendUserId || userInfo.id || userInfo.userId || "";
+    if (token && (role === "student" || role === "teacher") && isRemotePairId(this.partnerId)) {
+      chatApi
+        .sendMessage({
+          matchPairId: Number(this.partnerId),
+          messageType: "TEXT",
+          content: text
+        })
+        .then((row) => {
+          const one = mapRemoteMessage(row || {}, selfUserId);
+          const next = this.data.messages.concat(one);
+          this.setData({
+            messages: next,
+            message: "",
+            canSend: false,
+            scrollInto: `msg-${one.id}`
+          });
+        })
+        .catch((err) => {
+          wx.showToast({ title: (err && err.message) || "发送失败", icon: "none" });
+        });
       return;
     }
     const nick = (getApp().globalData.userInfo && getApp().globalData.userInfo.nickname) || "我";

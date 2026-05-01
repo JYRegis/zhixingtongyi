@@ -393,7 +393,7 @@ Page({
       this._syncProfileToBackend(role, payload)
         .then(function () {
           wx.hideLoading();
-          self._afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote);
+          self._afterOnboardingSubmitRemote(phone, role, schoolId, extra, u, orgNote);
         })
         .catch(function (err) {
           wx.hideLoading();
@@ -455,6 +455,32 @@ Page({
       );
     }
     return Promise.resolve();
+  },
+  _afterOnboardingSubmitRemote(phone, role, schoolId, extra, u, orgNote) {
+    const patch = {
+      name: extra.name,
+      studentNo: extra.studentNo,
+      workNo: extra.workNo,
+      schoolId,
+      school: schoolId ? getSchoolName(schoolId) : u.school,
+      grade: extra.grade,
+      studentAvailableTime: extra.studentAvailableTime,
+      availableTime: extra.availableTime,
+      l2Note: extra.l2Note,
+      organization: extra.orgNote || orgNote,
+      applicationNote: extra.applyNote,
+      onboardingStatus: "approved"
+    };
+    Object.keys(patch).forEach((key) => {
+      if (patch[key] === "" || patch[key] == null) {
+        delete patch[key];
+      }
+    });
+    saveProfile(phone, patch);
+    wx.showToast({ title: "已同步", icon: "success" });
+    setTimeout(() => {
+      wx.reLaunch({ url: "/pages/common/workbench/index" });
+    }, 500);
   },
   _afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote) {
     const r = submitApplication({ applicantId: phone, role, schoolId, extra });

@@ -34,7 +34,11 @@ function saveProfile(phone, partial) {
   }
   const p = String(phone);
   const all = { ...getAll() };
-  all[p] = { ...all[p], ...partial, userId: p, phone: p };
+  const next = { ...all[p], ...partial, phone: p };
+  if (next.userId == null || next.userId === "") {
+    next.userId = p;
+  }
+  all[p] = next;
   wx.setStorageSync(KEY, all);
   const app = getApp();
   if (app && app.globalData && app.globalData.userInfo && String(app.globalData.userInfo.phone) === p) {

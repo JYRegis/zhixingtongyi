@@ -39,6 +39,22 @@
       />
       <view class="form-hint">一般填 ISO 周，如 2026-W16；默认已填本周参考值，可改。</view>
 
+      <view class="form-label">服务日期 <text class="form-req">*</text></view>
+      <picker mode="date" value="{{dateInput}}" bindchange="onDateChange" start="2020-01-01" end="2040-12-31">
+        <view class="form-picker">
+          <text class="form-picker-text">{{dateInput || '选择服务日期'}}</text>
+          <text class="form-picker-arrow">选</text>
+        </view>
+      </picker>
+
+      <view class="form-label">服务说明 <text class="form-req">*</text></view>
+      <textarea
+        class="form-input"
+        placeholder="如：完成数学作业辅导、错题讲解等"
+        value="{{serviceDesc}}"
+        bindinput="onServiceDescInput"
+      />
+
       <button class="btn-primary hours-apply-submit" bindtap="onSubmit">提交审核</button>
     </view>
 

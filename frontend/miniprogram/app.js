@@ -58,10 +58,16 @@ App({
       return;
     }
     const phone = userInfo.phone != null && String(userInfo.phone).length === 11 ? String(userInfo.phone) : "";
-    const u = { ...userInfo, role, userId: phone || userInfo.userId || "" };
+    const backendUserId = userInfo.backendUserId != null ? userInfo.backendUserId : userInfo.id;
+    const u = {
+      ...userInfo,
+      role,
+      backendUserId: backendUserId != null ? backendUserId : userInfo.backendUserId,
+      userId: userInfo.userId || phone || (backendUserId != null ? String(backendUserId) : "")
+    };
     if (phone) {
       const prev = getByPhone(phone) || {};
-      const merged = { ...prev, ...u, role, phone, userId: phone };
+      const merged = { ...prev, ...u, role, phone, userId: u.userId || phone };
       this.globalData.role = role;
       this.globalData.userInfo = merged;
       wx.setStorageSync("role", role);

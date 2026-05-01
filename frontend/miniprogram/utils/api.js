@@ -133,6 +133,57 @@ const notificationApi = {
   }
 };
 
+const chatApi = {
+  sendMessage(data) {
+    return getData(request({ url: "/chat/messages", method: "POST", data }));
+  },
+  messages(params) {
+    const query = buildQuery(params);
+    return getData(request({ url: `/chat/messages${query}` }));
+  },
+  read(messageId) {
+    return request({ url: `/chat/messages/${messageId}/read`, method: "PUT" });
+  },
+  participants(pairId) {
+    return getData(request({ url: `/chat/pairs/${pairId}/participants` }));
+  },
+  addParticipant(pairId, userId) {
+    return request({ url: `/chat/pairs/${pairId}/participants`, method: "POST", data: { userId } });
+  },
+  removeParticipant(pairId, userId) {
+    return request({ url: `/chat/pairs/${pairId}/participants/${userId}`, method: "DELETE" });
+  }
+};
+
+const volunteerRecordApi = {
+  submit(data) {
+    return request({ url: "/volunteer-records", method: "POST", data });
+  },
+  studentConfirm(recordId, data) {
+    return request({ url: `/volunteer-records/${recordId}/student-confirm`, method: "PUT", data });
+  },
+  list(params) {
+    const query = buildQuery(params);
+    return getData(request({ url: `/volunteer-records${query}` }));
+  }
+};
+
+const dashboardApi = {
+  overview() {
+    return getData(request({ url: "/admin/dashboard/overview" }));
+  },
+  matchSuccessRate(params) {
+    const query = buildQuery(params);
+    return getData(request({ url: `/admin/statistics/match-success-rate${query}` }));
+  },
+  regionDistribution() {
+    return getData(request({ url: "/admin/statistics/region-distribution" }));
+  },
+  subjectDistribution() {
+    return getData(request({ url: "/admin/statistics/subject-distribution" }));
+  }
+};
+
 const adminApi = {
   users(params) {
     const query = buildQuery(params);
@@ -164,6 +215,34 @@ const adminApi = {
   },
   switchManagedStudent(studentId) {
     return request({ url: `/admin/students/${studentId}/switch`, method: "POST" });
+  },
+  pendingVolunteerRecords(params) {
+    const query = buildQuery(params);
+    return getData(request({ url: `/admin/volunteer-records/pending${query}` }));
+  },
+  auditVolunteerRecord(recordId, data) {
+    return request({ url: `/admin/volunteer-records/${recordId}/audit`, method: "PUT", data });
+  }
+};
+
+const systemApi = {
+  configs() {
+    return getData(request({ url: "/system/configs" }));
+  },
+  updateConfig(key, data) {
+    return request({ url: `/system/configs/${encodeURIComponent(key)}`, method: "PUT", data });
+  }
+};
+
+const algorithmApi = {
+  weights() {
+    return getData(request({ url: "/algorithm/weights" }));
+  },
+  updateWeight(configId, data) {
+    return request({ url: `/algorithm/weights/${configId}`, method: "PUT", data });
+  },
+  recalculateWeights() {
+    return request({ url: "/algorithm/recalculate-weights", method: "POST" });
   }
 };
 
@@ -182,5 +261,10 @@ module.exports = {
   matchApi,
   meetingApi,
   notificationApi,
-  adminApi
+  chatApi,
+  adminApi,
+  dashboardApi,
+  volunteerRecordApi,
+  systemApi,
+  algorithmApi
 };

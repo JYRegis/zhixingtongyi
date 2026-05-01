@@ -3,6 +3,7 @@ const { getSchoolName } = require("../../../utils/schoolsMock");
 const { submitHoursRequest, getMyHoursRequests } = require("../../../utils/hoursReviewStore");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
+const { matchApi, volunteerRecordApi } = require("../../../utils/api");
 
 const PAGE = "pages/common/hours-apply/index";
 
@@ -22,12 +23,34 @@ function suggestWeekString() {
   return y + "-W" + String(week).padStart(2, "0");
 }
 
+function todayString() {
+  const d = new Date();
+  const z = (n) => (n < 10 ? "0" : "") + n;
+  return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate());
+}
+
 function buildPairList() {
   const all = getActivePairList().filter((p) => p && p.status === "结对中");
   return all.map((p) => ({
     ...p,
     label: (p.studentName || "—") + " · " + (p.partnerName || "—") + " · " + (getSchoolName(p.schoolId) || p.schoolId)
   }));
+}
+
+function buildPairListFromRemote(pairs) {
+  return (Array.isArray(pairs) ? pairs : []).map((p) => {
+    const id = p && p.id != null ? p.id : p.pairId;
+    const studentId = p && p.studentId != null ? p.studentId : "—";
+    const teacherId = p && p.teacherId != null ? p.teacherId : "—";
+    return {
+      pairId: String(id),
+      studentName: "学员 " + studentId,
+      partnerName: "志愿者 " + teacherId,
+      schoolId: "",
+      label: "结对 #" + id + " · 学员 " + studentId + " · 志愿者 " + teacherId,
+      _remote: true
+    };
+  });
 }
 
 function mapMyList(phone) {
@@ -43,12 +66,45 @@ function mapMyList(phone) {
   }));
 }
 
+function mapRemoteRecords(records) {
+  const list = Array.isArray(records) ? records : (records && records.records) || (records && records.list) || [];
+  const statusMap = {
+    0: "待学员确认",
+    1: "待管理员审核",
+    2: "已通过",
+    3: "已驳回",
+    4: "学员已驳回"
+  };
+  return list.map((h) => {
+    const minutes = Number(h.duration || 0);
+    const hours = minutes ? Math.round((minutes / 60) * 10) / 10 : "";
+    const status = h.status;
+    return {
+      id: h.id,
+      studentName: h.studentName || (h.studentId != null ? "学员 " + h.studentId : "—"),
+      volunteerName: h.teacherName || (h.teacherId != null ? "志愿者 " + h.teacherId : "—"),
+      hours,
+      week: h.meetingDate || "—",
+      schoolName: "—",
+      statusLabel: statusMap[status] || "状态 " + status,
+      statusClass:
+        status === 2
+          ? "hours-status--approved"
+          : status === 3 || status === 4
+            ? "hours-status--rejected"
+            : "hours-status--pending"
+    };
+  });
+}
+
 Page({
   data: {
     pairList: [],
     pairIndex: 0,
     hoursInput: "",
     weekInput: "",
+    dateInput: "",
+    serviceDesc: "",
     myList: []
   },
   onLoad() {
@@ -58,7 +114,7 @@ Page({
       setTimeout(() => wx.navigateBack(), 500);
       return;
     }
-    this.setData({ weekInput: suggestWeekString() });
+    this.setData({ weekInput: suggestWeekString(), dateInput: todayString() });
   },
   onShow() {
     const r = (getApp().globalData && getApp().globalData.role) || "";
@@ -70,20 +126,26 @@ Page({
     this.syncData();
   },
   syncData() {
-    const pairList = buildPairList();
     const app = getApp();
     const u = (app.globalData && app.globalData.userInfo) || {};
     const phone = u.phone ? String(u.phone) : "";
-    const myList = mapMyList(phone);
+    const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    if (token) {
+      Promise.all([matchApi.myPairs(1), volunteerRecordApi.list({ page: 1, size: 20 })])
+        .then(([pairs, records]) => {
+          this._applyData(buildPairListFromRemote(pairs), mapRemoteRecords(records));
+        })
+        .catch(() => {
+          this._applyData(buildPairList(), mapMyList(phone));
+        });
+      return;
+    }
+    this._applyData(buildPairList(), mapMyList(phone));
+  },
+  _applyData(pairList, myList) {
     const { pairIndex } = this.data;
-    const nextIndex = pairList.length
-      ? Math.min(Math.max(0, pairIndex), pairList.length - 1)
-      : 0;
-    this.setData({
-      pairList,
-      pairIndex: nextIndex,
-      myList
-    });
+    const nextIndex = pairList.length ? Math.min(Math.max(0, pairIndex), pairList.length - 1) : 0;
+    this.setData({ pairList, pairIndex: nextIndex, myList });
   },
   onPairChange(e) {
     const idx = e.detail && e.detail.value != null ? Number(e.detail.value) : 0;
@@ -95,8 +157,14 @@ Page({
   onWeekInput(e) {
     this.setData({ weekInput: (e.detail && e.detail.value) || "" });
   },
+  onDateChange(e) {
+    this.setData({ dateInput: (e.detail && e.detail.value) || "" });
+  },
+  onServiceDescInput(e) {
+    this.setData({ serviceDesc: (e.detail && e.detail.value) || "" });
+  },
   onSubmit() {
-    const { pairList, pairIndex, hoursInput, weekInput } = this.data;
+    const { pairList, pairIndex, hoursInput, weekInput, dateInput, serviceDesc } = this.data;
     if (!pairList.length) {
       wx.showToast({ title: "没有可选结对", icon: "none" });
       return;
@@ -112,6 +180,7 @@ Page({
       return;
     }
     const week = (weekInput || "").trim() || suggestWeekString();
+    const meetingDate = (dateInput || "").trim() || todayString();
     const r = (getApp().globalData && getApp().globalData.role) || "";
     const u = (getApp().globalData && getApp().globalData.userInfo) || {};
     const phone = u.phone ? String(u.phone) : "";
@@ -126,6 +195,37 @@ Page({
       volunteerName = (nick && nick.trim()) || volunteerName;
     }
 
+    const app = getApp();
+    const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    if (token && pair._remote && r !== "teacher") {
+      wx.showToast({ title: "后端仅支持志愿者提交服务记录", icon: "none" });
+      return;
+    }
+    if (token && pair._remote) {
+      if (!String(serviceDesc || "").trim()) {
+        wx.showToast({ title: "请填写服务说明", icon: "none" });
+        return;
+      }
+      wx.showLoading({ title: "提交中", mask: true });
+      volunteerRecordApi
+        .submit({
+          matchPairId: Number(pair.pairId),
+          duration: Math.round(hours * 60),
+          meetingDate,
+          serviceDesc: String(serviceDesc || "").trim()
+        })
+        .then(() => {
+          wx.hideLoading();
+          wx.showToast({ title: "已提交", icon: "success" });
+          this.setData({ hoursInput: "", serviceDesc: "" });
+          this.syncData();
+        })
+        .catch((err) => {
+          wx.hideLoading();
+          wx.showToast({ title: (err && err.message) || "提交失败", icon: "none" });
+        });
+      return;
+    }
     const res = submitHoursRequest({
       schoolId: pair.schoolId,
       schoolName: getSchoolName(pair.schoolId) || pair.schoolId,
@@ -142,7 +242,7 @@ Page({
       return;
     }
     wx.showToast({ title: "已提交", icon: "success" });
-    this.setData({ hoursInput: "" });
+    this.setData({ hoursInput: "", serviceDesc: "" });
     this.syncData();
   },
   onViewItem(e) {

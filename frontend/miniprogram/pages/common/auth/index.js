@@ -1,4 +1,5 @@
-const { authWxLogin, authPhoneLogin, authRoleApply } = require("../../../utils/backendApi");
+const { authApi } = require("../../../utils/api");
+const { intToAppRole, appRoleToRoleApplyTarget, isLearnerRole } = require("../../../utils/backendRole");
 
 Page({
   data: {
@@ -73,11 +74,7 @@ Page({
     }
     this.setData({ submitting: true });
     const app = getApp();
-    const effectiveRole = (app.globalData && app.globalData.role) || "";
-    const roleApplyMap = {
-      student: "STUDENT",
-      teacher: "TEACHER"
-    };
+    const selectedRole = (app.globalData && app.globalData.role) || "";
     const appUser = (app.globalData && app.globalData.userInfo) || {};
     const preferredNick = (this.data.nickname && String(this.data.nickname).trim()) || "";
     const preferredAvatar = String(this.data.avatarUrl || "").trim();
@@ -93,7 +90,7 @@ Page({
     try {
       let loginRes = null;
       if (options.mode === "phone") {
-        loginRes = await authPhoneLogin({
+        loginRes = await authApi.phoneLogin({
           phone: options.phone,
           nickName: preferredNick || undefined,
           avatarUrl: preferredAvatar || undefined
@@ -111,7 +108,7 @@ Page({
           code: loginCode,
           userInfo: Object.keys(userInfoPayload).length ? userInfoPayload : undefined
         };
-        loginRes = await authWxLogin(payload);
+        loginRes = await authApi.wxLogin(payload);
       }
       token = loginRes && loginRes.token ? loginRes.token : "";
       remoteUser = loginRes && loginRes.user ? loginRes.user : null;
@@ -119,10 +116,16 @@ Page({
         app.globalData.token = token;
         wx.setStorageSync("token", token);
       }
-      const targetRole = roleApplyMap[effectiveRole];
+      const backendRole = remoteUser && remoteUser.role != null ? intToAppRole(remoteUser.role) : "";
+      const effectiveRole = isLearnerRole(selectedRole) ? selectedRole : backendRole || "student";
+      const targetRole = isLearnerRole(selectedRole) ? appRoleToRoleApplyTarget(selectedRole) : "";
       if (token && targetRole) {
-        await authRoleApply(targetRole);
+        await authApi.roleApply(targetRole);
       }
+      remoteUser = {
+        ...(remoteUser || {}),
+        _effectiveRole: effectiveRole
+      };
     } catch (e) {
       wx.showToast({
         title: (e && e.message) || "登录失败",
@@ -133,12 +136,17 @@ Page({
     }
     const phoneFromBackend = (remoteUser && remoteUser.phone) || "";
     const finalPhone = /^1\d{10}$/.test(String(phoneFromBackend)) ? String(phoneFromBackend) : "";
-    app.setLogin(effectiveRole, {
+    const finalRole = (remoteUser && remoteUser._effectiveRole) || "student";
+    app.setLogin(finalRole, {
       nickname: (remoteUser && remoteUser.username) || displayNick,
       avatarUrl: (remoteUser && remoteUser.avatar) || displayAvatar,
       phone: finalPhone,
-      role: effectiveRole,
-      userId: remoteUser && remoteUser.id ? String(remoteUser.id) : finalPhone
+      role: finalRole,
+      backendRoleCode: remoteUser && remoteUser.role,
+      backendUserId: remoteUser && remoteUser.id,
+      hasProfile: !!(remoteUser && remoteUser.hasProfile),
+      roleApplied: !!(remoteUser && remoteUser.roleApplied),
+      userId: finalPhone || (remoteUser && remoteUser.id ? String(remoteUser.id) : "")
     });
     const backToProfile = this._returnTo === "profile";
     let okTitle = "完成";
@@ -155,6 +163,10 @@ Page({
             wx.redirectTo({ url: "/pages/common/profile/index" });
           }
         });
+        return;
+      }
+      if (finalRole === "admin_level_1" || finalRole === "admin_level_2") {
+        wx.reLaunch({ url: "/pages/common/workbench/index" });
         return;
       }
       wx.redirectTo({ url: "/pages/common/role-select/index" });

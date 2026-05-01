@@ -36,6 +36,9 @@ function checkOnboardingOrRedirect(pageRoute) {
   if (!r || !u || !u.phone) {
     return;
   }
+  if ((r === "admin_level_1" || r === "admin_level_2") && ((app.globalData && app.globalData.token) || wx.getStorageSync("token"))) {
+    return;
+  }
   const phone0 = String(u.phone);
   ensureStatusFromApplications(phone0);
   const st = (app.globalData.userInfo && app.globalData.userInfo.onboardingStatus) || "none";

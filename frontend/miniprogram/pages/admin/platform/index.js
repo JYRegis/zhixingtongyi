@@ -3,8 +3,22 @@ const { getAllPendingForL1 } = require("../../../utils/hoursReviewStore");
 const { mergeFromStorageIntoApp } = require("../../../utils/userProfileStore");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { to } = require("../../../utils/nav");
+const { adminApi, dashboardApi } = require("../../../utils/api");
 
 const RISK_MOCK_LEN = 10;
+
+function pageTotal(payload) {
+  if (payload && payload.total != null) {
+    return Number(payload.total) || 0;
+  }
+  if (payload && Array.isArray(payload.records)) {
+    return payload.records.length;
+  }
+  if (payload && Array.isArray(payload.list)) {
+    return payload.list.length;
+  }
+  return Array.isArray(payload) ? payload.length : 0;
+}
 
 Page({
   data: {
@@ -34,6 +48,35 @@ Page({
     }
     const app = getApp();
     const u = app.globalData.userInfo || {};
+    const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    if (token) {
+      Promise.all([
+        dashboardApi.overview(),
+        adminApi.users({ role: 3, page: 1, size: 1 }),
+        adminApi.users({ role: 2, page: 1, size: 1 }),
+        adminApi.pendingVolunteerRecords({ page: 1, size: 1 })
+      ])
+        .then(([overview, students, teachers, hours]) => {
+          this.setData({
+            stats: {
+              volunteerCount: pageTotal(teachers),
+              studentCount: pageTotal(students),
+              pairCount: overview && overview.matchedPairs != null ? overview.matchedPairs : this.data.stats.pairCount,
+              pendingAlerts: overview && overview.totalServiceHours != null ? overview.totalServiceHours : this.data.stats.pendingAlerts
+            },
+            cStudent: pageTotal(students),
+            cTeacher: pageTotal(teachers),
+            cHours: pageTotal(hours)
+          });
+        })
+        .catch(() => {
+          this._setLocalCounts(u);
+        });
+      return;
+    }
+    this._setLocalCounts(u);
+  },
+  _setLocalCounts(u) {
     const pending = getAllPendingForUI("admin_level_1", u.phone) || [];
     const by = (r) => pending.filter((a) => a.role === r).length;
     const h = (getAllPendingForL1() || []).length;

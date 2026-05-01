@@ -4,10 +4,35 @@ const { mergeFromStorageIntoApp } = require("../../../../utils/userProfileStore"
 const { checkOnboardingOrRedirect } = require("../../../../utils/onboardingGuard");
 const { getSchoolsByKind, SCHOOLS } = require("../../../../utils/schoolsMock");
 const { SCOPE_OPTIONS, applyL2ScopeToTeacher } = require("../../../../utils/l2ScopeAssign");
+const { adminApi } = require("../../../../utils/api");
 
 const PAGE_PATH = "pages/admin/platform/review/index";
 
 const VALID = new Set(["student", "teacher", "admin_level_2", "admin_level_1"]);
+const ROLE_CODE = {
+  admin_level_1: 0,
+  admin_level_2: 1,
+  teacher: 2,
+  student: 3
+};
+
+function pageRecords(payload) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  return (payload && (payload.records || payload.list)) || [];
+}
+
+function mapRemoteUser(row, role) {
+  const name = row.username || row.phone || ("用户 " + row.id);
+  return mapApplicationRow({
+    id: row.id,
+    applicantId: row.id,
+    role,
+    schoolName: "—",
+    extra: { name }
+  });
+}
 
 const L2_PICKER_INIT = {
   scopeOptions: SCOPE_OPTIONS,
@@ -53,10 +78,25 @@ Page({
     mergeFromStorageIntoApp();
     const app = getApp();
     const u = app.globalData.userInfo || {};
+    const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    if (token && (this._role === "student" || this._role === "teacher")) {
+      adminApi
+        .users({ role: ROLE_CODE[this._role], page: 1, size: 50 })
+        .then((res) => {
+          this.setData({ pendingList: pageRecords(res).map((row) => mapRemoteUser(row, this._role)), _remote: true });
+        })
+        .catch(() => {
+          const pending = (getAllPendingForUI("admin_level_1", u.phone) || [])
+            .filter((a) => a.role === this._role)
+            .map(mapApplicationRow);
+          this.setData({ pendingList: pending, _remote: false });
+        });
+      return;
+    }
     const pending = (getAllPendingForUI("admin_level_1", u.phone) || [])
       .filter((a) => a.role === this._role)
       .map(mapApplicationRow);
-    this.setData({ pendingList: pending });
+    this.setData({ pendingList: pending, _remote: false });
   },
   onPullDownRefresh() {
     this.onShow();
@@ -174,6 +214,18 @@ Page({
     wx.navigateTo({ url: "/pages/common/review-submission-detail/index?type=onboarding&id=" + encodeURIComponent(String(id)) });
   },
   _resolve(id, ok, note) {
+    if (this.data._remote && (this._role === "student" || this._role === "teacher")) {
+      const api = this._role === "student" ? adminApi.auditStudent : adminApi.auditTeacher;
+      api(id, { status: ok ? 1 : 2, notes: note || (ok ? "" : "平台驳回") })
+        .then(() => {
+          wx.showToast({ title: ok ? "已通过" : "已驳回", icon: "success" });
+          this.onShow();
+        })
+        .catch((err) => {
+          wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
+        });
+      return;
+    }
     const appU = getApp().globalData.userInfo || {};
     const res = resolveApplication(
       id,

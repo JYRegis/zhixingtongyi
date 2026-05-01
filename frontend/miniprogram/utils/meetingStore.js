@@ -158,7 +158,7 @@ function formatMeetingTime(ms) {
  * 仅乡村学员、支教志愿者可登记会议（与底栏入口一致；管理员由产品侧不进入本模块）
  */
 function canCreateMeetingRole(role) {
-  return role === "student" || role === "teacher";
+  return role === "student" || role === "teacher" || role === "admin_level_1" || role === "admin_level_2";
 }
 
 /**

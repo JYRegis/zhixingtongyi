@@ -63,15 +63,11 @@ Page({
     const r = app0.globalData.role || "";
     const u = app0.globalData.userInfo || {};
     const p = (u && u.phone && getByPhone(String(u.phone))) || u || {};
-    if (r !== "student" && r !== "teacher") {
-      wx.switchTab({ url: "/pages/common/workbench/index" });
-      return;
-    }
     const token = (app0.globalData && app0.globalData.token) || wx.getStorageSync("token") || "";
     const tryRemote = USE_BACKEND_MEETING && token;
     if (tryRemote) {
-      meetingApi
-        .myMeetings()
+      const req = r === "student" || r === "teacher" ? meetingApi.myMeetings() : meetingApi.list();
+      req
         .then(function (rows) {
           const list = (rows || []).map(function (vo) {
             return meetingItemVoToListRow(vo);

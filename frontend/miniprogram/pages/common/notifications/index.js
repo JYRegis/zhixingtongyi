@@ -27,6 +27,13 @@ function mapRow(n) {
   };
 }
 
+function pageRecords(payload) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  return (payload && (payload.records || payload.list)) || [];
+}
+
 Page({
   data: {
     loggedIn: false,
@@ -50,7 +57,7 @@ Page({
     notificationApi
       .list({ page: 1, size: 50, unreadOnly: false })
       .then(function (rows) {
-        const list = (rows || []).map(mapRow);
+        const list = pageRecords(rows).map(mapRow);
         self.setData({ list: list, loading: false });
       })
       .catch(function () {

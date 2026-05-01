@@ -4,7 +4,7 @@ const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { formatSavedTimeForDisplay } = require("../../../utils/classTimeOptions");
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
 const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
-const { getRecommendations, applyMatch } = require("../../../utils/backendApi");
+const { matchApi } = require("../../../utils/api");
 
 var matchHeroMap = {
   student: { title: "志愿者推荐" },
@@ -140,7 +140,7 @@ Page({
     var fullList = buildListForRole(role);
     if (role === "student") {
       try {
-        const remote = await getRecommendations();
+        const remote = await matchApi.recommendations();
         fullList = (Array.isArray(remote) ? remote : []).map(function (row, idx) {
           return enrichItem({
             id: row.teacherId || idx + 1,
@@ -155,7 +155,7 @@ Page({
         });
       } catch (e) {
         if (console && console.warn) {
-          console.warn("[match-center] getRecommendations fallback to mock", e);
+          console.warn("[match-center] matchApi.recommendations fallback to mock", e);
         }
       }
     }
@@ -202,7 +202,7 @@ Page({
     });
     try {
       if (one && one.teacherId) {
-        await applyMatch(one.teacherId);
+        await matchApi.apply({ teacherId: one.teacherId });
       }
       wx.showToast({
         title: "已申请" + (one && one.teacher ? " " + one.teacher : ""),

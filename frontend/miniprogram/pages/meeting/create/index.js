@@ -21,6 +21,7 @@ Page({
     dateStr: "",
     timeStr: "20:00",
     roomLink: "",
+    manualPairId: "",
     pairIndex: 0,
     pairOptions: [],
     pairLineDisplay: "",
@@ -45,6 +46,19 @@ Page({
     }
     const token = (app && app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
     const pr = r === "student" || r === "teacher";
+    if (USE_BACKEND_MEETING && token && (r === "admin_level_1" || r === "admin_level_2")) {
+      this.setData({
+        role: r,
+        pairOptions: [],
+        pairIndex: 0,
+        pairLineDisplay: "",
+        pairRequired: true,
+        submitDisabled: false,
+        dateStr: this.data.dateStr || defaultDate(),
+        _pairSource: "api"
+      });
+      return;
+    }
     if (USE_BACKEND_MEETING && token && (r === "student" || r === "teacher")) {
       matchApi
         .myPairs(1)
@@ -171,13 +185,14 @@ Page({
     const opts = this.data.pairOptions || [];
     const ix = this.data.pairIndex || 0;
     const pick = opts[ix] || { id: "", name: "" };
-    const pairId = pick && pick.id != null && pick.id !== "" ? String(pick.id) : "";
+    const manualPairId = String(this.data.manualPairId || "").replace(/\D/g, "");
+    const pairId = pick && pick.id != null && pick.id !== "" ? String(pick.id) : manualPairId;
     if (this.data.pairRequired && !pairId) {
       wx.showToast({ title: "请选择结对口", icon: "none" });
       return;
     }
     const token0 = (app && app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
-    const useRemote = USE_BACKEND_MEETING && token0 && (r === "student" || r === "teacher") && this.data._pairSource === "api";
+    const useRemote = USE_BACKEND_MEETING && token0 && this.data._pairSource === "api";
     const self = this;
     if (useRemote) {
       const link = String(this.data.roomLink || "").trim();
@@ -187,7 +202,7 @@ Page({
       }
       const endMs = st + 60 * 60 * 1000;
       const body = buildMeetingCreateRequest({
-        matchPairId: Number(pick.id),
+        matchPairId: Number(pairId),
         topic: title,
         startTimeMs: st,
         endTimeMs: endMs,
@@ -206,29 +221,7 @@ Page({
         .catch(function (err) {
           wx.hideLoading();
           const msg = (err && err.message) || "网络或服务异常";
-          wx.showModal({
-            title: "服务器保存失败",
-            content: msg + "\n是否改为仅保存到本机？",
-            confirmText: "本机保存",
-            cancelText: "取消",
-            success: function (res) {
-              if (res.confirm) {
-                addMeeting({
-                  title: title,
-                  startTimeMs: st,
-                  roomLink: self.data.roomLink,
-                  pairId: pairId,
-                  pairLine: (pick && pick.name) || (pairId ? "结对" : "不指定结对"),
-                  createdByPhone: phone,
-                  creatorRole: r
-                });
-                wx.showToast({ title: "已保存到本机", icon: "success" });
-                setTimeout(function () {
-                  wx.navigateBack();
-                }, 500);
-              }
-            }
-          });
+          wx.showModal({ title: "服务器保存失败", content: msg, showCancel: false });
         });
       return;
     }

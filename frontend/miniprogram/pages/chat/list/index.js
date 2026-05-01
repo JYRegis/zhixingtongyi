@@ -10,6 +10,7 @@ const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
 const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
+const { matchApi } = require("../../../utils/api");
 
 function enrichPairs(pairs) {
   return (pairs || []).map(function (item) {
@@ -17,6 +18,22 @@ function enrichPairs(pairs) {
     return {
       ...item,
       avatarText: name.slice(0, 1)
+    };
+  });
+}
+
+function mapRemotePairs(pairs, role) {
+  return (Array.isArray(pairs) ? pairs : []).map(function (p) {
+    const id = p && p.id != null ? p.id : p.pairId;
+    const studentId = p && p.studentId != null ? p.studentId : "—";
+    const teacherId = p && p.teacherId != null ? p.teacherId : "—";
+    const otherName = role === "student" ? "志愿者 " + teacherId : "学员 " + studentId;
+    return {
+      id: String(id),
+      name: otherName,
+      tag: "结对 #" + id,
+      schoolId: p && p.schoolId,
+      _remote: true
     };
   });
 }
@@ -98,6 +115,29 @@ Page({
       });
       return;
     }
+    const token = (getApp().globalData && getApp().globalData.token) || wx.getStorageSync("token") || "";
+    if (token && (role === "student" || role === "teacher")) {
+      matchApi
+        .myPairs(1)
+        .then((rows) => {
+          const remotePairs = enrichPairs(mapRemotePairs(rows, role));
+          this.setData({
+            role,
+            roleName: ROLE_DISPLAY_NAME[role] || "未登录",
+            pairs: remotePairs,
+            l1FilterSchools: [],
+            l1FilterIndex: 0,
+            emptyHint: remotePairs.length ? "" : "暂无生效中的结对会话"
+          });
+        })
+        .catch(() => {
+          this._loadLocalPairs(role, u);
+        });
+      return;
+    }
+    this._loadLocalPairs(role, u);
+  },
+  _loadLocalPairs(role, u) {
     const pairs = enrichPairs(
       role && (role === "student" || role === "teacher")
         ? getPairedListForUser(String(u.phone || ""), role)

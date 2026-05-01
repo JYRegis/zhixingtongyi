@@ -15,7 +15,6 @@ const {
 } = require("../../../utils/pairingStore");
 const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
-const { USE_BACKEND_UNBIND } = require("../../../config/demoBackend");
 const { matchApi } = require("../../../utils/api");
 const { pairVosToUnbindList, unbindProgressToActiveRequest } = require("../../../utils/unbindDtoMappers");
 
@@ -121,7 +120,7 @@ Page({
     }
     const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
     const self = this;
-    if (USE_BACKEND_UNBIND && token && (r === "student" || r === "teacher")) {
+    if (token && (r === "student" || r === "teacher")) {
       matchApi
         .myPairs()
         .then(function (pairs) {

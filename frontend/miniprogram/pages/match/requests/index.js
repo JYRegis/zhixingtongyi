@@ -1,6 +1,6 @@
 const { formatSavedTimeForDisplay } = require("../../../utils/classTimeOptions");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
-const { getPendingApplications, processApplication } = require("../../../utils/backendApi");
+const { matchApi } = require("../../../utils/api");
 
 function formatApplyAt(ts) {
   if (ts == null) {
@@ -88,7 +88,7 @@ Page({
     this._viewerRole = r;
     if (r === "teacher") {
       try {
-        const remote = await getPendingApplications();
+        const remote = await matchApi.pendingApplications();
         this._pending = (Array.isArray(remote) ? remote : []).map((row) => ({
           id: row.id,
           studentName: row.studentName || `学员${row.studentId || ""}`,
@@ -122,7 +122,7 @@ Page({
       this._pending = SEED.map((r) => ({ ...r }));
     }
     try {
-      await processApplication(id, "accept", "");
+      await matchApi.process(id, { action: "accept", reason: "" });
       this._pending = this._pending.filter((item) => item.id !== id);
       const sorted = this._pending
         .slice()
@@ -170,7 +170,7 @@ Page({
       return;
     }
     try {
-      await processApplication(activeRejectId, "reject", rejectReason.trim());
+      await matchApi.process(activeRejectId, { action: "reject", reason: rejectReason.trim() });
       if (!this._pending) {
         this._pending = SEED.map((r) => ({ ...r }));
       }
