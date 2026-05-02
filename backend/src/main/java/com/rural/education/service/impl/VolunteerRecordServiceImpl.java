@@ -14,7 +14,7 @@ import com.rural.education.enums.RecordStatus;
 import com.rural.education.enums.UserRole;
 import com.rural.education.event.event.RecordStatusChangedEvent;
 import com.rural.education.event.publisher.EventPublisher;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.entity.MatchPair;
 import com.rural.education.model.entity.StudentProfile;
 import com.rural.education.model.entity.TeacherProfile;
@@ -52,13 +52,13 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
         MatchPair pair = matchPairMapper.selectById(request.getMatchPairId());
         if (pair == null) {
-            throw new BizException("结对不存在");
+            throw new BusinessException("结对不存在");
         }
         if (!Integer.valueOf(MatchStatus.ACCEPTED.getCode()).equals(pair.getMatchStatus())) {
-            throw new BizException("仅生效中的结对可提交服务记录");
+            throw new BusinessException("仅生效中的结对可提交服务记录");
         }
         if (!userId.equals(pair.getTeacherId())) {
-            throw new BizException("仅结对志愿者可提交服务记录");
+            throw new BusinessException("仅结对志愿者可提交服务记录");
         }
         VolunteerRecord record = new VolunteerRecord();
         record.setMatchPairId(request.getMatchPairId());
@@ -110,13 +110,13 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
         VolunteerRecord record = volunteerRecordMapper.selectById(recordId);
         if (record == null) {
-            throw new BizException("服务记录不存在");
+            throw new BusinessException("服务记录不存在");
         }
         if (!Integer.valueOf(RecordStatus.PENDING_STUDENT_CONFIRM.getCode()).equals(record.getStatus())) {
-            throw new BizException("当前状态不允许学生确认");
+            throw new BusinessException("当前状态不允许学生确认");
         }
         if (!userId.equals(record.getStudentId())) {
-            throw new BizException("仅结对学员可确认该记录");
+            throw new BusinessException("仅结对学员可确认该记录");
         }
         if ("accept".equalsIgnoreCase(request.getAction())) {
             record.setStatus(RecordStatus.PENDING_ADMIN_AUDIT.getCode());
@@ -134,7 +134,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             notificationAsyncPublisher.publish(event);
         } else if ("reject".equalsIgnoreCase(request.getAction())) {
             if (request.getRejectReason() == null || request.getRejectReason().isBlank()) {
-                throw new BizException("rejectReason 必填");
+                throw new BusinessException("rejectReason 必填");
             }
             record.setStatus(RecordStatus.STUDENT_REJECTED.getCode());
             record.setRejectReason(request.getRejectReason());
@@ -151,7 +151,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             event.setParamsJson("{\"recordId\":" + recordId + "}");
             notificationAsyncPublisher.publish(event);
         } else {
-            throw new BizException("action 只能为 accept 或 reject");
+            throw new BusinessException("action 只能为 accept 或 reject");
         }
     }
 
@@ -173,11 +173,11 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
                     filterSchoolId = adminProfile.getSchoolId();
                 }
                 if (filterSchoolId == null) {
-                    throw new BizException("无法确定管理员的管辖学校");
+                    throw new BusinessException("无法确定管理员的管辖学校");
                 }
             }
         } else if (user.getRole() != UserRole.L1_ADMIN.getCode()) {
-            throw new BizException("无权限操作");
+            throw new BusinessException("无权限操作");
         }
 
         Page<VolunteerRecordVO> mpPage = new Page<>(current, pageSize);
@@ -191,10 +191,10 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         userAccessService.requireL2WithPermission(userId, "student_manage");
         VolunteerRecord record = volunteerRecordMapper.selectById(recordId);
         if (record == null) {
-            throw new BizException("服务记录不存在");
+            throw new BusinessException("服务记录不存在");
         }
         if (!Integer.valueOf(RecordStatus.PENDING_ADMIN_AUDIT.getCode()).equals(record.getStatus())) {
-            throw new BizException("当前状态不允许管理员审核");
+            throw new BusinessException("当前状态不允许管理员审核");
         }
         StudentProfile studentProfile = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, record.getStudentId())
@@ -203,7 +203,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
         );
         if (studentProfile == null || adminProfile == null || !studentProfile.getSchoolId().equals(adminProfile.getSchoolId())) {
-            throw new BizException("仅同校二级管理员可审核该记录");
+            throw new BusinessException("仅同校二级管理员可审核该记录");
         }
         if ("approve".equalsIgnoreCase(request.getAction())) {
             record.setStatus(RecordStatus.APPROVED.getCode());
@@ -211,7 +211,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             record.setAuditorId(userId);
             int updated = volunteerRecordMapper.updateById(record);
             if (updated == 0) {
-                throw new BizException("记录已被其他管理员处理，请刷新后重试");
+                throw new BusinessException("记录已被其他管理员处理，请刷新后重试");
             }
 
             TeacherProfile teacherProfile = teacherProfileMapper.selectOne(
@@ -235,7 +235,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             notificationAsyncPublisher.publish(event);
         } else if ("reject".equalsIgnoreCase(request.getAction())) {
             if (request.getRejectReason() == null || request.getRejectReason().isBlank()) {
-                throw new BizException("rejectReason 必填");
+                throw new BusinessException("rejectReason 必填");
             }
             record.setStatus(RecordStatus.REJECTED.getCode());
             record.setRejectReason(request.getRejectReason());
@@ -243,7 +243,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             record.setAuditorId(userId);
             int updated = volunteerRecordMapper.updateById(record);
             if (updated == 0) {
-                throw new BizException("记录已被其他管理员处理，请刷新后重试");
+                throw new BusinessException("记录已被其他管理员处理，请刷新后重试");
             }
 
             eventPublisher.publish(new RecordStatusChangedEvent(recordId, record.getStatus(), userId));
@@ -256,7 +256,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             event.setParamsJson("{\"recordId\":" + recordId + "}");
             notificationAsyncPublisher.publish(event);
         } else {
-            throw new BizException("action 只能为 approve 或 reject");
+            throw new BusinessException("action 只能为 approve 或 reject");
         }
     }
 

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.enums.AuditStatus;
 import com.rural.education.enums.UserRole;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.StudentProfileMapper;
 import com.rural.education.dto.request.student.StudentProfileRequest;
 import com.rural.education.model.entity.StudentProfile;
@@ -71,10 +71,10 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
         );
         if (profile == null) {
-            throw new BizException("请先保存学生资料");
+            throw new BusinessException("请先保存学生资料");
         }
         if (isBlank(profile.getGrade()) || isBlank(profile.getSubjectsNeeded()) || isBlank(profile.getFreeTime())) {
-            throw new BizException("提交前需补全 grade、subjectsNeeded、freeTime");
+            throw new BusinessException("提交前需补全 grade、subjectsNeeded、freeTime");
         }
         studentProfileMapper.update(
                 null,
@@ -107,7 +107,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (Exception e) {
-            throw new BizException("JSON序列化失败");
+            throw new BusinessException("JSON序列化失败");
         }
     }
 

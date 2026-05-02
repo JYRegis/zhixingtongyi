@@ -1,7 +1,7 @@
 package com.rural.education.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.rural.education.dto.request.system.UpdateWeightRequest;
+import com.rural.education.dto.request.algorithm.UpdateWeightRequest;
 import com.rural.education.model.entity.AlgorithmWeightConfig;
 
 import java.util.List;

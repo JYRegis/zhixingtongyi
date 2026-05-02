@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rural.education.dto.request.chat.SendMessageRequest;
 import com.rural.education.enums.MessageType;
 import com.rural.education.enums.UserRole;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.entity.ChatMessage;
 import com.rural.education.model.entity.ChatParticipant;
 import com.rural.education.model.entity.MatchPair;
@@ -39,7 +39,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
         userAccessService.requireUser(userId);
         MatchPair pair = matchPairMapper.selectById(request.getMatchPairId());
         if (pair == null) {
-            throw new BizException("结对不存在");
+            throw new BusinessException("结对不存在");
         }
         ChatParticipant participant = chatParticipantMapper.selectOne(
                 new LambdaQueryWrapper<ChatParticipant>()
@@ -48,11 +48,11 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                         .isNull(ChatParticipant::getLeftTime)
         );
         if (participant == null) {
-            throw new BizException("您不是该会话的参与者或已退出会话");
+            throw new BusinessException("您不是该会话的参与者或已退出会话");
         }
         String type = request.getMessageType().toUpperCase();
         if (!"TEXT".equals(type) && !"IMAGE".equals(type) && !"VOICE".equals(type)) {
-            throw new BizException("不支持的消息类型");
+            throw new BusinessException("不支持的消息类型");
         }
         ChatMessage message = new ChatMessage();
         message.setMatchPairId(request.getMatchPairId());
@@ -82,7 +82,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                         .isNull(ChatParticipant::getLeftTime)
         );
         if (participant == null) {
-            throw new BizException("您不是该会话的参与者或已退出会话");
+            throw new BusinessException("您不是该会话的参与者或已退出会话");
         }
         int size = limit == null || limit <= 0 ? 50 : Math.min(limit, 200);
         LambdaQueryWrapper<ChatMessage> wrapper = new LambdaQueryWrapper<ChatMessage>()
@@ -113,10 +113,10 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
         userAccessService.requireUser(userId);
         ChatMessage message = chatMessageMapper.selectById(messageId);
         if (message == null) {
-            throw new BizException("消息不存在");
+            throw new BusinessException("消息不存在");
         }
         if (message.getSenderId().equals(userId)) {
-            throw new BizException("不能标记自己发送的消息");
+            throw new BusinessException("不能标记自己发送的消息");
         }
         ChatParticipant participant = chatParticipantMapper.selectOne(
                 new LambdaQueryWrapper<ChatParticipant>()
@@ -125,7 +125,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                         .isNull(ChatParticipant::getLeftTime)
         );
         if (participant == null) {
-            throw new BizException("您不是该会话的参与者");
+            throw new BusinessException("您不是该会话的参与者");
         }
         if (message.getReadTime() == null) {
             message.setReadTime(LocalDateTime.now());
@@ -139,13 +139,13 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
         userAccessService.requireL2WithPermission(adminUserId, "student_manage");
         MatchPair pair = matchPairMapper.selectById(pairId);
         if (pair == null) {
-            throw new BizException("结对不存在");
+            throw new BusinessException("结对不存在");
         }
         StudentProfile studentProfile = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, pair.getStudentId())
         );
         if (studentProfile == null) {
-            throw new BizException("学生资料不存在");
+            throw new BusinessException("学生资料不存在");
         }
         StudentProfile adminProfile = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, adminUserId)
@@ -155,7 +155,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
             adminSchoolId = adminProfile.getSchoolId();
         }
         if (adminSchoolId == null || !adminSchoolId.equals(studentProfile.getSchoolId())) {
-            throw new BizException("仅同校二级管理员可加入会话");
+            throw new BusinessException("仅同校二级管理员可加入会话");
         }
         Long existed = chatParticipantMapper.selectCount(
                 new LambdaQueryWrapper<ChatParticipant>()
@@ -164,7 +164,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                         .isNull(ChatParticipant::getLeftTime)
         );
         if (existed > 0) {
-            throw new BizException("该用户已在会话中");
+            throw new BusinessException("该用户已在会话中");
         }
         ChatParticipant participant = new ChatParticipant();
         participant.setMatchPairId(pairId);
@@ -186,10 +186,10 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                         .isNull(ChatParticipant::getLeftTime)
         );
         if (participant == null) {
-            throw new BizException("该参与者不在会话中");
+            throw new BusinessException("该参与者不在会话中");
         }
         if (Integer.valueOf(1).equals(participant.getIsDefaultMember())) {
-            throw new BizException("默认成员不能退出会话");
+            throw new BusinessException("默认成员不能退出会话");
         }
         participant.setLeftTime(LocalDateTime.now());
         chatParticipantMapper.updateById(participant);
@@ -200,7 +200,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
         userAccessService.requireUser(userId);
         MatchPair pair = matchPairMapper.selectById(pairId);
         if (pair == null) {
-            throw new BizException("结对不存在");
+            throw new BusinessException("结对不存在");
         }
         boolean isMember = userId.equals(pair.getStudentId()) || userId.equals(pair.getTeacherId());
         boolean isChatMember = chatParticipantMapper.selectCount(
@@ -210,7 +210,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                         .isNull(ChatParticipant::getLeftTime)
         ) > 0;
         if (!isMember && !isChatMember) {
-            throw new BizException("无权查看会话参与者");
+            throw new BusinessException("无权查看会话参与者");
         }
         return chatParticipantMapper.selectList(
                 new LambdaQueryWrapper<ChatParticipant>()

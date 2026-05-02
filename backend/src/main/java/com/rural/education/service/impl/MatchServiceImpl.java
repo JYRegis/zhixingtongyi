@@ -9,7 +9,7 @@ import com.rural.education.enums.MatchStatus;
 import com.rural.education.enums.NotificationType;
 import com.rural.education.enums.UserRole;
 import com.rural.education.enums.UserStatus;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.MatchPairMapper;
 import com.rural.education.model.mapper.StudentProfileMapper;
 import com.rural.education.model.mapper.TeacherProfileMapper;
@@ -77,19 +77,19 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
         User teacher = userMapper.selectById(request.getTeacherId());
         if (teacher == null || !Integer.valueOf(UserRole.TEACHER.getCode()).equals(teacher.getRole()) || !Integer.valueOf(UserStatus.ENABLED.getCode()).equals(teacher.getStatus())) {
-            throw new BizException("目标志愿者不存在或不可用");
+            throw new BusinessException("目标志愿者不存在或不可用");
         }
         StudentProfile profile = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
         );
         if (profile == null) {
-            throw new BizException("请先完善并提交学生资料");
+            throw new BusinessException("请先完善并提交学生资料");
         }
         if (!Integer.valueOf(1).equals(profile.getProfileStatus()) ||
                 profile.getGrade() == null ||
                 profile.getSubjectsNeeded() == null ||
                 profile.getFreeTime() == null) {
-            throw new BizException("学生资料需处于 READY_FOR_MATCH 且必填项完整");
+            throw new BusinessException("学生资料需处于 READY_FOR_MATCH 且必填项完整");
         }
         Long existed = matchPairMapper.selectCount(
                 new LambdaQueryWrapper<MatchPair>()
@@ -98,7 +98,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                         .in(MatchPair::getMatchStatus, MatchStatus.APPLIED.getCode(), MatchStatus.ACCEPTED.getCode(), MatchStatus.UNBIND_CONFIRMING.getCode())
         );
         if (existed > 0) {
-            throw new BizException("已存在待处理或生效中的结对关系");
+            throw new BusinessException("已存在待处理或生效中的结对关系");
         }
         MatchPair pair = new MatchPair();
         pair.setStudentId(userId);
@@ -132,10 +132,10 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                         .eq(MatchPair::getTeacherId, userId)
         );
         if (pair == null) {
-            throw new BizException("申请不存在");
+            throw new BusinessException("申请不存在");
         }
         if (!Integer.valueOf(MatchStatus.APPLIED.getCode()).equals(pair.getMatchStatus())) {
-            throw new BizException("仅待处理申请可审核");
+            throw new BusinessException("仅待处理申请可审核");
         }
         Long studentId = pair.getStudentId();
         if ("accept".equalsIgnoreCase(request.getAction())) {
@@ -179,7 +179,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         User user = userMapper.selectById(userId);
         Integer role = user == null ? null : user.getRole();
         if (role == null || (role != UserRole.TEACHER.getCode() && role != UserRole.STUDENT.getCode())) {
-            throw new BizException("无权限操作");
+            throw new BusinessException("无权限操作");
         }
         LambdaQueryWrapper<MatchPair> wrapper = new LambdaQueryWrapper<>();
         if (role == UserRole.TEACHER.getCode()) {
@@ -214,15 +214,15 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     public void unbindRequest(Long userId, Long pairId) {
         MatchPair pair = matchPairMapper.selectById(pairId);
         if (pair == null) {
-            throw new BizException("结对不存在");
+            throw new BusinessException("结对不存在");
         }
         if (!Integer.valueOf(MatchStatus.ACCEPTED.getCode()).equals(pair.getMatchStatus())) {
-            throw new BizException("仅生效中的结对可发起解绑");
+            throw new BusinessException("仅生效中的结对可发起解绑");
         }
         Long studentId = pair.getStudentId();
         Long teacherId = pair.getTeacherId();
         if (!userId.equals(studentId) && !userId.equals(teacherId)) {
-            throw new BizException("仅结对双方可发起解绑");
+            throw new BusinessException("仅结对双方可发起解绑");
         }
         StudentProfile studentProfile = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, studentId)
@@ -253,11 +253,11 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     public void unbindConfirm(Long userId, Long pairId, UnbindConfirmRequest request) {
         MatchPair pair = matchPairMapper.selectById(pairId);
         if (pair == null) {
-            throw new BizException("结对不存在");
+            throw new BusinessException("结对不存在");
         }
         if (!Integer.valueOf(MatchStatus.UNBIND_CONFIRMING.getCode()).equals(pair.getMatchStatus())
                 && !Integer.valueOf(MatchStatus.UNBIND_REJECTED.getCode()).equals(pair.getMatchStatus())) {
-            throw new BizException("当前状态不允许解绑确认");
+            throw new BusinessException("当前状态不允许解绑确认");
         }
         Long studentId = pair.getStudentId();
         Long teacherId = pair.getTeacherId();
@@ -265,7 +265,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         validateUnbindActor(request.getRole(), userId, studentId, teacherId, adminId);
         if ("reject".equalsIgnoreCase(request.getAction())) {
             if (request.getRejectReason() == null || request.getRejectReason().isBlank()) {
-                throw new BizException("rejectReason 必填");
+                throw new BusinessException("rejectReason 必填");
             }
             matchPairMapper.update(
                     null,
@@ -302,13 +302,13 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     public MatchPairVO unbindProgress(Long userId, Long pairId) {
         MatchPair pair = matchPairMapper.selectById(pairId);
         if (pair == null) {
-            throw new BizException("结对不存在");
+            throw new BusinessException("结对不存在");
         }
         Long studentId = pair.getStudentId();
         Long teacherId = pair.getTeacherId();
         Long adminId = pair.getUnbindAdminId();
         if (!userId.equals(studentId) && !userId.equals(teacherId) && (adminId == null || !userId.equals(adminId))) {
-            throw new BizException("无权查看解绑进度");
+            throw new BusinessException("无权查看解绑进度");
         }
         MatchPairVO vo = new MatchPairVO();
         vo.setPairId(pair.getId());
@@ -329,7 +329,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     public MatchPairVO pairDetail(Long userId, Long pairId) {
         MatchPair pair = matchPairMapper.selectById(pairId);
         if (pair == null) {
-            throw new BizException("结对不存在");
+            throw new BusinessException("结对不存在");
         }
         Long studentId = pair.getStudentId();
         Long teacherId = pair.getTeacherId();
@@ -337,7 +337,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         User user = userMapper.selectById(userId);
         Integer userRole = user == null ? null : user.getRole();
         if (!userId.equals(studentId) && !userId.equals(teacherId) && !Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(userRole) && (adminId == null || !userId.equals(adminId))) {
-            throw new BizException("无权查看结对详情");
+            throw new BusinessException("无权查看结对详情");
         }
         MatchPairVO vo = new MatchPairVO();
         vo.setId(pair.getId());
@@ -363,7 +363,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         if ("SECONDARY_ADMIN".equalsIgnoreCase(role) && adminId != null && userId.equals(adminId)) {
             return;
         }
-        throw new BizException("解绑角色与当前登录用户不匹配");
+        throw new BusinessException("解绑角色与当前登录用户不匹配");
     }
 
     private void initChatParticipants(Long pairId, Long studentId, Long teacherId) {

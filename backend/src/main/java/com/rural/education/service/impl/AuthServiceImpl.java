@@ -13,7 +13,7 @@ import com.rural.education.dto.response.auth.LoginResponse;
 import com.rural.education.model.entity.StudentProfile;
 import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.model.entity.User;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.StudentProfileMapper;
 import com.rural.education.model.mapper.TeacherProfileMapper;
 import com.rural.education.model.mapper.UserMapper;
@@ -177,11 +177,11 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
         } else if ("TEACHER".equalsIgnoreCase(targetRole)) {
             role = UserRole.TEACHER.getCode();
         } else {
-            throw new BizException("targetRole 仅支持 STUDENT 或 TEACHER");
+            throw new BusinessException("targetRole 仅支持 STUDENT 或 TEACHER");
         }
         User user = userMapper.selectById(userId);
         if (user == null) {
-            throw new BizException("用户不存在");
+            throw new BusinessException("用户不存在");
         }
         user.setRole(role);
         userMapper.updateById(user);
@@ -243,14 +243,14 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
 
     private String extractBearerToken(String authorizationHeader) {
         if (authorizationHeader == null || authorizationHeader.isBlank()) {
-            throw new BizException("Authorization 不能为空");
+            throw new BusinessException("Authorization 不能为空");
         }
         if (!authorizationHeader.startsWith("Bearer ")) {
-            throw new BizException("Authorization 必须是 Bearer token");
+            throw new BusinessException("Authorization 必须是 Bearer token");
         }
         String token = authorizationHeader.substring(7).trim();
         if (token.isEmpty()) {
-            throw new BizException("Bearer token 不能为空");
+            throw new BusinessException("Bearer token 不能为空");
         }
         return token;
     }

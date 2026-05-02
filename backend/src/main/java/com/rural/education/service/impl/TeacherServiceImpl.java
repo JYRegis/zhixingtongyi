@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.enums.AuditStatus;
 import com.rural.education.enums.UserRole;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.TeacherProfileMapper;
 import com.rural.education.dto.request.teacher.TeacherProfileRequest;
 import com.rural.education.model.entity.TeacherProfile;
@@ -37,7 +37,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
                 new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, userId)
         );
         if (existed != null) {
-            throw new BizException("教师资料已存在，请使用更新接口");
+            throw new BusinessException("教师资料已存在，请使用更新接口");
         }
         TeacherProfile profile = new TeacherProfile();
         profile.setUserId(userId);
@@ -104,7 +104,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (Exception e) {
-            throw new BizException("JSON序列化失败");
+            throw new BusinessException("JSON序列化失败");
         }
     }
 

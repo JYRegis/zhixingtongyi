@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/admin/volunteer-records")
 @RequiredArgsConstructor
-public class RecordAdminController {
+public class AdminRecordController {
     private final CurrentUserUtil currentUserUtil;
     private final VolunteerRecordService volunteerRecordService;
 

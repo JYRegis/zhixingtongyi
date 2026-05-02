@@ -58,4 +58,10 @@
         ORDER BY vr.create_time DESC
     </select>
 
+    <select id="selectTotalApprovedDuration" resultType="java.lang.Long">
+        SELECT COALESCE(SUM(duration), 0)
+        FROM volunteer_record
+        WHERE status = 2
+    </select>
+
 </mapper>

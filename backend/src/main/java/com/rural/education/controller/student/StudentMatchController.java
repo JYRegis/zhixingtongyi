@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/student/match")
 @RequiredArgsConstructor
 public class StudentMatchController {
-    // TODO: 学生匹配相关聚合接口（现阶段由 /match 下接口承载）
+    // 学生匹配相关接口（现阶段由 /match 下接口承载）
 }
 

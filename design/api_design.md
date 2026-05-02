@@ -540,21 +540,9 @@ GET /admin/statistics/region-distribution
 GET /admin/statistics/subject-distribution
 ```
 
-## 9. 系统管理模块
+## 9. 志愿时长与纪要管理模块
 
-### 9.1 获取系统配置
-```
-GET /system/configs
-```
-
-### 9.2 更新系统配置
-```
-PUT /system/configs/{key}
-```
-
-## 10. 志愿时长与纪要管理模块
-
-### 10.1 提交服务记录（教师端）
+### 9.1 提交服务记录（教师端）
 POST /volunteer-records
 
 请求参数：
@@ -572,7 +560,7 @@ POST /volunteer-records
 }
 ```
 
-### 10.2 确认/拒绝服务记录（学生端）
+### 9.2 确认/拒绝服务记录（学生端）
 PUT /volunteer-records/{recordId}/student-confirm
 请求参数：
 
@@ -583,11 +571,11 @@ PUT /volunteer-records/{recordId}/student-confirm
 }
 ```
 
-### 10.3 获取待审核的记录列表（二级管理员端）
+### 9.3 获取待审核的记录列表（二级管理员端）
 GET /admin/volunteer-records/pending
 查询参数：schoolId, regionCode, page, size（根据管理员管辖范围及权限过滤）
 
-### 10.4 审核服务记录（二级管理员端）
+### 9.4 审核服务记录（二级管理员端）
 (需拥有 `student_manage` 权限)
 
 PUT /admin/volunteer-records/{recordId}/audit
@@ -600,7 +588,7 @@ PUT /admin/volunteer-records/{recordId}/audit
 }
 ```
 
-### 10.5 查询个人服务记录（通用）
+### 9.5 查询个人服务记录（通用）
 GET /volunteer-records
 查询参数：teacherId, studentId, status, page, size
 

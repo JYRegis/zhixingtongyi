@@ -16,11 +16,6 @@ public class GlobalExceptionHandler {
         return ApiResponse.error(400, ex.getMessage());
     }
 
-    @ExceptionHandler(BizException.class)
-    public ApiResponse<Void> handleBiz(BizException ex) {
-        return ApiResponse.error(400, ex.getMessage());
-    }
-
     @ExceptionHandler(AuthException.class)
     public ApiResponse<Void> handleAuth(AuthException ex) {
         return ApiResponse.error(401, ex.getMessage());

@@ -1,4 +1,4 @@
-package com.rural.education.config;
+package com.rural.education.filter;
 
 import com.rural.education.utils.JwtUtil;
 import com.rural.education.utils.CurrentUserContext;

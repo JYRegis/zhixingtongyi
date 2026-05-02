@@ -1,7 +1,7 @@
 package com.rural.education.controller.match;
 
 import com.rural.education.dto.common.ApiResponse;
-import com.rural.education.dto.request.system.UpdateWeightRequest;
+import com.rural.education.dto.request.algorithm.UpdateWeightRequest;
 import com.rural.education.model.entity.AlgorithmWeightConfig;
 import com.rural.education.service.AlgorithmService;
 import com.rural.education.utils.CurrentUserUtil;

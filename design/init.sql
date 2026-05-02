@@ -319,21 +319,6 @@ CREATE TABLE `volunteer_record` (
   CONSTRAINT `fk_record_auditor_id` FOREIGN KEY (`auditor_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='志愿服务时长及纪要记录表';
 
--- ----------------------------
--- 12. 系统配置表 (system_config)
--- ----------------------------
-DROP TABLE IF EXISTS `system_config`;
-CREATE TABLE `system_config` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `config_key` varchar(64) NOT NULL COMMENT '配置键',
-  `config_value` varchar(512) NOT NULL COMMENT '配置值',
-  `description` varchar(256) DEFAULT NULL COMMENT '配置说明',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_config_key` (`config_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统配置表';
-
 -- --------------------------------------------------------
 -- 4. 恢复外键检查并写入初始数据
 -- --------------------------------------------------------

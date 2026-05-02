@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.dto.common.PageResponse;
 import com.rural.education.enums.NotificationType;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.MessageNotificationMapper;
 import com.rural.education.dto.common.NotificationEvent;
 import com.rural.education.dto.request.notification.NotificationReadRequest;
@@ -82,7 +82,7 @@ public class NotificationServiceImpl extends ServiceImpl<MessageNotificationMapp
         try {
             event.setParamsJson(objectMapper.writeValueAsString(request.getTemplateData()));
         } catch (Exception e) {
-            throw new BizException("templateData 序列化失败");
+            throw new BusinessException("templateData 序列化失败");
         }
         notificationAsyncPublisher.publish(event);
     }
@@ -97,7 +97,7 @@ public class NotificationServiceImpl extends ServiceImpl<MessageNotificationMapp
         if ("MATCH_REJECT".equalsIgnoreCase(code)) {
             return NotificationType.MATCH_REJECT.getCode();
         }
-        throw new BizException("不支持的通知类型: " + code);
+        throw new BusinessException("不支持的通知类型: " + code);
     }
 }
 

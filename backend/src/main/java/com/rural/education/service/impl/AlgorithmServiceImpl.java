@@ -3,9 +3,9 @@ package com.rural.education.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.rural.education.dto.request.system.UpdateWeightRequest;
+import com.rural.education.dto.request.algorithm.UpdateWeightRequest;
 import com.rural.education.enums.UserRole;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.entity.AlgorithmWeightConfig;
 import com.rural.education.model.entity.StudentProfile;
 import com.rural.education.model.mapper.AlgorithmWeightConfigMapper;
@@ -36,7 +36,7 @@ public class AlgorithmServiceImpl extends ServiceImpl<AlgorithmWeightConfigMappe
         userAccessService.requireAnyRole(userId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         AlgorithmWeightConfig config = algorithmWeightConfigMapper.selectById(configId);
         if (config == null) {
-            throw new BizException("权重配置不存在");
+            throw new BusinessException("权重配置不存在");
         }
         algorithmWeightConfigMapper.update(null,
                 new LambdaUpdateWrapper<AlgorithmWeightConfig>()

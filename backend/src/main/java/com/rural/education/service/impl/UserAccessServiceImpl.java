@@ -3,7 +3,7 @@ package com.rural.education.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rural.education.enums.UserRole;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.AdminProfileMapper;
 import com.rural.education.model.mapper.UserMapper;
 import com.rural.education.model.entity.AdminProfile;
@@ -22,7 +22,7 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
     public User requireUser(Long userId) {
         User user = userMapper.selectById(userId);
         if (user == null) {
-            throw new BizException("用户不存在");
+            throw new BusinessException("用户不存在");
         }
         return user;
     }
@@ -31,7 +31,7 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
     public void requireRole(Long userId, int role) {
         User user = requireUser(userId);
         if (user.getRole() == null || user.getRole() != role) {
-            throw new BizException("无权限操作");
+            throw new BusinessException("无权限操作");
         }
     }
 
@@ -39,14 +39,14 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
     public void requireAnyRole(Long userId, int... roles) {
         User user = requireUser(userId);
         if (user.getRole() == null) {
-            throw new BizException("无权限操作");
+            throw new BusinessException("无权限操作");
         }
         for (int role : roles) {
             if (user.getRole() == role) {
                 return;
             }
         }
-        throw new BizException("无权限操作");
+        throw new BusinessException("无权限操作");
     }
 
     @Override
@@ -61,11 +61,11 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
                 new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, userId)
         );
         if (adminProfile == null) {
-            throw new BizException("管理员资料不存在");
+            throw new BusinessException("管理员资料不存在");
         }
         String permissions = adminProfile.getPermissions();
         if (permissions == null || !permissions.contains(permission)) {
-            throw new BizException("缺少权限: " + permission);
+            throw new BusinessException("缺少权限: " + permission);
         }
     }
 }
