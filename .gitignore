@@ -16,6 +16,13 @@ Thumbs.db
 ### Env
 .env
 
+### vscode
+.vscode/
+
+### claude code
+.claude/
+CLAUDE.md
+
 ### Docker volumes (local bind mounts, if any)
 **/.mysql/
 **/.redis/

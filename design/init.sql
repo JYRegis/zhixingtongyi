@@ -305,6 +305,7 @@ CREATE TABLE `volunteer_record` (
   `auditor_id` bigint DEFAULT NULL COMMENT '审核的二级管理员ID',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `version` int NOT NULL DEFAULT 0 COMMENT '乐观锁版本号',
   PRIMARY KEY (`id`),
   KEY `idx_match_pair` (`match_pair_id`),
   KEY `idx_teacher_status` (`teacher_id`,`status`),

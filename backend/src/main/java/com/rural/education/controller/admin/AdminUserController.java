@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-public class UserAdminController {
+public class AdminUserController {
     private final CurrentUserUtil currentUserUtil;
     private final AdminService adminService;
 

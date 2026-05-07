@@ -30,7 +30,9 @@ public class StudentProfileController {
 
     @PutMapping("/profile")
     public ApiResponse<Void> updateProfile(@Valid @RequestBody StudentProfileRequest request) {
-        return saveDraft(request);
+        Long userId = currentUserUtil.getCurrentUserId();
+        studentService.updateProfile(userId, request);
+        return ApiResponse.success();
     }
 
     @PostMapping("/profile/submit")

@@ -33,8 +33,15 @@ public class WxAuthController {
 
     @PostMapping("/phone-login")
     public ApiResponse<LoginResponse> phoneLogin(@Valid @RequestBody LoginRequest request) {
-        log.info("phone-login request received, phone={}", request.getPhone());
+        log.info("phone-login request received, phone={}", maskPhone(request.getPhone()));
         return ApiResponse.success(authService.phoneLogin(request));
+    }
+
+    private String maskPhone(String phone) {
+        if (phone == null || phone.length() < 7) {
+            return phone;
+        }
+        return phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
     }
 }
 

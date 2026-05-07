@@ -13,7 +13,7 @@ import com.rural.education.dto.response.auth.LoginResponse;
 import com.rural.education.model.entity.StudentProfile;
 import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.model.entity.User;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.StudentProfileMapper;
 import com.rural.education.model.mapper.TeacherProfileMapper;
 import com.rural.education.model.mapper.UserMapper;
@@ -135,7 +135,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
         String phone = request.getPhone();
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
         boolean isNewUser = (user == null);
-        log.info("phone-login processing, phone={}, isNewUser={}", phone, isNewUser);
+        log.info("phone-login processing, phone={}, isNewUser={}", maskPhone(phone), isNewUser);
         if (isNewUser) {
             user = new User();
             user.setPhone(phone);
@@ -164,7 +164,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             }
         }
         String token = jwtUtil.generateToken(user.getId(), user.getRole());
-        log.info("phone-login success, userId={}, phone={}", user.getId(), user.getPhone());
+        log.info("phone-login success, userId={}, phone={}", user.getId(), maskPhone(user.getPhone()));
         return buildLoginResponse(token, user, isNewUser);
     }
 
@@ -177,11 +177,11 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
         } else if ("TEACHER".equalsIgnoreCase(targetRole)) {
             role = UserRole.TEACHER.getCode();
         } else {
-            throw new BizException("targetRole 仅支持 STUDENT 或 TEACHER");
+            throw new BusinessException("targetRole 仅支持 STUDENT 或 TEACHER");
         }
         User user = userMapper.selectById(userId);
         if (user == null) {
-            throw new BizException("用户不存在");
+            throw new BusinessException("用户不存在");
         }
         user.setRole(role);
         userMapper.updateById(user);
@@ -236,21 +236,28 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
                 ) > 0;
             }
         } catch (Exception e) {
-            log.warn("资料存在性检查失败: {}", e.getMessage());
+            log.warn("资料存在性检查失败, userId={}", userId, e);
         }
         return false;
     }
 
+    private String maskPhone(String phone) {
+        if (phone == null || phone.length() < 7) {
+            return phone;
+        }
+        return phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
+    }
+
     private String extractBearerToken(String authorizationHeader) {
         if (authorizationHeader == null || authorizationHeader.isBlank()) {
-            throw new BizException("Authorization 不能为空");
+            throw new BusinessException("Authorization 不能为空");
         }
         if (!authorizationHeader.startsWith("Bearer ")) {
-            throw new BizException("Authorization 必须是 Bearer token");
+            throw new BusinessException("Authorization 必须是 Bearer token");
         }
         String token = authorizationHeader.substring(7).trim();
         if (token.isEmpty()) {
-            throw new BizException("Bearer token 不能为空");
+            throw new BusinessException("Bearer token 不能为空");
         }
         return token;
     }

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.enums.AuditStatus;
 import com.rural.education.enums.UserRole;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.TeacherProfileMapper;
 import com.rural.education.dto.request.teacher.TeacherProfileRequest;
 import com.rural.education.model.entity.TeacherProfile;
@@ -15,12 +15,14 @@ import com.rural.education.vo.TeacherVO;
 import com.rural.education.service.TeacherService;
 import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, TeacherProfile> implements TeacherService {
@@ -37,7 +39,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
                 new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, userId)
         );
         if (existed != null) {
-            throw new BizException("教师资料已存在，请使用更新接口");
+            throw new BusinessException("教师资料已存在，请使用更新接口");
         }
         TeacherProfile profile = new TeacherProfile();
         profile.setUserId(userId);
@@ -104,7 +106,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (Exception e) {
-            throw new BizException("JSON序列化失败");
+            throw new BusinessException("JSON序列化失败");
         }
     }
 
@@ -132,12 +134,20 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
 
     private void evictRecommendationCache() {
         try {
-            java.util.Set<String> keys = redisTemplate.keys("match:recommendations:student:*");
-            if (keys != null && !keys.isEmpty()) {
+            // 使用 SCAN 替代 KEYS，避免阻塞 Redis
+            var keys = new java.util.HashSet<String>();
+            try (var cursor = redisTemplate.scan(
+                    org.springframework.data.redis.core.ScanOptions.scanOptions()
+                            .match("match:recommendations:student:*")
+                            .count(100)
+                            .build())) {
+                cursor.forEachRemaining(keys::add);
+            }
+            if (!keys.isEmpty()) {
                 redisTemplate.delete(keys);
             }
-        } catch (Exception ignore) {
-            // ignore cache eviction failure
+        } catch (Exception e) {
+            log.warn("推荐缓存清理失败", e);
         }
     }
 }

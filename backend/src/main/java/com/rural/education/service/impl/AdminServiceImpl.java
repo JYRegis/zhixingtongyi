@@ -9,7 +9,7 @@ import com.rural.education.dto.common.PageResponse;
 import com.rural.education.enums.AuditStatus;
 import com.rural.education.enums.UserRole;
 import com.rural.education.enums.UserStatus;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.*;
 import com.rural.education.dto.request.admin.*;
 import com.rural.education.model.entity.*;
@@ -61,7 +61,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         requireL1OrL2Permission(operatorId, "user_manage");
         User user = userMapper.selectById(userId);
         if (user == null) {
-            throw new BizException("用户不存在");
+            throw new BusinessException("用户不存在");
         }
         return user;
     }
@@ -136,7 +136,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, studentId)
         );
         if (studentProfile == null) {
-            throw new BizException("学生资料不存在");
+            throw new BusinessException("学生资料不存在");
         }
         AdminProfile adminProfile = adminProfileMapper.selectOne(
                 new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, operatorId)
@@ -144,7 +144,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         Long adminSchoolId = adminProfile == null ? null : adminProfile.getSchoolId();
         Long studentSchoolId = studentProfile.getSchoolId();
         if (adminSchoolId == null || !adminSchoolId.equals(studentSchoolId)) {
-            throw new BizException("只能审核本校学生");
+            throw new BusinessException("只能审核本校学生");
         }
         studentProfileMapper.update(
                 null,
@@ -202,7 +202,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
                         .eq(StudentProfile::getBindAdminId, operatorId)
         );
         if (count == 0) {
-            throw new BizException("该学生不在你的代管范围");
+            throw new BusinessException("该学生不在你的代管范围");
         }
         redisTemplate.opsForValue().set("managed:current:admin:" + operatorId, String.valueOf(studentId), 12, java.util.concurrent.TimeUnit.HOURS);
     }
@@ -211,7 +211,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (Exception e) {
-            throw new BizException("JSON序列化失败");
+            throw new BusinessException("JSON序列化失败");
         }
     }
 
@@ -224,7 +224,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
             userAccessService.requireL2WithPermission(userId, permission);
             return;
         }
-        throw new BizException("无权限操作");
+        throw new BusinessException("无权限操作");
     }
 }
 

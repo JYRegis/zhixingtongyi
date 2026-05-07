@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.dto.common.PageResponse;
 import com.rural.education.enums.NotificationType;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.MessageNotificationMapper;
 import com.rural.education.dto.common.NotificationEvent;
 import com.rural.education.dto.request.notification.NotificationReadRequest;
@@ -82,7 +82,7 @@ public class NotificationServiceImpl extends ServiceImpl<MessageNotificationMapp
         try {
             event.setParamsJson(objectMapper.writeValueAsString(request.getTemplateData()));
         } catch (Exception e) {
-            throw new BizException("templateData 序列化失败");
+            throw new BusinessException("templateData 序列化失败");
         }
         notificationAsyncPublisher.publish(event);
     }
@@ -97,7 +97,25 @@ public class NotificationServiceImpl extends ServiceImpl<MessageNotificationMapp
         if ("MATCH_REJECT".equalsIgnoreCase(code)) {
             return NotificationType.MATCH_REJECT.getCode();
         }
-        throw new BizException("不支持的通知类型: " + code);
+        if ("UNBIND_APPLY".equalsIgnoreCase(code)) {
+            return NotificationType.UNBIND_APPLY.getCode();
+        }
+        if ("UNBIND_ACCEPT".equalsIgnoreCase(code)) {
+            return NotificationType.UNBIND_ACCEPT.getCode();
+        }
+        if ("MEETING_REMINDER".equalsIgnoreCase(code)) {
+            return NotificationType.MEETING_REMINDER.getCode();
+        }
+        if ("DURATION_STUDENT_CONFIRM".equalsIgnoreCase(code)) {
+            return NotificationType.DURATION_STUDENT_CONFIRM.getCode();
+        }
+        if ("DURATION_ADMIN_AUDIT".equalsIgnoreCase(code)) {
+            return NotificationType.DURATION_ADMIN_AUDIT.getCode();
+        }
+        if ("DURATION_AUDIT_RESULT".equalsIgnoreCase(code)) {
+            return NotificationType.DURATION_AUDIT_RESULT.getCode();
+        }
+        throw new BusinessException("不支持的通知类型: " + code);
     }
 }
 

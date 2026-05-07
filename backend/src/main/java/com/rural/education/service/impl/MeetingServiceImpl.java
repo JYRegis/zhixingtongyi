@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rural.education.enums.MatchStatus;
 import com.rural.education.enums.MeetingStatus;
 import com.rural.education.enums.UserRole;
-import com.rural.education.exception.BizException;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.MatchPairMapper;
 import com.rural.education.model.mapper.MeetingMapper;
 import com.rural.education.model.mapper.UserMapper;
@@ -39,17 +39,17 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
         User user = userAccessService.requireUser(userId);
         MatchPair pair = matchPairMapper.selectById(request.getMatchPairId());
         if (pair == null) {
-            throw new BizException("结对关系不存在");
+            throw new BusinessException("结对关系不存在");
         }
         Integer role = user.getRole();
         boolean isAdmin = Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(role)
                 || Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(role);
         boolean isPairMember = userId.equals(pair.getStudentId()) || userId.equals(pair.getTeacherId());
         if (!isAdmin && !isPairMember) {
-            throw new BizException("无权创建该结对会议");
+            throw new BusinessException("无权创建该结对会议");
         }
         if (!Integer.valueOf(MatchStatus.ACCEPTED.getCode()).equals(pair.getMatchStatus())) {
-            throw new BizException("仅生效中的结对可创建会议");
+            throw new BusinessException("仅生效中的结对可创建会议");
         }
         Meeting meeting = new Meeting();
         meeting.setMatchPairId(request.getMatchPairId());
@@ -86,7 +86,7 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
     public MeetingVO detail(Long userId, Long meetingId) {
         MeetingVO meeting = meetingMapper.selectMeetingDetail(meetingId);
         if (meeting == null) {
-            throw new BizException("会议不存在");
+            throw new BusinessException("会议不存在");
         }
         User user = userMapper.selectById(userId);
         Integer role = user == null ? null : user.getRole();
@@ -96,7 +96,7 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
                 && !Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(role)
                 && !userId.equals(studentId)
                 && !userId.equals(teacherId)) {
-            throw new BizException("无权查看会议详情");
+            throw new BusinessException("无权查看会议详情");
         }
         return meeting;
     }
@@ -106,7 +106,7 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
     public void updateStatus(Long userId, Long meetingId, UpdateStatusRequest request) {
         MeetingVO meeting = meetingMapper.selectMeetingDetail(meetingId);
         if (meeting == null) {
-            throw new BizException("会议不存在");
+            throw new BusinessException("会议不存在");
         }
         User user = userAccessService.requireUser(userId);
         Integer role = user.getRole();
@@ -115,7 +115,7 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
         boolean isAdmin = Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(role)
                 || Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(role);
         if (!isAdmin && !userId.equals(studentId) && !userId.equals(teacherId)) {
-            throw new BizException("无权更新会议状态");
+            throw new BusinessException("无权更新会议状态");
         }
         meetingMapper.update(
                 null,
@@ -131,7 +131,7 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
         User user = userMapper.selectById(userId);
         Integer role = user == null ? null : user.getRole();
         if (role == null || (role != UserRole.TEACHER.getCode() && role != UserRole.STUDENT.getCode())) {
-            throw new BizException("仅学生和志愿者可查看我的会议");
+            throw new BusinessException("仅学生和志愿者可查看我的会议");
         }
         return role == UserRole.TEACHER.getCode()
                 ? meetingMapper.selectTeacherMeetings(userId)

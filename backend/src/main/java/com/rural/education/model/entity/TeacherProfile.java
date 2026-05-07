@@ -1,8 +1,6 @@
 package com.rural.education.model.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -25,5 +23,11 @@ public class TeacherProfile {
     private String auditNotes;
     private Integer continuousMatch;
     private Integer totalServiceDuration;
+
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
 }
 

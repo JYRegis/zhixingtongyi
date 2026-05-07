@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-public class StudentAdminController {
+public class AdminStudentController {
     private final CurrentUserUtil currentUserUtil;
     private final AdminService adminService;
 

@@ -1,6 +1,7 @@
 package com.rural.education.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.rural.education.dto.common.PageResponse;
 import com.rural.education.dto.request.match.MatchApplyRequest;
 import com.rural.education.dto.request.match.ProcessMatchRequest;
 import com.rural.education.dto.request.match.UnbindConfirmRequest;
@@ -20,7 +21,7 @@ public interface MatchService extends IService<MatchPair> {
 
     void process(Long userId, Long applicationId, ProcessMatchRequest request);
 
-    List<MatchPairVO> myPairs(Long userId, Integer status);
+    PageResponse<MatchPairVO> myPairs(Long userId, Integer status, Long page, Long size);
 
     void unbindRequest(Long userId, Long pairId);
 

@@ -1,5 +1,6 @@
-package com.rural.education.config;
+package com.rural.education.filter;
 
+import com.rural.education.exception.AuthException;
 import com.rural.education.utils.JwtUtil;
 import com.rural.education.utils.CurrentUserContext;
 import jakarta.servlet.FilterChain;
@@ -63,11 +64,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
-            // 5. 放行请求（无论 Token 是否存在或解析是否失败）
+            // 5. 放行请求
             filterChain.doFilter(request, response);
+        } catch (AuthException e) {
+            log.warn("Token 无效或已过期: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"code\":401,\"message\":\"" + e.getMessage() + "\",\"data\":null}");
         } catch (Exception e) {
             log.error("Token 解析失败: {}", e.getMessage());
-            // Token 解析失败不阻断请求链路
             filterChain.doFilter(request, response);
         } finally {
             CurrentUserContext.clear();
