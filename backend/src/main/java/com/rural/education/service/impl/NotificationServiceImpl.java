@@ -97,6 +97,24 @@ public class NotificationServiceImpl extends ServiceImpl<MessageNotificationMapp
         if ("MATCH_REJECT".equalsIgnoreCase(code)) {
             return NotificationType.MATCH_REJECT.getCode();
         }
+        if ("UNBIND_APPLY".equalsIgnoreCase(code)) {
+            return NotificationType.UNBIND_APPLY.getCode();
+        }
+        if ("UNBIND_ACCEPT".equalsIgnoreCase(code)) {
+            return NotificationType.UNBIND_ACCEPT.getCode();
+        }
+        if ("MEETING_REMINDER".equalsIgnoreCase(code)) {
+            return NotificationType.MEETING_REMINDER.getCode();
+        }
+        if ("DURATION_STUDENT_CONFIRM".equalsIgnoreCase(code)) {
+            return NotificationType.DURATION_STUDENT_CONFIRM.getCode();
+        }
+        if ("DURATION_ADMIN_AUDIT".equalsIgnoreCase(code)) {
+            return NotificationType.DURATION_ADMIN_AUDIT.getCode();
+        }
+        if ("DURATION_AUDIT_RESULT".equalsIgnoreCase(code)) {
+            return NotificationType.DURATION_AUDIT_RESULT.getCode();
+        }
         throw new BusinessException("不支持的通知类型: " + code);
     }
 }

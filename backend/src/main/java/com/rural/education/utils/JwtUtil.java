@@ -3,6 +3,7 @@ package com.rural.education.utils;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.rural.education.exception.AuthException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ public class JwtUtil {
         try {
             return JWT.require(Algorithm.HMAC256(secret)).build().verify(token);
         } catch (Exception e) {
-            throw new RuntimeException("无效或已过期的 Token");
+            throw new AuthException("无效或已过期的 Token");
         }
     }
 

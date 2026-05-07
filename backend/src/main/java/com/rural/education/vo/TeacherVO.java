@@ -27,4 +27,5 @@ public class TeacherVO {
 
     // Recommendation fields
     private Long teacherId;
+    private Double matchScore;
 }

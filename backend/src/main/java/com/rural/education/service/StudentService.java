@@ -8,6 +8,8 @@ import com.rural.education.vo.StudentVO;
 public interface StudentService extends IService<StudentProfile> {
     void saveDraft(Long userId, StudentProfileRequest request);
 
+    void updateProfile(Long userId, StudentProfileRequest request);
+
     void submitProfile(Long userId);
 
     StudentVO getProfile(Long userId);

@@ -18,4 +18,10 @@
         LIMIT 20
     </select>
 
+    <update id="accumulateDuration">
+        UPDATE teacher_profile
+        SET total_service_duration = total_service_duration + #{duration}
+        WHERE user_id = #{userId}
+    </update>
+
 </mapper>

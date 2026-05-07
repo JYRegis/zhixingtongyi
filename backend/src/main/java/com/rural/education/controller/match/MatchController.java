@@ -1,6 +1,7 @@
 package com.rural.education.controller.match;
 
 import com.rural.education.dto.common.ApiResponse;
+import com.rural.education.dto.common.PageResponse;
 import com.rural.education.dto.request.match.MatchApplyRequest;
 import com.rural.education.dto.request.match.ProcessMatchRequest;
 import com.rural.education.dto.request.match.UnbindConfirmRequest;
@@ -55,9 +56,11 @@ public class MatchController {
     }
 
     @GetMapping("/my-pairs")
-    public ApiResponse<List<MatchPairVO>> myPairs(@RequestParam(required = false) Integer status) {
+    public ApiResponse<PageResponse<MatchPairVO>> myPairs(@RequestParam(required = false) Integer status,
+                                                          @RequestParam(required = false) Long page,
+                                                          @RequestParam(required = false) Long size) {
         Long userId = currentUserUtil.getCurrentUserId();
-        return ApiResponse.success(matchService.myPairs(userId, status));
+        return ApiResponse.success(matchService.myPairs(userId, status, page, size));
     }
 
     @PostMapping("/{pairId}/unbind-request")

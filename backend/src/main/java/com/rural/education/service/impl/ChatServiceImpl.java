@@ -6,10 +6,12 @@ import com.rural.education.dto.request.chat.SendMessageRequest;
 import com.rural.education.enums.MessageType;
 import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BusinessException;
+import com.rural.education.model.entity.AdminProfile;
 import com.rural.education.model.entity.ChatMessage;
 import com.rural.education.model.entity.ChatParticipant;
 import com.rural.education.model.entity.MatchPair;
 import com.rural.education.model.entity.StudentProfile;
+import com.rural.education.model.mapper.AdminProfileMapper;
 import com.rural.education.model.mapper.ChatMessageMapper;
 import com.rural.education.model.mapper.ChatParticipantMapper;
 import com.rural.education.model.mapper.MatchPairMapper;
@@ -31,6 +33,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
     private final ChatParticipantMapper chatParticipantMapper;
     private final MatchPairMapper matchPairMapper;
     private final StudentProfileMapper studentProfileMapper;
+    private final AdminProfileMapper adminProfileMapper;
     private final UserAccessService userAccessService;
 
     @Override
@@ -147,8 +150,8 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
         if (studentProfile == null) {
             throw new BusinessException("学生资料不存在");
         }
-        StudentProfile adminProfile = studentProfileMapper.selectOne(
-                new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, adminUserId)
+        AdminProfile adminProfile = adminProfileMapper.selectOne(
+                new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, adminUserId)
         );
         Long adminSchoolId = null;
         if (adminProfile != null) {

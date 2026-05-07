@@ -2,6 +2,8 @@ package com.rural.education.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.AdminProfileMapper;
@@ -12,11 +14,14 @@ import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> implements UserAccessService {
     private final UserMapper userMapper;
     private final AdminProfileMapper adminProfileMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     public User requireUser(Long userId) {
@@ -64,8 +69,17 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
             throw new BusinessException("管理员资料不存在");
         }
         String permissions = adminProfile.getPermissions();
-        if (permissions == null || !permissions.contains(permission)) {
+        if (permissions == null || !hasExactPermission(permissions, permission)) {
             throw new BusinessException("缺少权限: " + permission);
+        }
+    }
+
+    private boolean hasExactPermission(String permissionsJson, String permission) {
+        try {
+            List<String> list = objectMapper.readValue(permissionsJson, new TypeReference<List<String>>() {});
+            return list.contains(permission);
+        } catch (Exception e) {
+            return false;
         }
     }
 }

@@ -135,7 +135,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
         String phone = request.getPhone();
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
         boolean isNewUser = (user == null);
-        log.info("phone-login processing, phone={}, isNewUser={}", phone, isNewUser);
+        log.info("phone-login processing, phone={}, isNewUser={}", maskPhone(phone), isNewUser);
         if (isNewUser) {
             user = new User();
             user.setPhone(phone);
@@ -164,7 +164,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             }
         }
         String token = jwtUtil.generateToken(user.getId(), user.getRole());
-        log.info("phone-login success, userId={}, phone={}", user.getId(), user.getPhone());
+        log.info("phone-login success, userId={}, phone={}", user.getId(), maskPhone(user.getPhone()));
         return buildLoginResponse(token, user, isNewUser);
     }
 
@@ -236,9 +236,16 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
                 ) > 0;
             }
         } catch (Exception e) {
-            log.warn("资料存在性检查失败: {}", e.getMessage());
+            log.warn("资料存在性检查失败, userId={}", userId, e);
         }
         return false;
+    }
+
+    private String maskPhone(String phone) {
+        if (phone == null || phone.length() < 7) {
+            return phone;
+        }
+        return phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
     }
 
     private String extractBearerToken(String authorizationHeader) {

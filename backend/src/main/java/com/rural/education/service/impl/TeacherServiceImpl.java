@@ -15,12 +15,14 @@ import com.rural.education.vo.TeacherVO;
 import com.rural.education.service.TeacherService;
 import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, TeacherProfile> implements TeacherService {
@@ -132,12 +134,20 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
 
     private void evictRecommendationCache() {
         try {
-            java.util.Set<String> keys = redisTemplate.keys("match:recommendations:student:*");
-            if (keys != null && !keys.isEmpty()) {
+            // 使用 SCAN 替代 KEYS，避免阻塞 Redis
+            var keys = new java.util.HashSet<String>();
+            try (var cursor = redisTemplate.scan(
+                    org.springframework.data.redis.core.ScanOptions.scanOptions()
+                            .match("match:recommendations:student:*")
+                            .count(100)
+                            .build())) {
+                cursor.forEachRemaining(keys::add);
+            }
+            if (!keys.isEmpty()) {
                 redisTemplate.delete(keys);
             }
-        } catch (Exception ignore) {
-            // ignore cache eviction failure
+        } catch (Exception e) {
+            log.warn("推荐缓存清理失败", e);
         }
     }
 }
