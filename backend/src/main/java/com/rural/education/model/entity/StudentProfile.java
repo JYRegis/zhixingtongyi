@@ -24,6 +24,9 @@ public class StudentProfile {
     private LocalDateTime auditTime;
     private String auditNotes;
 
+    @TableLogic
+    private Integer deleted;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

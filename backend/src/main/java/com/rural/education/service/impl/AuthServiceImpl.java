@@ -183,6 +183,9 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
         if (user == null) {
             throw new BusinessException("用户不存在");
         }
+        if (Integer.valueOf(role).equals(user.getRole())) {
+            throw new BusinessException("您已经是该角色，无需重复申请");
+        }
         user.setRole(role);
         userMapper.updateById(user);
         redisTemplate.opsForValue().set("role:apply:" + userId, targetRole.toUpperCase(), 30, TimeUnit.DAYS);
@@ -203,6 +206,11 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
         String actualToken = extractBearerToken(token);
         Long userId = jwtUtil.getUserIdFromToken(actualToken);
         Integer role = jwtUtil.getRoleFromToken(actualToken);
+        try {
+            redisTemplate.opsForValue().set("jwt:blacklist:" + actualToken, "1", 24, TimeUnit.HOURS);
+        } catch (Exception e) {
+            log.warn("旧Token黑名单写入失败: {}", e.getMessage());
+        }
         return jwtUtil.generateToken(userId, role);
     }
 
@@ -225,12 +233,12 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
 
     private boolean hasProfile(Long userId, Integer role) {
         try {
-            if (UserRole.TEACHER.getCode() == (role == null ? -1 : role)) {
+            if (Integer.valueOf(UserRole.TEACHER.getCode()).equals(role)) {
                 return teacherProfileMapper.selectCount(
                         new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, userId)
                 ) > 0;
             }
-            if (UserRole.STUDENT.getCode() == (role == null ? -1 : role)) {
+            if (Integer.valueOf(UserRole.STUDENT.getCode()).equals(role)) {
                 return studentProfileMapper.selectCount(
                         new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
                 ) > 0;

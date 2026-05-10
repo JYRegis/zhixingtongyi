@@ -16,6 +16,9 @@ public class AdminProfile {
     private String regionCode;
     private String permissions;
 
+    @TableLogic
+    private Integer deleted;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

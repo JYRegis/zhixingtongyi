@@ -16,6 +16,9 @@ public class AlgorithmWeightConfig {
     private String description;
     private Integer enabled;
 
+    @TableLogic
+    private Integer deleted;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

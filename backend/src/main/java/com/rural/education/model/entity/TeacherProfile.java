@@ -24,6 +24,9 @@ public class TeacherProfile {
     private Integer continuousMatch;
     private Integer totalServiceDuration;
 
+    @TableLogic
+    private Integer deleted;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

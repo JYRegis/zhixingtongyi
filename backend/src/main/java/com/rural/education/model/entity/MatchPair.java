@@ -30,6 +30,9 @@ public class MatchPair {
     private LocalDateTime unbindRejectTime;
     private LocalDateTime unbindAcceptTime;
 
+    @TableLogic
+    private Integer deleted;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

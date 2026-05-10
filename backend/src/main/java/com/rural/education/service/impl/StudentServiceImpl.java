@@ -48,6 +48,9 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
                             .set(StudentProfile::getProfileStatus, 0)
             );
         } else {
+            if (request.getBindAdminId() != null) {
+                userAccessService.requireRole(request.getBindAdminId(), UserRole.L2_ADMIN.getCode());
+            }
             StudentProfile profile = new StudentProfile();
             profile.setUserId(userId);
             profile.setRealName(request.getRealName());

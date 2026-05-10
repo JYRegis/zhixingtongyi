@@ -17,6 +17,9 @@ public class ChatParticipant {
     private LocalDateTime joinedTime;
     private LocalDateTime leftTime;
 
+    @TableLogic
+    private Integer deleted;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

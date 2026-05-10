@@ -16,6 +16,9 @@ public class School {
     private String contactPerson;
     private String contactPhone;
 
+    @TableLogic
+    private Integer deleted;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

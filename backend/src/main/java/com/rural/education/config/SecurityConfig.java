@@ -44,6 +44,9 @@ public class SecurityConfig {
                         // 放行登录相关接口（微信真实登录 + 开发测试后门）
                         .requestMatchers("/auth/wx-login", "/auth/mock-login", "/auth/phone-login").permitAll()
 
+                        // 放行 WebSocket 端点（身份验证在 STOMP 层面完成）
+                        .requestMatchers("/ws/**").permitAll()
+
                         // 放行 Swagger 在线接口文档相关的路径
                         .requestMatchers(
                                 "/swagger-ui/**",

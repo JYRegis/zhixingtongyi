@@ -18,6 +18,9 @@ public class Meeting {
     private Long createdBy;
     private Integer status;
 
+    @TableLogic
+    private Integer deleted;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

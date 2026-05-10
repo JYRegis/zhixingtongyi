@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -158,7 +159,13 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         event.setType(NotificationType.MATCH_APPLY.getCode());
         event.setTitle("新的结对申请");
         event.setContent("你收到了新的学生结对申请");
-        event.setParamsJson("{\"studentId\":" + userId + "}");
+        Map<String, Object> applyParams = new HashMap<>();
+        applyParams.put("studentId", userId);
+        try {
+            event.setParamsJson(objectMapper.writeValueAsString(applyParams));
+        } catch (Exception e) {
+            throw new BusinessException("参数序列化失败");
+        }
         notificationAsyncPublisher.publish(event);
         evictRecommendationCache(userId);
     }
@@ -200,7 +207,13 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             event.setType(NotificationType.MATCH_ACCEPT.getCode());
             event.setTitle("结对申请已通过");
             event.setContent("志愿者已通过你的结对申请");
-            event.setParamsJson("{\"applicationId\":" + applicationId + "}");
+            Map<String, Object> acceptParams = new HashMap<>();
+            acceptParams.put("applicationId", applicationId);
+            try {
+                event.setParamsJson(objectMapper.writeValueAsString(acceptParams));
+            } catch (Exception e) {
+                throw new BusinessException("参数序列化失败");
+            }
             notificationAsyncPublisher.publish(event);
         } else {
             matchPairMapper.update(
@@ -215,7 +228,13 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             event.setType(NotificationType.MATCH_REJECT.getCode());
             event.setTitle("结对申请被拒绝");
             event.setContent(request.getReason() == null ? "志愿者拒绝了你的申请" : request.getReason());
-            event.setParamsJson("{\"applicationId\":" + applicationId + "}");
+            Map<String, Object> rejectParams = new HashMap<>();
+            rejectParams.put("applicationId", applicationId);
+            try {
+                event.setParamsJson(objectMapper.writeValueAsString(rejectParams));
+            } catch (Exception e) {
+                throw new BusinessException("参数序列化失败");
+            }
             notificationAsyncPublisher.publish(event);
         }
         evictRecommendationCache(studentId);
@@ -312,7 +331,13 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         unbindEvent.setType(NotificationType.UNBIND_APPLY.getCode());
         unbindEvent.setTitle("解绑申请");
         unbindEvent.setContent("结对关系有新的解绑申请，请确认");
-        unbindEvent.setParamsJson("{\"pairId\":" + pairId + "}");
+        Map<String, Object> unbindParams = new HashMap<>();
+        unbindParams.put("pairId", pairId);
+        try {
+            unbindEvent.setParamsJson(objectMapper.writeValueAsString(unbindParams));
+        } catch (Exception e) {
+            throw new BusinessException("参数序列化失败");
+        }
         if (!userId.equals(studentId)) {
             unbindEvent.setUserId(studentId);
             notificationAsyncPublisher.publish(unbindEvent);
@@ -360,7 +385,13 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             rejectEvent.setType(NotificationType.UNBIND_APPLY.getCode());
             rejectEvent.setTitle("解绑申请被拒绝");
             rejectEvent.setContent("解绑申请已被拒绝，原因: " + request.getRejectReason());
-            rejectEvent.setParamsJson("{\"pairId\":" + pairId + "}");
+            Map<String, Object> rejectUnbindParams = new HashMap<>();
+            rejectUnbindParams.put("pairId", pairId);
+            try {
+                rejectEvent.setParamsJson(objectMapper.writeValueAsString(rejectUnbindParams));
+            } catch (Exception e) {
+                throw new BusinessException("参数序列化失败");
+            }
             Long unbindRequester = pair.getUnbindRequestBy();
             if (unbindRequester != null && !unbindRequester.equals(userId)) {
                 rejectEvent.setUserId(unbindRequester);
@@ -396,7 +427,13 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             doneEvent.setType(NotificationType.UNBIND_ACCEPT.getCode());
             doneEvent.setTitle("解绑完成");
             doneEvent.setContent("结对关系已解除");
-            doneEvent.setParamsJson("{\"pairId\":" + pairId + "}");
+            Map<String, Object> doneParams = new HashMap<>();
+            doneParams.put("pairId", pairId);
+            try {
+                doneEvent.setParamsJson(objectMapper.writeValueAsString(doneParams));
+            } catch (Exception e) {
+                throw new BusinessException("参数序列化失败");
+            }
             for (Long uid : new Long[]{studentId, teacherId, adminId}) {
                 if (uid != null) {
                     doneEvent.setUserId(uid);
