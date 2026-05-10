@@ -1,0 +1,41 @@
+<view class="welcome-page">
+  <view class="welcome-status-bar" style="height: {{statusBarHeight}}px;"></view>
+
+  <view class="welcome-decor">
+    <view class="welcome-decor-circle welcome-decor-circle--lg"></view>
+    <view class="welcome-decor-circle welcome-decor-circle--md"></view>
+    <view class="welcome-decor-circle welcome-decor-circle--sm"></view>
+  </view>
+
+  <view class="welcome-hero">
+    <view class="welcome-logo">
+      <text class="welcome-logo-text">驿</text>
+    </view>
+    <view class="welcome-kicker">CLOUD VOLUNTEER CLASSROOM</view>
+    <view class="welcome-title">知行同驿</view>
+    <view class="welcome-subtitle">云端连接，温暖陪伴</view>
+    <view class="welcome-desc">连接城市志愿者与乡村孩子，让每一次陪伴都被看见</view>
+
+    <view class="welcome-chips">
+      <view class="welcome-chip">🤝 结对学习</view>
+      <view class="welcome-chip">💬 线上陪伴</view>
+      <view class="welcome-chip">🛡 安全沟通</view>
+    </view>
+  </view>
+
+  <view class="welcome-footer">
+    <view class="welcome-footer-card">
+      <view class="welcome-footer-row">
+        <view class="welcome-footer-text">
+          <view class="welcome-footer-title">欢迎来到云支教旅程</view>
+          <view class="welcome-footer-desc">点击下方按钮进入登录与身份选择</view>
+        </view>
+        <view class="welcome-footer-badge">公益</view>
+      </view>
+      <button class="welcome-btn" bindtap="onEnter" loading="{{submitting}}" disabled="{{submitting}}">
+        进入小程序
+      </button>
+      <view class="welcome-foot-note">公益项目 · 知行同驿支教云平台</view>
+    </view>
+  </view>
+</view>

@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/common/welcome/index",
     "pages/common/home/index",
     "pages/common/auth/index",
     "pages/common/role-select/index",

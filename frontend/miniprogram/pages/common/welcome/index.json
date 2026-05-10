@@ -1,0 +1,7 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "知行同驿",
+  "backgroundColor": "#ff8c00",
+  "disableScroll": true,
+  "usingComponents": {}
+}
