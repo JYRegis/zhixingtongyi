@@ -26,6 +26,9 @@ public class VolunteerRecord {
     private LocalDateTime adminAuditTime;
     private Long auditorId;
 
+    @TableLogic
+    private Integer deleted;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

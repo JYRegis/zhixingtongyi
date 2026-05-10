@@ -33,6 +33,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -85,7 +87,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         studentEvent.setType(NotificationType.DURATION_STUDENT_CONFIRM.getCode());
         studentEvent.setTitle("请确认服务记录");
         studentEvent.setContent("志愿者提交了新的服务时长记录，请确认");
-        studentEvent.setParamsJson("{\"recordId\":" + record.getId() + "}");
+        studentEvent.setParamsJson(jsonParam("recordId", record.getId()));
         notificationAsyncPublisher.publish(studentEvent);
 
         StudentProfile studentProfile = studentProfileMapper.selectOne(
@@ -97,7 +99,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             adminEvent.setType(NotificationType.DURATION_STUDENT_CONFIRM.getCode());
             adminEvent.setTitle("请确认服务记录");
             adminEvent.setContent("志愿者为学生提交了新的服务时长记录，请提醒学生确认");
-            adminEvent.setParamsJson("{\"recordId\":" + record.getId() + "}");
+            adminEvent.setParamsJson(jsonParam("recordId", record.getId()));
             notificationAsyncPublisher.publish(adminEvent);
         }
     }
@@ -119,14 +121,17 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         if ("accept".equalsIgnoreCase(request.getAction())) {
             record.setStatus(RecordStatus.PENDING_ADMIN_AUDIT.getCode());
             record.setStudentConfirmTime(LocalDateTime.now());
-            volunteerRecordMapper.updateById(record);
+            int updated = volunteerRecordMapper.updateById(record);
+            if (updated == 0) {
+                throw new BusinessException("记录已被其他操作更新，请刷新后重试");
+            }
 
             NotificationEvent event = new NotificationEvent();
             event.setUserId(record.getTeacherId());
             event.setType(NotificationType.DURATION_ADMIN_AUDIT.getCode());
             event.setTitle("服务记录待审核");
             event.setContent("学员已确认服务记录，等待管理员审核");
-            event.setParamsJson("{\"recordId\":" + recordId + "}");
+            event.setParamsJson(jsonParam("recordId", recordId));
             notificationAsyncPublisher.publish(event);
         } else if ("reject".equalsIgnoreCase(request.getAction())) {
             if (request.getRejectReason() == null || request.getRejectReason().isBlank()) {
@@ -142,7 +147,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             event.setType(NotificationType.DURATION_AUDIT_RESULT.getCode());
             event.setTitle("服务记录被拒绝");
             event.setContent("学员拒绝了服务记录，原因: " + request.getRejectReason());
-            event.setParamsJson("{\"recordId\":" + recordId + "}");
+            event.setParamsJson(jsonParam("recordId", recordId));
             notificationAsyncPublisher.publish(event);
         } else {
             throw new BusinessException("action 只能为 accept 或 reject");
@@ -215,7 +220,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             event.setType(NotificationType.DURATION_AUDIT_RESULT.getCode());
             event.setTitle("服务记录审核通过");
             event.setContent("管理员已审核通过你的服务时长记录，时长已累计");
-            event.setParamsJson("{\"recordId\":" + recordId + "}");
+            event.setParamsJson(jsonParam("recordId", recordId));
             notificationAsyncPublisher.publish(event);
         } else if ("reject".equalsIgnoreCase(request.getAction())) {
             if (request.getRejectReason() == null || request.getRejectReason().isBlank()) {
@@ -235,7 +240,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             event.setType(NotificationType.DURATION_AUDIT_RESULT.getCode());
             event.setTitle("服务记录审核拒绝");
             event.setContent("管理员拒绝了服务记录，原因: " + request.getRejectReason());
-            event.setParamsJson("{\"recordId\":" + recordId + "}");
+            event.setParamsJson(jsonParam("recordId", recordId));
             notificationAsyncPublisher.publish(event);
         } else {
             throw new BusinessException("action 只能为 approve 或 reject");
@@ -268,5 +273,15 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         Page<VolunteerRecordVO> mpPage = new Page<>(current, pageSize);
         volunteerRecordMapper.selectRecords(mpPage, filterTeacherId, filterStudentId, status, filterSchoolId);
         return mpPage;
+    }
+
+    private String jsonParam(String key, Object value) {
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put(key, value);
+            return objectMapper.writeValueAsString(params);
+        } catch (Exception e) {
+            throw new BusinessException("参数序列化失败");
+        }
     }
 }

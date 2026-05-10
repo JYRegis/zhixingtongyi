@@ -40,7 +40,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public PageResponse<User> users(Long operatorId, Integer role, Integer status, Integer page, Integer size, String keyword) {
-        requireL1OrL2Permission(operatorId, "user_manage");
+        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         if (role != null) {
             wrapper.eq(User::getRole, role);
@@ -58,7 +58,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public User userDetail(Long operatorId, Long userId) {
-        requireL1OrL2Permission(operatorId, "user_manage");
+        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         User user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException("用户不存在");
@@ -68,7 +68,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public void updateUserStatus(Long operatorId, Long userId, UpdateUserStatusRequest request) {
-        requireL1OrL2Permission(operatorId, "user_manage");
+        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         userMapper.update(null, new LambdaUpdateWrapper<User>().eq(User::getId, userId).set(User::getStatus, request.getStatus()));
     }
 
@@ -215,16 +215,5 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         }
     }
 
-    private void requireL1OrL2Permission(Long userId, String permission) {
-        User user = userAccessService.requireUser(userId);
-        if (Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(user.getRole())) {
-            return;
-        }
-        if (Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(user.getRole())) {
-            userAccessService.requireL2WithPermission(userId, permission);
-            return;
-        }
-        throw new BusinessException("无权限操作");
-    }
 }
 

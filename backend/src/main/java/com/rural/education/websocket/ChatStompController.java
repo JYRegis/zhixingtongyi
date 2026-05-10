@@ -24,8 +24,7 @@ public class ChatStompController {
 
     @MessageMapping("/chat.send")
     public void sendMessage(@Payload SendMessageRequest request,
-                            @AuthenticationPrincipal String userIdStr) {
-        Long userId = Long.valueOf(userIdStr);
+                            @AuthenticationPrincipal Long userId) {
         ChatMessageVO vo = chatService.sendMessage(userId, request);
 
         List<ChatParticipant> participants = chatService.getParticipants(userId, request.getMatchPairId());
@@ -39,8 +38,7 @@ public class ChatStompController {
 
     @MessageMapping("/chat.read")
     public void markRead(@Payload MarkReadRequest request,
-                         @AuthenticationPrincipal String userIdStr) {
-        Long userId = Long.valueOf(userIdStr);
+                         @AuthenticationPrincipal Long userId) {
         chatService.markRead(userId, request.getMessageId());
     }
 

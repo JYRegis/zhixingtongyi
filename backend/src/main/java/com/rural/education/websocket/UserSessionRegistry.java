@@ -24,7 +24,7 @@ public class UserSessionRegistry {
             Long userId = Long.valueOf(user.getName());
             userSessions.compute(userId, (key, sessions) -> {
                 if (sessions == null) {
-                    return ConcurrentHashMap.newKeySet();
+                    sessions = ConcurrentHashMap.newKeySet();
                 }
                 sessions.add(accessor.getSessionId());
                 return sessions;

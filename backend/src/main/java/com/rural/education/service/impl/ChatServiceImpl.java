@@ -1,6 +1,7 @@
 package com.rural.education.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rural.education.dto.request.chat.SendMessageRequest;
 import com.rural.education.enums.MessageType;
@@ -94,8 +95,8 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
         if (lastMessageId != null) {
             wrapper.lt(ChatMessage::getId, lastMessageId);
         }
-        wrapper.last("LIMIT " + size);
-        return chatMessageMapper.selectList(wrapper).stream()
+        Page<ChatMessage> page = new Page<>(1, size);
+        return chatMessageMapper.selectPage(page, wrapper).getRecords().stream()
                 .map(m -> {
                     ChatMessageVO vo = new ChatMessageVO();
                     vo.setId(m.getId());
@@ -127,7 +128,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                         .eq(ChatParticipant::getUserId, userId)
                         .isNull(ChatParticipant::getLeftTime)
         );
-        if (participant == null) {
+        if (participant == null || !participant.getMatchPairId().equals(message.getMatchPairId())) {
             throw new BusinessException("您不是该会话的参与者");
         }
         if (message.getReadTime() == null) {

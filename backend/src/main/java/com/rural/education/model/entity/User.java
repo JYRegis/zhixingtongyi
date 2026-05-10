@@ -18,6 +18,9 @@ public class User {
     private String phone;
     private String wechatOpenid;
 
+    @TableLogic
+    private Integer deleted;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 

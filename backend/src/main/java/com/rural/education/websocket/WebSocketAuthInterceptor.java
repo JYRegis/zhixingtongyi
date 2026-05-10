@@ -40,7 +40,7 @@ public class WebSocketAuthInterceptor implements WebSocketMessageBrokerConfigure
                     String token = authHeader.substring(7);
                     Long userId = jwtUtil.getUserIdFromToken(token);
                     UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userId.toString(), null, Collections.emptyList());
+                            new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
                     accessor.setUser(authentication);
                 }
 
