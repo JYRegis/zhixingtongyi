@@ -27,6 +27,29 @@ function isRealDevice() {
   }
 }
 
+/** 换取新 token 的接口不要带旧 Bearer，否则无效/过期 token 会触发 401 */
+const AUTH_TOKEN_SKIP_PATHS = new Set([
+  "/auth/wx-login",
+  "/auth/mock-login",
+  "/auth/phone-login"
+]);
+
+function pathWithoutQuery(url) {
+  if (!url || typeof url !== "string") return "";
+  const q = url.indexOf("?");
+  return q === -1 ? url : url.slice(0, q);
+}
+
+function shouldOmitAuthHeader(options, token) {
+  if (!token) return true;
+  if (options.skipAuth === true) return true;
+  const method = (options.method || "GET").toUpperCase();
+  const path = pathWithoutQuery(options.url || "");
+  if (method === "POST" && AUTH_TOKEN_SKIP_PATHS.has(path)) return true;
+  if (method === "GET" && (path === "/schools" || path.startsWith("/schools/"))) return true;
+  return false;
+}
+
 function request(options) {
   const baseUrl = getBaseUrl();
   const app = getApp();
@@ -44,7 +67,7 @@ function request(options) {
     "X-Client-Version": "phone-login-debug-1",
     ...(options.header || {})
   };
-  if (token) {
+  if (token && !shouldOmitAuthHeader(options, token)) {
     headers.Authorization = `Bearer ${token}`;
   }
   return new Promise((resolve, reject) => {
