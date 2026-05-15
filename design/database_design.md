@@ -8,7 +8,7 @@
 | 字段名 | 数据类型 | 约束 | 说明 |
 |--------|----------|------|------|
 | id | bigint | PRIMARY KEY, AUTO_INCREMENT | 主键 |
-| username | varchar(64) | NOT NULL, UNIQUE | 用户名（可用于登录） |
+| username | varchar(64) | NOT NULL | 用户名/昵称（允许重复，与 `init.sql` 一致） |
 | password | varchar(255) | NOT NULL | 加密后的密码 |
 | role | tinyint | NOT NULL | 角色：0-一级管理员，1-二级管理员，2-教师（志愿者），3-学员 |
 | phone | varchar(20) | UNIQUE | 手机号 |
@@ -19,7 +19,7 @@
 | update_time | datetime | NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | 更新时间 |
 
 **索引：**
-- UNIQUE KEY `uk_username` (`username`)
+- KEY `idx_username` (`username`)
 - UNIQUE KEY `uk_phone` (`phone`)
 - UNIQUE KEY `uk_wechat_openid` (`wechat_openid`)
 - KEY `idx_role_status` (`role`, `status`)

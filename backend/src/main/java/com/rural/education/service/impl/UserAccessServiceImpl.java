@@ -61,7 +61,13 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
 
     @Override
     public void requireL2WithPermission(Long userId, String permission) {
-        requireRole(userId, UserRole.L2_ADMIN.getCode());
+        User user = requireUser(userId);
+        if (user.getRole() != null && user.getRole() == UserRole.L1_ADMIN.getCode()) {
+            return;
+        }
+        if (user.getRole() == null || user.getRole() != UserRole.L2_ADMIN.getCode()) {
+            throw new BusinessException("无权限操作");
+        }
         AdminProfile adminProfile = adminProfileMapper.selectOne(
                 new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, userId)
         );
@@ -77,7 +83,7 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
     private boolean hasExactPermission(String permissionsJson, String permission) {
         try {
             List<String> list = objectMapper.readValue(permissionsJson, new TypeReference<List<String>>() {});
-            return list.contains(permission);
+            return list.contains("*") || list.contains(permission);
         } catch (Exception e) {
             return false;
         }

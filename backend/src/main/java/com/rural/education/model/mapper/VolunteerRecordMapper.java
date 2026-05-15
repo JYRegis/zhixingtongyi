@@ -19,5 +19,7 @@ public interface VolunteerRecordMapper extends BaseMapper<VolunteerRecord> {
     List<VolunteerRecordVO> selectPendingBySchool(Page<VolunteerRecordVO> page,
                                                    @Param("schoolId") Long schoolId);
 
+    VolunteerRecordVO selectRecordById(@Param("recordId") Long recordId);
+
     Long selectTotalApprovedDuration();
 }

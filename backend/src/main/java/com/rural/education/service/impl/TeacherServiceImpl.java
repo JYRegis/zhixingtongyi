@@ -85,7 +85,18 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
         if (row == null) {
             return null;
         }
-        TeacherVO vo = objectMapper.convertValue(row, TeacherVO.class);
+        TeacherVO vo = new TeacherVO();
+        vo.setUserId(row.getUserId());
+        vo.setRealName(row.getRealName());
+        vo.setSchool(row.getSchool());
+        vo.setGrade(row.getGrade());
+        vo.setPersonalSkills(row.getPersonalSkills());
+        vo.setPersonalityDesc(row.getPersonalityDesc());
+        vo.setCertificationStatus(row.getCertificationStatus());
+        vo.setAuditTime(row.getAuditTime());
+        vo.setAuditNotes(row.getAuditNotes());
+        vo.setContinuousMatch(row.getContinuousMatch());
+        vo.setTotalServiceDuration(row.getTotalServiceDuration());
         vo.setFreeTime(parseJsonMapList(row.getFreeTime()));
         vo.setSkilledSubjects(parseJsonList(row.getSkilledSubjects()));
         return vo;

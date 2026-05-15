@@ -39,6 +39,12 @@ public class VolunteerRecordController {
         return ApiResponse.success();
     }
 
+    @GetMapping("/{recordId}")
+    public ApiResponse<VolunteerRecordVO> detail(@PathVariable Long recordId) {
+        Long userId = currentUserUtil.getCurrentUserId();
+        return ApiResponse.success(volunteerRecordService.getRecordDetail(userId, recordId));
+    }
+
     @GetMapping
     public ApiResponse<PageResponse<VolunteerRecordVO>> queryRecords(@RequestParam(required = false) Long teacherId,
                                                                       @RequestParam(required = false) Long studentId,

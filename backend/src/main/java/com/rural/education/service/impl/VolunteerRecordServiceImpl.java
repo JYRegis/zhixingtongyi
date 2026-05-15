@@ -201,8 +201,11 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         AdminProfile adminProfile = adminProfileMapper.selectOne(
                 new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, userId)
         );
-        if (studentProfile == null || adminProfile == null || !studentProfile.getSchoolId().equals(adminProfile.getSchoolId())) {
-            throw new BusinessException("仅同校二级管理员可审核该记录");
+        User operator = userAccessService.requireUser(userId);
+        if (Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(operator.getRole())) {
+            if (studentProfile == null || adminProfile == null || !studentProfile.getSchoolId().equals(adminProfile.getSchoolId())) {
+                throw new BusinessException("仅同校二级管理员可审核该记录");
+            }
         }
         if ("approve".equalsIgnoreCase(request.getAction())) {
             record.setStatus(RecordStatus.APPROVED.getCode());
@@ -273,6 +276,43 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         Page<VolunteerRecordVO> mpPage = new Page<>(current, pageSize);
         volunteerRecordMapper.selectRecords(mpPage, filterTeacherId, filterStudentId, status, filterSchoolId);
         return mpPage;
+    }
+
+    @Override
+    public VolunteerRecordVO getRecordDetail(Long userId, Long recordId) {
+        VolunteerRecord record = volunteerRecordMapper.selectById(recordId);
+        if (record == null) {
+            throw new BusinessException("服务记录不存在");
+        }
+        User user = userAccessService.requireUser(userId);
+        int role = user.getRole();
+        if (role == UserRole.TEACHER.getCode() && !userId.equals(record.getTeacherId())) {
+            throw new BusinessException("无权限查看该记录");
+        }
+        if (role == UserRole.STUDENT.getCode() && !userId.equals(record.getStudentId())) {
+            throw new BusinessException("无权限查看该记录");
+        }
+        if (role == UserRole.L2_ADMIN.getCode()) {
+            userAccessService.requireL2WithPermission(userId, "student_manage");
+            StudentProfile sp = studentProfileMapper.selectOne(
+                    new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, record.getStudentId())
+            );
+            AdminProfile ap = adminProfileMapper.selectOne(
+                    new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, userId)
+            );
+            if (sp == null || ap == null || !sp.getSchoolId().equals(ap.getSchoolId())) {
+                throw new BusinessException("无权限查看该记录");
+            }
+        } else if (role != UserRole.L1_ADMIN.getCode()
+                && role != UserRole.TEACHER.getCode()
+                && role != UserRole.STUDENT.getCode()) {
+            throw new BusinessException("无权限操作");
+        }
+        VolunteerRecordVO vo = volunteerRecordMapper.selectRecordById(recordId);
+        if (vo == null) {
+            throw new BusinessException("服务记录不存在");
+        }
+        return vo;
     }
 
     private String jsonParam(String key, Object value) {

@@ -5,13 +5,19 @@
 <mapper namespace="com.rural.education.model.mapper.MatchPairMapper">
 
     <select id="selectPendingApplications" parameterType="long" resultType="com.rural.education.vo.MatchPairVO">
-        SELECT id,
-               student_id AS studentId,
-               apply_time AS applyTime
-        FROM match_pair
-        WHERE teacher_id = #{teacherId}
-          AND match_status = 0  <!-- APPLIED -->
-        ORDER BY apply_time DESC
+        SELECT mp.id,
+               mp.student_id AS studentId,
+               sp.real_name AS studentName,
+               mp.teacher_id AS teacherId,
+               tp.real_name AS teacherName,
+               mp.apply_time AS applyTime,
+               mp.match_status AS matchStatus
+        FROM match_pair mp
+        LEFT JOIN student_profile sp ON sp.user_id = mp.student_id
+        LEFT JOIN teacher_profile tp ON tp.user_id = mp.teacher_id
+        WHERE mp.teacher_id = #{teacherId}
+          AND mp.match_status = 0
+        ORDER BY mp.apply_time DESC
     </select>
 
 </mapper>

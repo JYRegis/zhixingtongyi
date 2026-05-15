@@ -119,7 +119,18 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
         if (row == null) {
             return null;
         }
-        StudentVO vo = objectMapper.convertValue(row, StudentVO.class);
+        StudentVO vo = new StudentVO();
+        vo.setId(row.getId());
+        vo.setUserId(row.getUserId());
+        vo.setRealName(row.getRealName());
+        vo.setSchoolId(row.getSchoolId());
+        vo.setGrade(row.getGrade());
+        vo.setPersonalityDesc(row.getPersonalityDesc());
+        vo.setProfileStatus(row.getProfileStatus());
+        vo.setBindAdminId(row.getBindAdminId());
+        vo.setAuditStatus(row.getAuditStatus());
+        vo.setAuditTime(row.getAuditTime());
+        vo.setAuditNotes(row.getAuditNotes());
         vo.setSubjectsNeeded(parseJsonList(row.getSubjectsNeeded()));
         vo.setFreeTime(parseJsonMapList(row.getFreeTime()));
         return vo;

@@ -4,6 +4,7 @@ import com.rural.education.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -43,6 +44,9 @@ public class SecurityConfig {
 
                         // 放行登录相关接口（微信真实登录 + 开发测试后门）
                         .requestMatchers("/auth/wx-login", "/auth/mock-login", "/auth/phone-login").permitAll()
+
+                        // 学校列表/详情：入驻前未登录即可查询（与 SchoolController GET 对齐）
+                        .requestMatchers(HttpMethod.GET, "/schools", "/schools/**").permitAll()
 
                         // 放行 WebSocket 端点（身份验证在 STOMP 层面完成）
                         .requestMatchers("/ws/**").permitAll()

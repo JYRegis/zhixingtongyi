@@ -10,9 +10,13 @@ import com.rural.education.enums.UserStatus;
 import com.rural.education.dto.request.auth.LoginRequest;
 import com.rural.education.dto.request.auth.WxLoginRequest;
 import com.rural.education.dto.response.auth.LoginResponse;
+import com.rural.education.model.entity.AdminProfile;
 import com.rural.education.model.entity.StudentProfile;
 import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.model.entity.User;
+import com.rural.education.model.mapper.AdminProfileMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.StudentProfileMapper;
 import com.rural.education.model.mapper.TeacherProfileMapper;
@@ -25,6 +29,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -39,6 +45,8 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
     private final StringRedisTemplate redisTemplate;
     private final TeacherProfileMapper teacherProfileMapper;
     private final StudentProfileMapper studentProfileMapper;
+    private final AdminProfileMapper adminProfileMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     public LoginResponse wxLogin(WxLoginRequest request) {
@@ -54,7 +62,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
                 user = new User();
                 user.setWechatOpenid(openId);
                 String preferredName = request.getUserInfo() != null ? request.getUserInfo().getNickName() : null;
-                user.setUsername(resolveAvailableUsername(preferredName, null));
+                user.setUsername(normalizeUsername(preferredName));
                 user.setPassword(UUID.randomUUID().toString());
                 user.setAvatar(request.getUserInfo() != null ? request.getUserInfo().getAvatarUrl() : "");
                 user.setRole(UserRole.STUDENT.getCode());
@@ -64,7 +72,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             } else {
                 boolean needUpdate = false;
                 if (request.getUserInfo() != null && request.getUserInfo().getNickName() != null && !request.getUserInfo().getNickName().isBlank()) {
-                    user.setUsername(resolveAvailableUsername(request.getUserInfo().getNickName(), user.getId()));
+                    user.setUsername(normalizeUsername(request.getUserInfo().getNickName()));
                     needUpdate = true;
                 }
                 if (request.getUserInfo() != null && request.getUserInfo().getAvatarUrl() != null && !request.getUserInfo().getAvatarUrl().isBlank()) {
@@ -143,7 +151,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             if (nick == null || nick.isBlank()) {
                 nick = "用户" + phone.substring(phone.length() - 4);
             }
-            user.setUsername(resolveAvailableUsername(nick, null));
+            user.setUsername(normalizeUsername(nick));
             user.setPassword(UUID.randomUUID().toString());
             user.setAvatar(request.getAvatarUrl() == null ? "" : request.getAvatarUrl());
             user.setRole(UserRole.STUDENT.getCode());
@@ -152,7 +160,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
         } else {
             boolean needUpdate = false;
             if (request.getNickName() != null && !request.getNickName().isBlank()) {
-                user.setUsername(resolveAvailableUsername(request.getNickName(), user.getId()));
+                user.setUsername(normalizeUsername(request.getNickName()));
                 needUpdate = true;
             }
             if (request.getAvatarUrl() != null && !request.getAvatarUrl().isBlank()) {
@@ -217,6 +225,8 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
     private LoginResponse buildLoginResponse(String token, User user, boolean isNewUser) {
         boolean hasProfile = hasProfile(user.getId(), user.getRole());
         String roleApply = redisTemplate.opsForValue().get("role:apply:" + user.getId());
+        Integer auditStatus = resolveAuditStatus(user.getId(), user.getRole());
+        List<String> permissions = resolvePermissions(user.getId(), user.getRole());
         return LoginResponse.builder()
                 .token(token)
                 .user(LoginResponse.UserInfo.builder()
@@ -227,8 +237,53 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
                         .phone(user.getPhone())
                         .hasProfile(isNewUser ? false : hasProfile)
                         .roleApplied(roleApply != null)
+                        .auditStatus(auditStatus)
+                        .permissions(permissions)
                         .build())
                 .build();
+    }
+
+    private Integer resolveAuditStatus(Long userId, Integer role) {
+        if (role == null) {
+            return null;
+        }
+        if (Integer.valueOf(UserRole.STUDENT.getCode()).equals(role)) {
+            StudentProfile profile = studentProfileMapper.selectOne(
+                    new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
+            );
+            return profile == null ? null : profile.getAuditStatus();
+        }
+        if (Integer.valueOf(UserRole.TEACHER.getCode()).equals(role)) {
+            TeacherProfile profile = teacherProfileMapper.selectOne(
+                    new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, userId)
+            );
+            return profile == null ? null : profile.getCertificationStatus();
+        }
+        return null;
+    }
+
+    private List<String> resolvePermissions(Long userId, Integer role) {
+        if (role == null || !Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(role)) {
+            return Collections.emptyList();
+        }
+        AdminProfile admin = adminProfileMapper.selectOne(
+                new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, userId)
+        );
+        if (admin == null || admin.getPermissions() == null || admin.getPermissions().isBlank()) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(admin.getPermissions(), new TypeReference<List<String>>() {});
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
+    private String normalizeUsername(String preferred) {
+        if (preferred == null || preferred.isBlank()) {
+            return "微信用户";
+        }
+        return preferred.trim();
     }
 
     private boolean hasProfile(Long userId, Integer role) {
@@ -268,25 +323,6 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             throw new BusinessException("Bearer token 不能为空");
         }
         return token;
-    }
-
-    private String resolveAvailableUsername(String preferred, Long currentUserId) {
-        String base = (preferred == null || preferred.isBlank()) ? "微信用户" : preferred.trim();
-        String candidate = base;
-        int attempt = 0;
-        while (attempt < 20) {
-            LambdaQueryWrapper<User> query = new LambdaQueryWrapper<User>().eq(User::getUsername, candidate);
-            if (currentUserId != null) {
-                query.ne(User::getId, currentUserId);
-            }
-            User exists = userMapper.selectOne(query);
-            if (exists == null) {
-                return candidate;
-            }
-            attempt++;
-            candidate = base + "_" + UUID.randomUUID().toString().substring(0, 6);
-        }
-        return base + "_" + System.currentTimeMillis();
     }
 
     @SuppressWarnings("deprecation")

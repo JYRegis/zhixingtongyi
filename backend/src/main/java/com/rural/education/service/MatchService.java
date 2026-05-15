@@ -30,5 +30,7 @@ public interface MatchService extends IService<MatchPair> {
     MatchPairVO unbindProgress(Long userId, Long pairId);
 
     MatchPairVO pairDetail(Long userId, Long pairId);
+
+    List<MatchPairVO> pendingUnbindRequests(Long userId);
 }
 

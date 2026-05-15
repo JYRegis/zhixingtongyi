@@ -10,6 +10,7 @@ public class StudentVO {
     private Long userId;
     private String realName;
     private Long schoolId;
+    private String schoolName;
     private String grade;
 
     // Compatible with both profile(list/json) and managed-student(string/json)

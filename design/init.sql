@@ -30,11 +30,10 @@ CREATE TABLE `user` (
   `avatar` varchar(512) DEFAULT NULL COMMENT '头像URL',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '状态：0-禁用，1-启用',
   `deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
-  `deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_username` (`username`),
+  KEY `idx_username` (`username`),
   UNIQUE KEY `uk_phone` (`phone`),
   UNIQUE KEY `uk_wechat_openid` (`wechat_openid`),
   KEY `idx_role_status` (`role`,`status`)

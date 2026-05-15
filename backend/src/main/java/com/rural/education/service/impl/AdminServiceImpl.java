@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.dto.common.PageResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.rural.education.enums.AuditStatus;
 import com.rural.education.enums.UserRole;
 import com.rural.education.enums.UserStatus;
@@ -13,6 +14,7 @@ import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.*;
 import com.rural.education.dto.request.admin.*;
 import com.rural.education.model.entity.*;
+import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.vo.*;
 import com.rural.education.service.AdminService;
 import com.rural.education.service.UserAccessService;
@@ -138,13 +140,16 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         if (studentProfile == null) {
             throw new BusinessException("学生资料不存在");
         }
-        AdminProfile adminProfile = adminProfileMapper.selectOne(
-                new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, operatorId)
-        );
-        Long adminSchoolId = adminProfile == null ? null : adminProfile.getSchoolId();
-        Long studentSchoolId = studentProfile.getSchoolId();
-        if (adminSchoolId == null || !adminSchoolId.equals(studentSchoolId)) {
-            throw new BusinessException("只能审核本校学生");
+        User operator = userMapper.selectById(operatorId);
+        if (operator != null && !Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(operator.getRole())) {
+            AdminProfile adminProfile = adminProfileMapper.selectOne(
+                    new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, operatorId)
+            );
+            Long adminSchoolId = adminProfile == null ? null : adminProfile.getSchoolId();
+            Long studentSchoolId = studentProfile.getSchoolId();
+            if (adminSchoolId == null || !adminSchoolId.equals(studentSchoolId)) {
+                throw new BusinessException("只能审核本校学生");
+            }
         }
         studentProfileMapper.update(
                 null,
@@ -205,6 +210,157 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
             throw new BusinessException("该学生不在你的代管范围");
         }
         redisTemplate.opsForValue().set("managed:current:admin:" + operatorId, String.valueOf(studentId), 12, java.util.concurrent.TimeUnit.HOURS);
+    }
+
+    @Override
+    public PageResponse<StudentVO> pendingStudents(Long operatorId, Long page, Long size) {
+        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+        long current = page == null || page < 1 ? 1 : page;
+        long pageSize = size == null || size < 1 ? 10 : Math.min(size, 100);
+        LambdaQueryWrapper<StudentProfile> wrapper = new LambdaQueryWrapper<StudentProfile>()
+                .eq(StudentProfile::getAuditStatus, AuditStatus.PENDING.getCode())
+                .eq(StudentProfile::getProfileStatus, 1)
+                .orderByDesc(StudentProfile::getUpdateTime);
+        User operator = userMapper.selectById(operatorId);
+        if (operator != null && Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(operator.getRole())) {
+            AdminProfile admin = adminProfileMapper.selectOne(
+                    new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, operatorId)
+            );
+            if (admin != null && admin.getSchoolId() != null) {
+                wrapper.eq(StudentProfile::getSchoolId, admin.getSchoolId());
+            }
+        }
+        Page<StudentProfile> p = studentProfileMapper.selectPage(new Page<>(current, pageSize), wrapper);
+        Page<StudentVO> voPage = new Page<>(p.getCurrent(), p.getSize(), p.getTotal());
+        voPage.setRecords(p.getRecords().stream().map(this::toStudentVO).toList());
+        return PageResponse.from(voPage);
+    }
+
+    @Override
+    public StudentVO studentProfileDetail(Long operatorId, Long studentId) {
+        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+        StudentProfile row = studentProfileMapper.selectOne(
+                new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, studentId)
+        );
+        if (row == null) {
+            throw new BusinessException("学生资料不存在");
+        }
+        return toStudentVO(row);
+    }
+
+    @Override
+    public PageResponse<TeacherVO> pendingTeachers(Long operatorId, Long page, Long size) {
+        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+        long current = page == null || page < 1 ? 1 : page;
+        long pageSize = size == null || size < 1 ? 10 : Math.min(size, 100);
+        LambdaQueryWrapper<TeacherProfile> wrapper = new LambdaQueryWrapper<TeacherProfile>()
+                .eq(TeacherProfile::getCertificationStatus, AuditStatus.PENDING.getCode())
+                .orderByDesc(TeacherProfile::getUpdateTime);
+        Page<TeacherProfile> p = teacherProfileMapper.selectPage(new Page<>(current, pageSize), wrapper);
+        Page<TeacherVO> voPage = new Page<>(p.getCurrent(), p.getSize(), p.getTotal());
+        voPage.setRecords(p.getRecords().stream().map(this::toTeacherVO).toList());
+        return PageResponse.from(voPage);
+    }
+
+    @Override
+    public TeacherVO teacherProfileDetail(Long operatorId, Long teacherId) {
+        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+        TeacherProfile row = teacherProfileMapper.selectOne(
+                new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, teacherId)
+        );
+        if (row == null) {
+            throw new BusinessException("志愿者资料不存在");
+        }
+        return toTeacherVO(row);
+    }
+
+    @Override
+    public AdminProfileVO myProfile(Long operatorId) {
+        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+        AdminProfile admin = adminProfileMapper.selectOne(
+                new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, operatorId)
+        );
+        if (admin == null) {
+            throw new BusinessException("管理员资料不存在");
+        }
+        AdminProfileVO vo = new AdminProfileVO();
+        vo.setUserId(admin.getUserId());
+        vo.setRealName(admin.getRealName());
+        vo.setSchoolId(admin.getSchoolId());
+        vo.setRegionCode(admin.getRegionCode());
+        if (admin.getSchoolId() != null) {
+            School school = schoolMapper.selectById(admin.getSchoolId());
+            if (school != null) {
+                vo.setSchoolName(school.getName());
+            }
+        }
+        if (admin.getPermissions() != null && !admin.getPermissions().isBlank()) {
+            try {
+                vo.setPermissions(objectMapper.readValue(admin.getPermissions(), new TypeReference<List<String>>() {}));
+            } catch (Exception e) {
+                vo.setPermissions(List.of());
+            }
+        } else {
+            vo.setPermissions(List.of());
+        }
+        return vo;
+    }
+
+    private StudentVO toStudentVO(StudentProfile row) {
+        StudentVO vo = new StudentVO();
+        vo.setId(row.getId());
+        vo.setUserId(row.getUserId());
+        vo.setRealName(row.getRealName());
+        vo.setSchoolId(row.getSchoolId());
+        vo.setGrade(row.getGrade());
+        vo.setPersonalityDesc(row.getPersonalityDesc());
+        vo.setProfileStatus(row.getProfileStatus());
+        vo.setBindAdminId(row.getBindAdminId());
+        vo.setAuditStatus(row.getAuditStatus());
+        vo.setAuditTime(row.getAuditTime());
+        vo.setAuditNotes(row.getAuditNotes());
+        vo.setUpdateTime(row.getUpdateTime());
+        if (row.getSchoolId() != null) {
+            School school = schoolMapper.selectById(row.getSchoolId());
+            if (school != null) {
+                vo.setSchoolName(school.getName());
+            }
+        }
+        try {
+            if (row.getSubjectsNeeded() != null) {
+                vo.setSubjectsNeeded(objectMapper.readValue(row.getSubjectsNeeded(), new TypeReference<List<Object>>() {}));
+            }
+            if (row.getFreeTime() != null) {
+                vo.setFreeTime(objectMapper.readValue(row.getFreeTime(), new TypeReference<List<java.util.Map<String, Object>>>() {}));
+            }
+        } catch (Exception ignored) {
+        }
+        return vo;
+    }
+
+    private TeacherVO toTeacherVO(TeacherProfile row) {
+        TeacherVO vo = new TeacherVO();
+        vo.setUserId(row.getUserId());
+        vo.setRealName(row.getRealName());
+        vo.setSchool(row.getSchool());
+        vo.setGrade(row.getGrade());
+        vo.setPersonalSkills(row.getPersonalSkills());
+        vo.setPersonalityDesc(row.getPersonalityDesc());
+        vo.setCertificationStatus(row.getCertificationStatus());
+        vo.setAuditTime(row.getAuditTime());
+        vo.setAuditNotes(row.getAuditNotes());
+        vo.setContinuousMatch(row.getContinuousMatch());
+        vo.setTotalServiceDuration(row.getTotalServiceDuration());
+        try {
+            if (row.getSkilledSubjects() != null) {
+                vo.setSkilledSubjects(objectMapper.readValue(row.getSkilledSubjects(), new TypeReference<List<Object>>() {}));
+            }
+            if (row.getFreeTime() != null) {
+                vo.setFreeTime(objectMapper.readValue(row.getFreeTime(), new TypeReference<List<java.util.Map<String, Object>>>() {}));
+            }
+        } catch (Exception ignored) {
+        }
+        return vo;
     }
 
     private String toJson(Object obj) {

@@ -8,8 +8,9 @@ import com.rural.education.dto.request.admin.SchoolRequest;
 import com.rural.education.dto.request.admin.SecondaryAdminRequest;
 import com.rural.education.dto.request.admin.UpdateUserStatusRequest;
 import com.rural.education.model.entity.User;
+import com.rural.education.vo.AdminProfileVO;
 import com.rural.education.vo.StudentVO;
-
+import com.rural.education.vo.TeacherVO;
 import java.util.List;
 
 public interface AdminService extends IService<User> {
@@ -32,5 +33,15 @@ public interface AdminService extends IService<User> {
     List<StudentVO> managedStudents(Long operatorId);
 
     void switchManagedStudent(Long operatorId, Long studentId);
+
+    PageResponse<StudentVO> pendingStudents(Long operatorId, Long page, Long size);
+
+    StudentVO studentProfileDetail(Long operatorId, Long studentId);
+
+    PageResponse<TeacherVO> pendingTeachers(Long operatorId, Long page, Long size);
+
+    TeacherVO teacherProfileDetail(Long operatorId, Long teacherId);
+
+    AdminProfileVO myProfile(Long operatorId);
 }
 

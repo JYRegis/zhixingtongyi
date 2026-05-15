@@ -9,7 +9,9 @@ public class MatchPairVO {
     private Long id;
     private Long pairId;
     private Long studentId;
+    private String studentName;
     private Long teacherId;
+    private String teacherName;
     private Integer matchStatus;
     private LocalDateTime applyTime;
     private LocalDateTime acceptTime;

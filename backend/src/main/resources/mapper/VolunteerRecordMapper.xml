@@ -58,6 +58,16 @@
         ORDER BY vr.create_time DESC
     </select>
 
+    <select id="selectRecordById" resultType="com.rural.education.vo.VolunteerRecordVO">
+        SELECT <include refid="recordColumns"/>,
+               t.real_name AS teacherName,
+               s.real_name AS studentName
+        FROM volunteer_record vr
+        LEFT JOIN teacher_profile t ON vr.teacher_id = t.user_id
+        LEFT JOIN student_profile s ON vr.student_id = s.user_id
+        WHERE vr.id = #{recordId}
+    </select>
+
     <select id="selectTotalApprovedDuration" resultType="java.lang.Long">
         SELECT COALESCE(SUM(duration), 0)
         FROM volunteer_record

@@ -11,7 +11,14 @@ import com.rural.education.model.entity.AdminProfile;
 import com.rural.education.model.entity.ChatMessage;
 import com.rural.education.model.entity.ChatParticipant;
 import com.rural.education.model.entity.MatchPair;
+import com.rural.education.model.entity.User;
+import com.rural.education.enums.MatchStatus;
+import com.rural.education.model.entity.School;
 import com.rural.education.model.entity.StudentProfile;
+import com.rural.education.model.entity.TeacherProfile;
+import com.rural.education.model.mapper.SchoolMapper;
+import com.rural.education.model.mapper.TeacherProfileMapper;
+import com.rural.education.vo.ChatConversationVO;
 import com.rural.education.model.mapper.AdminProfileMapper;
 import com.rural.education.model.mapper.ChatMessageMapper;
 import com.rural.education.model.mapper.ChatParticipantMapper;
@@ -36,6 +43,8 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
     private final StudentProfileMapper studentProfileMapper;
     private final AdminProfileMapper adminProfileMapper;
     private final UserAccessService userAccessService;
+    private final TeacherProfileMapper teacherProfileMapper;
+    private final SchoolMapper schoolMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -221,5 +230,76 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                         .eq(ChatParticipant::getMatchPairId, pairId)
                         .isNull(ChatParticipant::getLeftTime)
         );
+    }
+
+    @Override
+    public List<ChatConversationVO> listAdminConversations(Long userId) {
+        User user = userAccessService.requireUser(userId);
+        if (user.getRole() == null
+                || (user.getRole() != UserRole.L1_ADMIN.getCode() && user.getRole() != UserRole.L2_ADMIN.getCode())) {
+            throw new BusinessException("无权限操作");
+        }
+        LambdaQueryWrapper<MatchPair> wrapper = new LambdaQueryWrapper<MatchPair>()
+                .eq(MatchPair::getMatchStatus, MatchStatus.ACCEPTED.getCode())
+                .orderByDesc(MatchPair::getAcceptTime);
+        if (Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(user.getRole())) {
+            AdminProfile admin = adminProfileMapper.selectOne(
+                    new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, userId)
+            );
+            if (admin == null || admin.getSchoolId() == null) {
+                return List.of();
+            }
+            List<Long> studentIds = studentProfileMapper.selectList(
+                    new LambdaQueryWrapper<StudentProfile>()
+                            .eq(StudentProfile::getSchoolId, admin.getSchoolId())
+            ).stream().map(StudentProfile::getUserId).toList();
+            if (studentIds.isEmpty()) {
+                return List.of();
+            }
+            wrapper.in(MatchPair::getStudentId, studentIds);
+        }
+        return matchPairMapper.selectList(wrapper).stream().map(pair -> {
+            ChatConversationVO vo = new ChatConversationVO();
+            vo.setMatchPairId(pair.getId());
+            vo.setStudentId(pair.getStudentId());
+            vo.setTeacherId(pair.getTeacherId());
+            StudentProfile sp = studentProfileMapper.selectOne(
+                    new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, pair.getStudentId())
+            );
+            if (sp != null) {
+                vo.setStudentName(sp.getRealName());
+                vo.setSchoolId(sp.getSchoolId());
+                if (sp.getSchoolId() != null) {
+                    School school = schoolMapper.selectById(sp.getSchoolId());
+                    if (school != null) {
+                        vo.setSchoolName(school.getName());
+                    }
+                }
+            }
+            TeacherProfile tp = teacherProfileMapper.selectOne(
+                    new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, pair.getTeacherId())
+            );
+            if (tp != null) {
+                vo.setTeacherName(tp.getRealName());
+            }
+            ChatMessage last = chatMessageMapper.selectOne(
+                    new LambdaQueryWrapper<ChatMessage>()
+                            .eq(ChatMessage::getMatchPairId, pair.getId())
+                            .orderByDesc(ChatMessage::getSendTime)
+                            .last("LIMIT 1")
+            );
+            if (last != null) {
+                vo.setLastMessage(last.getContent());
+                vo.setLastMessageTime(last.getSendTime());
+            }
+            Long unread = chatMessageMapper.selectCount(
+                    new LambdaQueryWrapper<ChatMessage>()
+                            .eq(ChatMessage::getMatchPairId, pair.getId())
+                            .ne(ChatMessage::getSenderId, userId)
+                            .isNull(ChatMessage::getReadTime)
+            );
+            vo.setUnreadCount(unread == null ? 0 : unread.intValue());
+            return vo;
+        }).toList();
     }
 }

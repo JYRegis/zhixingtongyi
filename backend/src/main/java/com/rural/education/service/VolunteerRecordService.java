@@ -19,4 +19,6 @@ public interface VolunteerRecordService extends IService<VolunteerRecord> {
     void auditRecord(Long userId, Long recordId, AdminAuditRecordRequest request);
 
     Page<VolunteerRecordVO> queryRecords(Long userId, Long teacherId, Long studentId, Integer status, Long page, Long size);
+
+    VolunteerRecordVO getRecordDetail(Long userId, Long recordId);
 }

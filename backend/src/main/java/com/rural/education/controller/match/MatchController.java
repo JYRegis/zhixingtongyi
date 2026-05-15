@@ -77,6 +77,12 @@ public class MatchController {
         return ApiResponse.success();
     }
 
+    @GetMapping("/unbind-requests/pending")
+    public ApiResponse<List<MatchPairVO>> pendingUnbindRequests() {
+        Long userId = currentUserUtil.getCurrentUserId();
+        return ApiResponse.success(matchService.pendingUnbindRequests(userId));
+    }
+
     @GetMapping("/{pairId}/unbind-progress")
     public ApiResponse<MatchPairVO> unbindProgress(@PathVariable Long pairId) {
         Long userId = currentUserUtil.getCurrentUserId();

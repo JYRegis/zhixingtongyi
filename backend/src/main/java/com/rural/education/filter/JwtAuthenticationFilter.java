@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 2. 检查 Token 是否在黑名单中
                 try {
                     Boolean isBlacklisted = redisTemplate.hasKey("jwt:blacklist:" + jwt);
-                    if (isBlacklisted) {
+                    if (Boolean.TRUE.equals(isBlacklisted)) {
                         filterChain.doFilter(request, response);
                         return;
                     }
@@ -49,34 +49,82 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     log.warn("Redis连接失败，跳过黑名单校验: {}", e.getMessage());
                 }
 
-                // 3. 解析 Token 获取用户信息
-                Long userId = jwtUtil.getUserIdFromToken(jwt);
-                if (userId != null) {
-                    CurrentUserContext.setUserId(userId);
-                }
-
-                // 4. 将用户认证信息存入 Spring Security 上下文
-                if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                // 3. 解析 Token；匿名放行路径上若带过期/错误 Token，不得拦截登录与学校列表
+                try {
+                    Long userId = jwtUtil.getUserIdFromToken(jwt);
+                    if (userId != null) {
+                        CurrentUserContext.setUserId(userId);
+                    }
+                    if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
+                } catch (AuthException e) {
+                    if (allowsInvalidBearerToken(request)) {
+                        log.debug("匿名放行路径上忽略无效 Authorization: path={}, msg={}", resolvePath(request), e.getMessage());
+                    } else {
+                        throw e;
+                    }
                 }
             }
-            // 5. 放行请求
             filterChain.doFilter(request, response);
         } catch (AuthException e) {
             log.warn("Token 无效或已过期: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"code\":401,\"message\":\"" + e.getMessage() + "\",\"data\":null}");
+            response.getWriter().write("{\"code\":401,\"message\":\"" + escapeJson(e.getMessage()) + "\",\"data\":null}");
         } catch (Exception e) {
             log.error("Token 解析失败: {}", e.getMessage());
             filterChain.doFilter(request, response);
         } finally {
             CurrentUserContext.clear();
         }
+    }
+
+    /**
+     * 与 {@link com.rural.education.config.SecurityConfig} 中 permitAll 对齐：这些路径不应因「带了坏 Token」而 401。
+     * 典型场景：小程序全局请求头仍挂着旧 JWT，用户再次调用登录接口。
+     */
+    private boolean allowsInvalidBearerToken(HttpServletRequest request) {
+        String path = resolvePath(request);
+        if (path == null) {
+            return false;
+        }
+        if ("/auth/wx-login".equals(path) || "/auth/mock-login".equals(path) || "/auth/phone-login".equals(path)) {
+            return true;
+        }
+        String method = request.getMethod();
+        if (method != null && "GET".equalsIgnoreCase(method)
+                && ("/schools".equals(path) || path.startsWith("/schools/"))) {
+            return true;
+        }
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || "/swagger-ui.html".equals(path)
+                || path.startsWith("/swagger-resources") || path.startsWith("/webjars") || "/error".equals(path)) {
+            return true;
+        }
+        return false;
+    }
+
+    private String resolvePath(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        String ctx = request.getContextPath();
+        if (uri != null && ctx != null && !ctx.isEmpty() && uri.startsWith(ctx)) {
+            return uri.substring(ctx.length());
+        }
+        String sp = request.getServletPath();
+        if (sp != null && !sp.isEmpty()) {
+            return sp;
+        }
+        return uri;
+    }
+
+    private static String escapeJson(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

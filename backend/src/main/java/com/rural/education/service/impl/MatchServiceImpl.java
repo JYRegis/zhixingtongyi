@@ -24,6 +24,7 @@ import com.rural.education.dto.request.match.UnbindConfirmRequest;
 import com.rural.education.model.entity.AlgorithmWeightConfig;
 import com.rural.education.model.entity.MatchPair;
 import com.rural.education.model.entity.StudentProfile;
+import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.model.entity.User;
 import com.rural.education.vo.MatchPairVO;
 import com.rural.education.vo.TeacherVO;
@@ -265,6 +266,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                 .map(pair -> {
                     MatchPairVO vo = new MatchPairVO();
                     vo.setId(pair.getId());
+                    vo.setPairId(pair.getId());
                     vo.setStudentId(pair.getStudentId());
                     vo.setTeacherId(pair.getTeacherId());
                     vo.setMatchStatus(pair.getMatchStatus());
@@ -274,6 +276,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                     vo.setUnbindRequestTime(pair.getUnbindRequestTime());
                     vo.setUnbindAcceptTime(pair.getUnbindAcceptTime());
                     vo.setUnbindRejectReason(pair.getUnbindRejectReason());
+                    fillPairNames(vo);
                     return vo;
                 })
                 .toList();
@@ -646,6 +649,52 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
 
     private String toString(Object obj) {
         return obj != null ? obj.toString() : null;
+    }
+
+    private void fillPairNames(MatchPairVO vo) {
+        if (vo == null) {
+            return;
+        }
+        if (vo.getStudentId() != null && (vo.getStudentName() == null || vo.getStudentName().isBlank())) {
+            StudentProfile sp = studentProfileMapper.selectOne(
+                    new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, vo.getStudentId())
+            );
+            if (sp != null) {
+                vo.setStudentName(sp.getRealName());
+            }
+        }
+        if (vo.getTeacherId() != null && (vo.getTeacherName() == null || vo.getTeacherName().isBlank())) {
+            TeacherProfile tp = teacherProfileMapper.selectOne(
+                    new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, vo.getTeacherId())
+            );
+            if (tp != null) {
+                vo.setTeacherName(tp.getRealName());
+            }
+        }
+    }
+
+    @Override
+    public List<MatchPairVO> pendingUnbindRequests(Long userId) {
+        userAccessService.requireAnyRole(userId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+        LambdaQueryWrapper<MatchPair> wrapper = new LambdaQueryWrapper<MatchPair>()
+                .eq(MatchPair::getMatchStatus, MatchStatus.UNBIND_CONFIRMING.getCode())
+                .eq(MatchPair::getUnbindAdminId, userId)
+                .orderByDesc(MatchPair::getUnbindRequestTime);
+        return matchPairMapper.selectList(wrapper).stream().map(pair -> {
+            MatchPairVO vo = new MatchPairVO();
+            vo.setId(pair.getId());
+            vo.setPairId(pair.getId());
+            vo.setStudentId(pair.getStudentId());
+            vo.setTeacherId(pair.getTeacherId());
+            vo.setMatchStatus(pair.getMatchStatus());
+            vo.setUnbindRequestTime(pair.getUnbindRequestTime());
+            vo.setStudentUnbindConfirm(pair.getStudentUnbindConfirm());
+            vo.setTeacherUnbindConfirm(pair.getTeacherUnbindConfirm());
+            vo.setAdminUnbindConfirm(pair.getAdminUnbindConfirm());
+            vo.setUnbindRejectReason(pair.getUnbindRejectReason());
+            fillPairNames(vo);
+            return vo;
+        }).toList();
     }
 }
 
