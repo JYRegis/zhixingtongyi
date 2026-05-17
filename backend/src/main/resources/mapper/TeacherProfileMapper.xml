@@ -5,16 +5,20 @@
 <mapper namespace="com.rural.education.model.mapper.TeacherProfileMapper">
 
     <select id="selectRecommendations" resultType="com.rural.education.vo.TeacherVO">
-        SELECT user_id AS teacherId,
-               real_name AS realName,
-               school,
-               grade,
-               skilled_subjects AS skilledSubjects,
-               free_time AS freeTime
-        FROM teacher_profile
-        WHERE certification_status = 1  <!-- APPROVED -->
-          AND continuous_match = 1      <!-- true -->
-        ORDER BY total_service_duration ASC
+        SELECT tp.user_id AS teacherId,
+               tp.real_name AS realName,
+               tp.school_id AS schoolId,
+               sc.name AS schoolName,
+               tp.grade,
+               tp.skilled_subjects AS skilledSubjects,
+               tp.free_time AS freeTime,
+               tp.skilled_subjects AS skilledSubjectsRaw,
+               tp.free_time AS freeTimeRaw
+        FROM teacher_profile tp
+        LEFT JOIN school sc ON tp.school_id = sc.id
+        WHERE tp.certification_status = 1  <!-- APPROVED -->
+          AND tp.continuous_match = 1      <!-- true -->
+        ORDER BY tp.total_service_duration ASC
         LIMIT 20
     </select>
 

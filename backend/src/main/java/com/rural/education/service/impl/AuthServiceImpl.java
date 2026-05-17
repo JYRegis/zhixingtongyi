@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rural.education.enums.UserRole;
 import com.rural.education.enums.UserStatus;
 import com.rural.education.dto.request.auth.LoginRequest;
+import com.rural.education.dto.request.auth.UpdateProfileRequest;
 import com.rural.education.dto.request.auth.WxLoginRequest;
 import com.rural.education.dto.response.auth.LoginResponse;
 import com.rural.education.model.entity.AdminProfile;
@@ -69,23 +70,6 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
                 user.setStatus(UserStatus.ENABLED.getCode());
                 user.setPhone(phone);
                 userMapper.insert(user);
-            } else {
-                boolean needUpdate = false;
-                if (request.getUserInfo() != null && request.getUserInfo().getNickName() != null && !request.getUserInfo().getNickName().isBlank()) {
-                    user.setUsername(normalizeUsername(request.getUserInfo().getNickName()));
-                    needUpdate = true;
-                }
-                if (request.getUserInfo() != null && request.getUserInfo().getAvatarUrl() != null && !request.getUserInfo().getAvatarUrl().isBlank()) {
-                    user.setAvatar(request.getUserInfo().getAvatarUrl());
-                    needUpdate = true;
-                }
-                if (phone != null && !phone.isBlank()) {
-                    user.setPhone(phone);
-                    needUpdate = true;
-                }
-                if (needUpdate) {
-                    userMapper.updateById(user);
-                }
             }
 
             String token = jwtUtil.generateToken(user.getId(), user.getRole());
@@ -125,9 +109,6 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             user.setStatus(UserStatus.ENABLED.getCode());
             user.setPhone(phone);
             userMapper.insert(user);
-        } else if (phone != null && !phone.isBlank()) {
-            user.setPhone(phone);
-            userMapper.updateById(user);
         }
 
         // 4. 签发 Token
@@ -157,19 +138,6 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             user.setRole(UserRole.STUDENT.getCode());
             user.setStatus(UserStatus.ENABLED.getCode());
             userMapper.insert(user);
-        } else {
-            boolean needUpdate = false;
-            if (request.getNickName() != null && !request.getNickName().isBlank()) {
-                user.setUsername(normalizeUsername(request.getNickName()));
-                needUpdate = true;
-            }
-            if (request.getAvatarUrl() != null && !request.getAvatarUrl().isBlank()) {
-                user.setAvatar(request.getAvatarUrl());
-                needUpdate = true;
-            }
-            if (needUpdate) {
-                userMapper.updateById(user);
-            }
         }
         String token = jwtUtil.generateToken(user.getId(), user.getRole());
         log.info("phone-login success, userId={}, phone={}", user.getId(), maskPhone(user.getPhone()));
@@ -220,6 +188,26 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             log.warn("旧Token黑名单写入失败: {}", e.getMessage());
         }
         return jwtUtil.generateToken(userId, role);
+    }
+
+    @Override
+    public void updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+        boolean needUpdate = false;
+        if (request.getUsername() != null && !request.getUsername().isBlank()) {
+            user.setUsername(normalizeUsername(request.getUsername()));
+            needUpdate = true;
+        }
+        if (request.getAvatar() != null && !request.getAvatar().isBlank()) {
+            user.setAvatar(request.getAvatar());
+            needUpdate = true;
+        }
+        if (needUpdate) {
+            userMapper.updateById(user);
+        }
     }
 
     private LoginResponse buildLoginResponse(String token, User user, boolean isNewUser) {

@@ -2,9 +2,9 @@ package com.rural.education.websocket;
 
 import com.rural.education.dto.request.chat.MarkReadRequest;
 import com.rural.education.dto.request.chat.SendMessageRequest;
-import com.rural.education.model.entity.ChatParticipant;
 import com.rural.education.service.ChatService;
 import com.rural.education.vo.ChatMessageVO;
+import com.rural.education.vo.ChatParticipantVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -27,8 +27,8 @@ public class ChatStompController {
                             @AuthenticationPrincipal Long userId) {
         ChatMessageVO vo = chatService.sendMessage(userId, request);
 
-        List<ChatParticipant> participants = chatService.getParticipants(userId, request.getMatchPairId());
-        for (ChatParticipant p : participants) {
+        List<ChatParticipantVO> participants = chatService.getParticipants(userId, request.getMatchPairId());
+        for (ChatParticipantVO p : participants) {
             if (!p.getUserId().equals(userId) && sessionRegistry.isOnline(p.getUserId())) {
                 messagingTemplate.convertAndSendToUser(
                         p.getUserId().toString(), "/queue/chat", vo);

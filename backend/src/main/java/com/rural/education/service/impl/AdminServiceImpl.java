@@ -249,13 +249,16 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     }
 
     @Override
-    public PageResponse<TeacherVO> pendingTeachers(Long operatorId, Long page, Long size) {
+    public PageResponse<TeacherVO> pendingTeachers(Long operatorId, Long page, Long size, Long schoolId) {
         userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         long current = page == null || page < 1 ? 1 : page;
         long pageSize = size == null || size < 1 ? 10 : Math.min(size, 100);
         LambdaQueryWrapper<TeacherProfile> wrapper = new LambdaQueryWrapper<TeacherProfile>()
                 .eq(TeacherProfile::getCertificationStatus, AuditStatus.PENDING.getCode())
                 .orderByDesc(TeacherProfile::getUpdateTime);
+        if (schoolId != null) {
+            wrapper.eq(TeacherProfile::getSchoolId, schoolId);
+        }
         Page<TeacherProfile> p = teacherProfileMapper.selectPage(new Page<>(current, pageSize), wrapper);
         Page<TeacherVO> voPage = new Page<>(p.getCurrent(), p.getSize(), p.getTotal());
         voPage.setRecords(p.getRecords().stream().map(this::toTeacherVO).toList());
@@ -342,7 +345,13 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         TeacherVO vo = new TeacherVO();
         vo.setUserId(row.getUserId());
         vo.setRealName(row.getRealName());
-        vo.setSchool(row.getSchool());
+        vo.setSchoolId(row.getSchoolId());
+        if (row.getSchoolId() != null) {
+            School school = schoolMapper.selectById(row.getSchoolId());
+            if (school != null) {
+                vo.setSchoolName(school.getName());
+            }
+        }
         vo.setGrade(row.getGrade());
         vo.setPersonalSkills(row.getPersonalSkills());
         vo.setPersonalityDesc(row.getPersonalityDesc());

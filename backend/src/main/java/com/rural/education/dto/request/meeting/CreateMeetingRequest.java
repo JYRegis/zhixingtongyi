@@ -20,5 +20,7 @@ public class CreateMeetingRequest {
 
     @NotBlank(message = "meetingLink 不能为空")
     private String meetingLink;
+
+    private String meetingPassword;
 }
 

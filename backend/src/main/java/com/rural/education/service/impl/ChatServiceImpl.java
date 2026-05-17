@@ -19,6 +19,7 @@ import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.model.mapper.SchoolMapper;
 import com.rural.education.model.mapper.TeacherProfileMapper;
 import com.rural.education.vo.ChatConversationVO;
+import com.rural.education.vo.ChatParticipantVO;
 import com.rural.education.model.mapper.AdminProfileMapper;
 import com.rural.education.model.mapper.ChatMessageMapper;
 import com.rural.education.model.mapper.ChatParticipantMapper;
@@ -49,19 +50,22 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ChatMessageVO sendMessage(Long userId, SendMessageRequest request) {
-        userAccessService.requireUser(userId);
+        User user = userAccessService.requireUser(userId);
         MatchPair pair = matchPairMapper.selectById(request.getMatchPairId());
         if (pair == null) {
             throw new BusinessException("结对不存在");
         }
-        ChatParticipant participant = chatParticipantMapper.selectOne(
-                new LambdaQueryWrapper<ChatParticipant>()
-                        .eq(ChatParticipant::getMatchPairId, request.getMatchPairId())
-                        .eq(ChatParticipant::getUserId, userId)
-                        .isNull(ChatParticipant::getLeftTime)
-        );
-        if (participant == null) {
-            throw new BusinessException("您不是该会话的参与者或已退出会话");
+        boolean isL1Admin = user.getRole() != null && Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(user.getRole());
+        if (!isL1Admin) {
+            ChatParticipant participant = chatParticipantMapper.selectOne(
+                    new LambdaQueryWrapper<ChatParticipant>()
+                            .eq(ChatParticipant::getMatchPairId, request.getMatchPairId())
+                            .eq(ChatParticipant::getUserId, userId)
+                            .isNull(ChatParticipant::getLeftTime)
+            );
+            if (participant == null) {
+                throw new BusinessException("您不是该会话的参与者或已退出会话");
+            }
         }
         String type = request.getMessageType().toUpperCase();
         if (!"TEXT".equals(type) && !"IMAGE".equals(type) && !"VOICE".equals(type)) {
@@ -82,20 +86,24 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
         vo.setMessageType(message.getMessageType());
         vo.setContent(message.getContent());
         vo.setSendTime(message.getSendTime());
+        vo.setSenderName(resolveSenderName(userId));
         return vo;
     }
 
     @Override
     public List<ChatMessageVO> getMessages(Long userId, Long matchPairId, Long lastMessageId, Integer limit) {
-        userAccessService.requireUser(userId);
-        ChatParticipant participant = chatParticipantMapper.selectOne(
-                new LambdaQueryWrapper<ChatParticipant>()
-                        .eq(ChatParticipant::getMatchPairId, matchPairId)
-                        .eq(ChatParticipant::getUserId, userId)
-                        .isNull(ChatParticipant::getLeftTime)
-        );
-        if (participant == null) {
-            throw new BusinessException("您不是该会话的参与者或已退出会话");
+        User user = userAccessService.requireUser(userId);
+        boolean isL1Admin = user.getRole() != null && Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(user.getRole());
+        if (!isL1Admin) {
+            ChatParticipant participant = chatParticipantMapper.selectOne(
+                    new LambdaQueryWrapper<ChatParticipant>()
+                            .eq(ChatParticipant::getMatchPairId, matchPairId)
+                            .eq(ChatParticipant::getUserId, userId)
+                            .isNull(ChatParticipant::getLeftTime)
+            );
+            if (participant == null) {
+                throw new BusinessException("您不是该会话的参与者或已退出会话");
+            }
         }
         int size = limit == null || limit <= 0 ? 50 : Math.min(limit, 200);
         LambdaQueryWrapper<ChatMessage> wrapper = new LambdaQueryWrapper<ChatMessage>()
@@ -115,6 +123,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                     vo.setContent(m.getContent());
                     vo.setSendTime(m.getSendTime());
                     vo.setReadTime(m.getReadTime());
+                    vo.setSenderName(resolveSenderName(m.getSenderId()));
                     return vo;
                 })
                 .toList();
@@ -209,27 +218,42 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
     }
 
     @Override
-    public List<ChatParticipant> getParticipants(Long userId, Long pairId) {
-        userAccessService.requireUser(userId);
+    public List<ChatParticipantVO> getParticipants(Long userId, Long pairId) {
+        User user = userAccessService.requireUser(userId);
         MatchPair pair = matchPairMapper.selectById(pairId);
         if (pair == null) {
             throw new BusinessException("结对不存在");
         }
-        boolean isMember = userId.equals(pair.getStudentId()) || userId.equals(pair.getTeacherId());
-        boolean isChatMember = chatParticipantMapper.selectCount(
-                new LambdaQueryWrapper<ChatParticipant>()
-                        .eq(ChatParticipant::getMatchPairId, pairId)
-                        .eq(ChatParticipant::getUserId, userId)
-                        .isNull(ChatParticipant::getLeftTime)
-        ) > 0;
-        if (!isMember && !isChatMember) {
-            throw new BusinessException("无权查看会话参与者");
+        boolean isL1Admin = user.getRole() != null && Integer.valueOf(UserRole.L1_ADMIN.getCode()).equals(user.getRole());
+        if (!isL1Admin) {
+            boolean isMember = userId.equals(pair.getStudentId()) || userId.equals(pair.getTeacherId());
+            boolean isChatMember = chatParticipantMapper.selectCount(
+                    new LambdaQueryWrapper<ChatParticipant>()
+                            .eq(ChatParticipant::getMatchPairId, pairId)
+                            .eq(ChatParticipant::getUserId, userId)
+                            .isNull(ChatParticipant::getLeftTime)
+            ) > 0;
+            if (!isMember && !isChatMember) {
+                throw new BusinessException("无权查看会话参与者");
+            }
         }
-        return chatParticipantMapper.selectList(
+        List<ChatParticipant> list = chatParticipantMapper.selectList(
                 new LambdaQueryWrapper<ChatParticipant>()
                         .eq(ChatParticipant::getMatchPairId, pairId)
                         .isNull(ChatParticipant::getLeftTime)
         );
+        return list.stream().map(p -> {
+            ChatParticipantVO vo = new ChatParticipantVO();
+            vo.setId(p.getId());
+            vo.setMatchPairId(p.getMatchPairId());
+            vo.setUserId(p.getUserId());
+            vo.setParticipantRole(p.getParticipantRole());
+            vo.setIsDefaultMember(p.getIsDefaultMember());
+            vo.setJoinedTime(p.getJoinedTime());
+            vo.setLeftTime(p.getLeftTime());
+            vo.setRealName(resolveParticipantName(p.getUserId()));
+            return vo;
+        }).toList();
     }
 
     @Override
@@ -301,5 +325,37 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
             vo.setUnreadCount(unread == null ? 0 : unread.intValue());
             return vo;
         }).toList();
+    }
+
+    private String resolveSenderName(Long senderId) {
+        StudentProfile sp = studentProfileMapper.selectOne(
+                new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, senderId));
+        if (sp != null && sp.getRealName() != null) return sp.getRealName();
+
+        TeacherProfile tp = teacherProfileMapper.selectOne(
+                new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, senderId));
+        if (tp != null && tp.getRealName() != null) return tp.getRealName();
+
+        AdminProfile ap = adminProfileMapper.selectOne(
+                new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, senderId));
+        if (ap != null && ap.getRealName() != null) return ap.getRealName();
+
+        return null;
+    }
+
+    private String resolveParticipantName(Long userId) {
+        StudentProfile sp = studentProfileMapper.selectOne(
+                new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId));
+        if (sp != null && sp.getRealName() != null) return sp.getRealName();
+
+        TeacherProfile tp = teacherProfileMapper.selectOne(
+                new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, userId));
+        if (tp != null && tp.getRealName() != null) return tp.getRealName();
+
+        AdminProfile ap = adminProfileMapper.selectOne(
+                new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, userId));
+        if (ap != null && ap.getRealName() != null) return ap.getRealName();
+
+        return null;
     }
 }

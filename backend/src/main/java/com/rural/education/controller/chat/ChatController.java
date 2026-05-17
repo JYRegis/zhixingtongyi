@@ -3,10 +3,10 @@ package com.rural.education.controller.chat;
 import com.rural.education.dto.common.ApiResponse;
 import com.rural.education.dto.request.chat.AddParticipantRequest;
 import com.rural.education.dto.request.chat.SendMessageRequest;
-import com.rural.education.model.entity.ChatParticipant;
 import com.rural.education.service.ChatService;
 import com.rural.education.utils.CurrentUserUtil;
 import com.rural.education.vo.ChatMessageVO;
+import com.rural.education.vo.ChatParticipantVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -64,7 +64,7 @@ public class ChatController {
     }
 
     @GetMapping("/pairs/{pairId}/participants")
-    public ApiResponse<List<ChatParticipant>> getParticipants(@PathVariable Long pairId) {
+    public ApiResponse<List<ChatParticipantVO>> getParticipants(@PathVariable Long pairId) {
         Long userId = currentUserUtil.getCurrentUserId();
         return ApiResponse.success(chatService.getParticipants(userId, pairId));
     }

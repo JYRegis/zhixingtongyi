@@ -68,7 +68,7 @@
 | id | bigint | PRIMARY KEY, AUTO_INCREMENT | 主键 |
 | user_id | bigint | NOT NULL, FOREIGN KEY (user_id) REFERENCES user(id) | 关联用户ID |
 | real_name | varchar(64) | NOT NULL | 真实姓名 |
-| school | varchar(128) | NOT NULL | 所在学校（志愿者所属学校） |
+| school_id | bigint | FOREIGN KEY (school_id) REFERENCES school(id) | 所在学校ID（关联 school 表） |
 | grade | varchar(32) | | 年级（大学生/高中生） |
 | free_time | json | NOT NULL | 空闲时间段（JSON数组） |
 | skilled_subjects | json | NOT NULL | 擅长科目（JSON数组） |
@@ -85,6 +85,11 @@
 **索引：**
 - UNIQUE KEY `uk_user_id` (`user_id`)
 - KEY `idx_certification_status` (`certification_status`)
+- KEY `idx_teacher_school_id` (`school_id`)
+
+**外键：**
+- CONSTRAINT `fk_teacher_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+- CONSTRAINT `fk_teacher_school_id` FOREIGN KEY (`school_id`) REFERENCES `school` (`id`)
 
 ### 5. 学生信息表 (student_profile)
 存储学员（学生）的详细信息。
@@ -182,6 +187,7 @@
 | start_time | datetime | NOT NULL | 会议开始时间 |
 | end_time | datetime | NOT NULL | 会议结束时间 |
 | meeting_link | varchar(512) | NOT NULL | 腾讯会议链接 |
+| meeting_password | varchar(64) | DEFAULT NULL | 会议密码（可选） |
 | created_by | bigint | NOT NULL, FOREIGN KEY (created_by) REFERENCES user(id) | 创建人（管理员用户ID） |
 | status | tinyint | NOT NULL DEFAULT 0 | 状态：0-未开始，1-进行中，2-已结束，3-已取消 |
 | record_url | varchar(512) | | 录制文件URL |
@@ -276,5 +282,11 @@
 - KEY `idx_student_status` (`student_id`, `status`)
 - KEY `idx_match_pair` (`match_pair_id`)
 
+## 通用说明
+
+- **所有表均支持逻辑删除**：每张表包含 `deleted` tinyint NOT NULL DEFAULT 0 字段，通过 MyBatis-Plus `@TableLogic` 注解实现（0-未删除，1-已删除）
+- **JSON 字段**：`teacher_profile.free_time`、`teacher_profile.skilled_subjects`、`student_profile.subjects_needed`、`student_profile.free_time`、`volunteer_record.evidence_images`、`admin_profile.permissions`、`message_notification.params` 使用 MySQL JSON 类型存储灵活数据结构
+- **自动填充**：所有表的 `create_time`、`update_time` 由 MyBatis-Plus `MetaObjectHandler` 自动填充
+
 ## 数据库初始化脚本
-（可在后续生成SQL文件）
+详见 `design/init.sql`

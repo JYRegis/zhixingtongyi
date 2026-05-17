@@ -11,6 +11,7 @@ public class ChatMessageVO {
     private Long senderId;
     private Integer messageType;
     private String content;
+    private String senderName;
     private LocalDateTime sendTime;
     private LocalDateTime readTime;
 }

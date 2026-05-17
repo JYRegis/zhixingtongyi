@@ -11,7 +11,9 @@
                mp.teacher_id AS teacherId,
                tp.real_name AS teacherName,
                mp.apply_time AS applyTime,
-               mp.match_status AS matchStatus
+               mp.match_status AS matchStatus,
+               sp.free_time AS studentFreeTime,
+               sp.grade AS studentGrade
         FROM match_pair mp
         LEFT JOIN student_profile sp ON sp.user_id = mp.student_id
         LEFT JOIN teacher_profile tp ON tp.user_id = mp.teacher_id

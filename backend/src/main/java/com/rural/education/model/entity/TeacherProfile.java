@@ -12,7 +12,7 @@ public class TeacherProfile {
     private Long id;
     private Long userId;
     private String realName;
-    private String school;
+    private Long schoolId;
     private String grade;
     private String freeTime;
     private String skilledSubjects;

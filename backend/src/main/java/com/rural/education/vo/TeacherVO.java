@@ -13,7 +13,8 @@ public class TeacherVO {
 
     // Profile fields
     private String realName;
-    private String school;
+    private Long schoolId;
+    private String schoolName;
     private String grade;
     private List<Map<String, Object>> freeTime;
     private List<Object> skilledSubjects;
@@ -24,6 +25,10 @@ public class TeacherVO {
     private String auditNotes;
     private Integer continuousMatch;
     private Integer totalServiceDuration;
+
+    // Raw JSON string fields for MyBatis mapping (DB VARCHAR → Java List)
+    private String skilledSubjectsRaw;
+    private String freeTimeRaw;
 
     // Recommendation fields
     private Long teacherId;

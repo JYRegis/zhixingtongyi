@@ -95,6 +95,20 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
 
         List<TeacherVO> list = teacherProfileMapper.selectRecommendations();
         for (TeacherVO t : list) {
+            // Parse raw DB JSON strings into typed List fields
+            // (MyBatis cannot auto-convert VARCHAR to List, so fields are null; raw fields have the values)
+            if (t.getSkilledSubjects() == null && t.getSkilledSubjectsRaw() != null) {
+                try {
+                    t.setSkilledSubjects(objectMapper.readValue(t.getSkilledSubjectsRaw(),
+                            new TypeReference<List<Object>>() {}));
+                } catch (Exception e) {
+                    t.setSkilledSubjects(List.of());
+                }
+            }
+            if (t.getFreeTime() == null && t.getFreeTimeRaw() != null) {
+                t.setFreeTime(parseFreeTime(t.getFreeTimeRaw()));
+            }
+
             List<String> teacherSubjects = parseJsonListFromObj(t.getSkilledSubjects());
             List<Map<String, Object>> teacherFreeTime = parseFreeTimeFromObj(t.getFreeTime());
 
@@ -311,24 +325,41 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                 && (adminId == null || !userId.equals(adminId))) {
             throw new BusinessException("仅结对双方或对应二级管理员可发起解绑");
         }
-        matchPairMapper.update(
-                null,
-                new LambdaUpdateWrapper<MatchPair>()
-                        .eq(MatchPair::getId, pairId)
-                        .set(MatchPair::getMatchStatus, MatchStatus.UNBIND_CONFIRMING.getCode())
-                        .set(MatchPair::getUnbindRequestBy, userId)
-                        .set(MatchPair::getUnbindRequestTime, LocalDateTime.now())
-                        .set(MatchPair::getStudentUnbindConfirm, 0)
-                        .set(MatchPair::getTeacherUnbindConfirm, 0)
-                        .set(MatchPair::getAdminUnbindConfirm, 0)
-                        .set(MatchPair::getStudentUnbindConfirmTime, null)
-                        .set(MatchPair::getTeacherUnbindConfirmTime, null)
-                        .set(MatchPair::getAdminUnbindConfirmTime, null)
-                        .set(MatchPair::getUnbindRejectBy, null)
-                        .set(MatchPair::getUnbindRejectReason, null)
-                        .set(MatchPair::getUnbindRejectTime, null)
-                        .set(MatchPair::getUnbindAdminId, adminId)
-        );
+        LambdaUpdateWrapper<MatchPair> wrapper = new LambdaUpdateWrapper<MatchPair>()
+                .eq(MatchPair::getId, pairId)
+                .set(MatchPair::getMatchStatus, MatchStatus.UNBIND_CONFIRMING.getCode())
+                .set(MatchPair::getUnbindRequestBy, userId)
+                .set(MatchPair::getUnbindRequestTime, LocalDateTime.now())
+                .set(MatchPair::getUnbindRejectBy, null)
+                .set(MatchPair::getUnbindRejectReason, null)
+                .set(MatchPair::getUnbindRejectTime, null)
+                .set(MatchPair::getUnbindAdminId, adminId);
+
+        // Auto-confirm the initiator
+        if (userId.equals(studentId)) {
+            wrapper.set(MatchPair::getStudentUnbindConfirm, 1)
+                   .set(MatchPair::getStudentUnbindConfirmTime, LocalDateTime.now())
+                   .set(MatchPair::getTeacherUnbindConfirm, 0)
+                   .set(MatchPair::getTeacherUnbindConfirmTime, null)
+                   .set(MatchPair::getAdminUnbindConfirm, 0)
+                   .set(MatchPair::getAdminUnbindConfirmTime, null);
+        } else if (userId.equals(teacherId)) {
+            wrapper.set(MatchPair::getStudentUnbindConfirm, 0)
+                   .set(MatchPair::getStudentUnbindConfirmTime, null)
+                   .set(MatchPair::getTeacherUnbindConfirm, 1)
+                   .set(MatchPair::getTeacherUnbindConfirmTime, LocalDateTime.now())
+                   .set(MatchPair::getAdminUnbindConfirm, 0)
+                   .set(MatchPair::getAdminUnbindConfirmTime, null);
+        } else {
+            wrapper.set(MatchPair::getStudentUnbindConfirm, 0)
+                   .set(MatchPair::getStudentUnbindConfirmTime, null)
+                   .set(MatchPair::getTeacherUnbindConfirm, 0)
+                   .set(MatchPair::getTeacherUnbindConfirmTime, null)
+                   .set(MatchPair::getAdminUnbindConfirm, 1)
+                   .set(MatchPair::getAdminUnbindConfirmTime, LocalDateTime.now());
+        }
+
+        matchPairMapper.update(null, wrapper);
 
         NotificationEvent unbindEvent = new NotificationEvent();
         unbindEvent.setType(NotificationType.UNBIND_APPLY.getCode());
@@ -460,7 +491,11 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         }
         MatchPairVO vo = new MatchPairVO();
         vo.setPairId(pair.getId());
+        vo.setStudentId(pair.getStudentId());
+        vo.setTeacherId(pair.getTeacherId());
         vo.setMatchStatus(pair.getMatchStatus());
+        vo.setUnbindRequestBy(pair.getUnbindRequestBy());
+        vo.setUnbindRequestTime(pair.getUnbindRequestTime());
         vo.setStudentUnbindConfirm(pair.getStudentUnbindConfirm());
         vo.setTeacherUnbindConfirm(pair.getTeacherUnbindConfirm());
         vo.setAdminUnbindConfirm(pair.getAdminUnbindConfirm());
@@ -470,6 +505,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         vo.setUnbindRejectBy(pair.getUnbindRejectBy());
         vo.setUnbindRejectReason(pair.getUnbindRejectReason());
         vo.setUnbindRejectTime(pair.getUnbindRejectTime());
+        fillPairNames(vo);
         return vo;
     }
 
@@ -489,15 +525,26 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         }
         MatchPairVO vo = new MatchPairVO();
         vo.setId(pair.getId());
+        vo.setPairId(pair.getId());
         vo.setStudentId(pair.getStudentId());
         vo.setTeacherId(pair.getTeacherId());
         vo.setMatchStatus(pair.getMatchStatus());
         vo.setApplyTime(pair.getApplyTime());
         vo.setAcceptTime(pair.getAcceptTime());
         vo.setRejectReason(pair.getRejectReason());
+        vo.setUnbindRequestBy(pair.getUnbindRequestBy());
         vo.setUnbindRequestTime(pair.getUnbindRequestTime());
         vo.setUnbindAcceptTime(pair.getUnbindAcceptTime());
         vo.setUnbindRejectReason(pair.getUnbindRejectReason());
+        vo.setStudentUnbindConfirm(pair.getStudentUnbindConfirm());
+        vo.setTeacherUnbindConfirm(pair.getTeacherUnbindConfirm());
+        vo.setAdminUnbindConfirm(pair.getAdminUnbindConfirm());
+        vo.setStudentUnbindConfirmTime(pair.getStudentUnbindConfirmTime());
+        vo.setTeacherUnbindConfirmTime(pair.getTeacherUnbindConfirmTime());
+        vo.setAdminUnbindConfirmTime(pair.getAdminUnbindConfirmTime());
+        vo.setUnbindRejectBy(pair.getUnbindRejectBy());
+        vo.setUnbindRejectTime(pair.getUnbindRejectTime());
+        fillPairNames(vo);
         return vo;
     }
 

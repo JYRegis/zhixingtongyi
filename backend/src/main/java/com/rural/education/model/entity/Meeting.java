@@ -15,6 +15,7 @@ public class Meeting {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String meetingLink;
+    private String meetingPassword;
     private Long createdBy;
     private Integer status;
 

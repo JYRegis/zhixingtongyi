@@ -11,6 +11,7 @@
         m.start_time AS startTime,
         m.end_time AS endTime,
         m.meeting_link AS meetingLink,
+        m.meeting_password AS meetingPassword,
         m.created_by AS createdBy,
         m.status,
         m.update_time AS updateTime
