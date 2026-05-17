@@ -53,8 +53,12 @@
         FROM volunteer_record vr
         LEFT JOIN teacher_profile t ON vr.teacher_id = t.user_id
         LEFT JOIN student_profile s ON vr.student_id = s.user_id
-        WHERE s.school_id = #{schoolId}
-          AND vr.status = 1
+        <where>
+            <if test="schoolId != null">
+                AND s.school_id = #{schoolId}
+            </if>
+            AND vr.status = 1
+        </where>
         ORDER BY vr.create_time DESC
     </select>
 

@@ -7,7 +7,7 @@
 ### 1.2 核心功能
 - 多角色用户体系：一级管理员、二级管理员（乡村老师）、教师端（城市志愿者）、学员端（乡村学生）
 - 智能匹配与双向互选：基于算法的志愿者推荐系统
-- 即时通讯与视频会议：内置聊天功能 + 外部腾讯会议集成
+- 即时通讯与视频会议：内置聊天功能（WebSocket 实时 + REST 轮询）+ 外部腾讯会议集成
 - 消息通知系统：微信订阅消息实时提醒
 - 数据统计与分析：管理员可视化数据看板
 
@@ -22,6 +22,7 @@
 | 数据库 | MySQL | 8.0 | 关系型数据库 |
 | 缓存 | Redis | 7.x | 会话缓存、数据缓存 |
 | 消息队列 | RabbitMQ | 3.x | 异步消息处理（可选） |
+| WebSocket | STOMP over SockJS | - | 聊天实时消息推送 |
 | API文档 | SpringDoc OpenAPI 3 | 2.3.x | 生成在线API文档 |
 | 构建工具 | Maven | 3.8+ | 项目管理与构建 |
 | 容器化 | Docker | - | 应用容器化 |
@@ -105,9 +106,10 @@
 ## 4. 安全设计
 
 ### 4.1 认证机制
-- **微信登录**：小程序获取code，后端调用微信API换取openid
-- **JWT令牌**：登录成功后生成JWT，包含用户ID、角色等信息
-- **Token刷新**：支持refresh token机制，延长会话有效期
+- **微信登录**：小程序获取code，后端调用微信API换取openid；登录时不再覆盖已有用户的 username/avatar/phone
+- **JWT令牌**：登录成功后生成JWT（HS256），包含 `userId`、`role`，默认 24h 过期
+- **Token刷新**：`POST /auth/refresh` 黑名单旧 token 并签发新 token，无需重新认证
+- **资料更新**：`PUT /auth/me` 仅更新当前登录用户（从 JWT 取 userId），不允许修改 phone/wechatOpenid
 
 ### 4.2 权限控制
 - **角色权限**：基于RBAC模型，四类角色各有不同权限
@@ -116,6 +118,7 @@
   - `teacher_audit`：志愿者注册审核（跨区域，不受学校/地区边界限制）
 - **数据权限**：二级管理员只能访问其管辖区域的数据
 - **方法级权限**：使用`@PreAuthorize`注解控制方法访问
+- **L1 超级管理员**：在 `requireL2WithPermission` 等权限检查中自动放行，可访问所有数据
 - **API级权限**：通过拦截器校验接口访问权限
 
 ### 4.3 数据安全
@@ -128,6 +131,7 @@
 
 ### 5.1 用户管理模块
 - **多角色用户体系**：统一用户表+角色扩展表设计
+- **数据模型统一**：`teacher_profile.school_id` 与 `student_profile.school_id` 均为 FK → `school.id`
 - **审核机制**：学生、志愿者均需对应权限的二级管理员审核后激活
 - **代管模式**：二级管理员可代管学生账号
 - **学校与权限治理**：一级管理员负责学校注册，并将已注册用户指定为二级管理员，按需分配学校/区域及`student_manage`、`teacher_audit`权限（可单独授予）
@@ -145,6 +149,7 @@
    - 性格匹配（10%）
 3. 推荐排序：综合得分排序，返回Top N推荐
 4. 双向选择：学生发起申请，志愿者确认
+ **JSON 解析**：`selectRecommendations` SQL 将 `free_time`、`skilled_subjects` 以 raw 字符串别名返回，Service 层用 Jackson 解析为 `List<Map>` / `List<Object>` 类型
 ```
 
 ### 5.3 消息通知模块
@@ -153,11 +158,14 @@
 - **异步处理**：使用事件驱动模式，异步发送消息
 
 ### 5.4 聊天模块
-- **实时通信**：WebSocket实现实时消息推送
-- **消息存储**：所有聊天记录持久化存储
-- **离线消息**：支持离线消息拉取
-- **管理员参与机制**：学生绑定管理员默认在会话中；同校具备`student_manage`权限的其他二级管理员可加入会话
-- **发送防越权**：发送消息时需校验发送者在会话参与者表中；数据库通过复合外键约束`(match_pair_id, sender_id)`确保库层防护
+- **双通道设计**：WebSocket（STOMP over SockJS，端点 `/ws`）用于实时推送 + REST 接口用于历史消息拉取
+- **WebSocket 鉴权**：`WebSocketAuthInterceptor` 在 STOMP CONNECT 帧校验 `Authorization: Bearer <token>`
+- **在线追踪**：`UserSessionRegistry` 监听 `SessionConnectedEvent` / `SessionDisconnectEvent`，维护 `userId → sessionIds` 映射
+- **消息路由**：客户端发送到 `/app/chat.send` → 服务端持久化后推送到 `/user/{userId}/queue/chat`（仅在线参与者）
+- **消息存储**：所有聊天记录持久化到 `chat_message` 表
+- **离线消息**：离线用户通过 REST `GET /chat/messages` 轮询拉取
+- **管理员参与机制**：学生绑定管理员默认在会话中；同校具备`student_manage`权限的其他二级管理员可加入会话；**L1 管理员可直接查看/发送所有会话消息，无需加入 participant**
+- **发送防越权**：非 L1 用户发送消息时需校验在 `chat_participant` 表中；数据库通过复合外键约束`(match_pair_id, sender_id)`确保库层防护
 
 ### 5.5 志愿时长与纪要管理模块（新增）
 - **工作流引擎**：实现严格的状态单向流转：`Draft -> 待学生确认-> 待管理员审核-> 审核通过/ 审核拒绝`。
@@ -168,7 +176,13 @@
   - 学生确认后 -> 触发通知提醒二级管理员审核。
   - 管理员审核完毕 -> 通知发送给相关教师。
 
-### 5.6 三向解绑模块（新增）
+### 5.6 定时任务模块（已启用）
+- **`@EnableScheduling` 已激活**，三个定时任务均有实际逻辑：
+  - `MeetingReminderScheduler`：每 5 分钟扫描即将开始（15 分钟内）的会议，通过 RabbitMQ 异步推送提醒通知
+  - `MatchRecommendationScheduler`：每小时清理 Redis 中过期的推荐缓存 key（`match:recommendations:student:*`）
+  - `DataCleanupScheduler`：每天凌晨 3 点清理 30 天前的过期聊天参与者（设置 `leftTime`）
+
+### 5.7 三向解绑模块
 - **发起规则**：学生、志愿者、对应二级管理员任一方均可发起解绑。
 - **确认规则**：发起后进入`解绑确认中`状态，学生、志愿者、二级管理员三方均确认才可解绑成功。
 - **进度可视化**：提供三方确认进度查询，显示各方确认状态与时间。

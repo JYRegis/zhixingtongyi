@@ -26,6 +26,9 @@ public class MatchPairVO {
     private LocalDateTime studentUnbindConfirmTime;
     private LocalDateTime teacherUnbindConfirmTime;
     private LocalDateTime adminUnbindConfirmTime;
+    private Long unbindRequestBy;
     private Long unbindRejectBy;
     private LocalDateTime unbindRejectTime;
+    private String studentFreeTime;
+    private String studentGrade;
 }

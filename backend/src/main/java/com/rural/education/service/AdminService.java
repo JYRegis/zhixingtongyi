@@ -38,7 +38,7 @@ public interface AdminService extends IService<User> {
 
     StudentVO studentProfileDetail(Long operatorId, Long studentId);
 
-    PageResponse<TeacherVO> pendingTeachers(Long operatorId, Long page, Long size);
+    PageResponse<TeacherVO> pendingTeachers(Long operatorId, Long page, Long size, Long schoolId);
 
     TeacherVO teacherProfileDetail(Long operatorId, Long teacherId);
 

@@ -87,7 +87,7 @@ CREATE TABLE `teacher_profile` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `user_id` bigint NOT NULL COMMENT '关联用户ID',
   `real_name` varchar(64) NOT NULL COMMENT '真实姓名',
-  `school` varchar(128) NOT NULL COMMENT '所在学校（志愿者所属学校）',
+  `school_id` bigint DEFAULT NULL COMMENT '所在学校ID（关联school表）',
   `grade` varchar(32) DEFAULT NULL COMMENT '年级（大学生/高中生）',
   `free_time` json NOT NULL COMMENT '空闲时间段（JSON数组）',
   `skilled_subjects` json NOT NULL COMMENT '擅长科目（JSON数组）',
@@ -104,7 +104,9 @@ CREATE TABLE `teacher_profile` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_user_id` (`user_id`),
   KEY `idx_certification_status` (`certification_status`),
-  CONSTRAINT `fk_teacher_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+  KEY `idx_teacher_school_id` (`school_id`),
+  CONSTRAINT `fk_teacher_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `fk_teacher_school_id` FOREIGN KEY (`school_id`) REFERENCES `school` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='志愿者（教师）信息表';
 
 -- ----------------------------
@@ -215,6 +217,7 @@ CREATE TABLE `meeting` (
   `start_time` datetime NOT NULL COMMENT '会议开始时间',
   `end_time` datetime NOT NULL COMMENT '会议结束时间',
   `meeting_link` varchar(512) NOT NULL COMMENT '会议链接',
+  `meeting_password` varchar(64) DEFAULT NULL COMMENT '会议密码（可选）',
   `created_by` bigint NOT NULL COMMENT '创建人（管理员用户ID）',
   `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态：0-未开始，1-进行中，2-已结束，3-已取消',
   `record_url` varchar(512) DEFAULT NULL COMMENT '录制文件URL',

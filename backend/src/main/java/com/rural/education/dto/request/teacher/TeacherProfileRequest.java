@@ -2,6 +2,7 @@ package com.rural.education.dto.request.teacher;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
@@ -11,8 +12,8 @@ import java.util.Map;
 public class TeacherProfileRequest {
     @NotBlank(message = "realName 不能为空")
     private String realName;
-    @NotBlank(message = "school 不能为空")
-    private String school;
+    @NotNull(message = "schoolId 不能为空")
+    private Long schoolId;
     @NotBlank(message = "grade 不能为空")
     private String grade;
     @NotEmpty(message = "freeTime 不能为空")

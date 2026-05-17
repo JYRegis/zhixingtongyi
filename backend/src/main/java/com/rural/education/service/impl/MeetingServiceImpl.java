@@ -57,6 +57,7 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
         meeting.setStartTime(LocalDateTime.parse(request.getStartTime().replace(" ", "T")));
         meeting.setEndTime(LocalDateTime.parse(request.getEndTime().replace(" ", "T")));
         meeting.setMeetingLink(request.getMeetingLink());
+        meeting.setMeetingPassword(request.getMeetingPassword());
         meeting.setCreatedBy(userId);
         meeting.setStatus(MeetingStatus.NOT_STARTED.getCode());
         meetingMapper.insert(meeting);

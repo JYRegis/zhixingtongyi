@@ -36,6 +36,8 @@ src/main/java/com/rural/education/
 │   │   ├── AdminTeacherController.java         # 志愿者审核与管理
 │   │   ├── AdminStudentController.java         # 学生审核与管理
 │   │   ├── AdminRecordController.java          # 管理员审核时长记录
+│   │   ├── AdminChatController.java            # 管理员聊天会话列表
+│   │   ├── AdminProfileController.java         # 管理员个人资料
 │   │   └── DashboardController.java            # 数据仪表盘
 │   ├── teacher/                                # 志愿者功能
 │   │   ├── TeacherProfileController.java       # 资料管理
@@ -57,6 +59,13 @@ src/main/java/com/rural/education/
 │   │   └── ChatController.java
 │   └── volunteer/                              # 志愿时长记录
 │       └── VolunteerRecordController.java      # 记录查询
+│   ├── school/                                  # 学校公开查询
+│   │   └── SchoolController.java
+├── websocket/                                   # WebSocket 实时通信
+│   ├── WebSocketConfig.java
+│   ├── WebSocketAuthInterceptor.java
+│   ├── ChatStompController.java
+│   └── UserSessionRegistry.java
 ├── service/                                    # 服务层
 │   ├── impl/                                   # 服务实现
 │   │   ├── AuthServiceImpl.java
@@ -72,6 +81,7 @@ src/main/java/com/rural/education/
 │   │   ├── AlgorithmServiceImpl.java
 │   │   ├── VolunteerRecordServiceImpl.java
 │   │   ├── DashboardServiceImpl.java
+│   │   ├── SchoolServiceImpl.java
 │   │   └── NotificationEventListenerImpl.java  # 事件监听与通知分发
 │   ├── AuthService.java
 │   ├── AdminService.java
@@ -86,6 +96,7 @@ src/main/java/com/rural/education/
 │   ├── AlgorithmService.java
 │   ├── VolunteerRecordService.java
 │   ├── DashboardService.java
+│   ├── SchoolService.java
 │   └── NotificationEventListener.java          
 ├── model/                                      # 数据模型
 │   ├── mapper/                                 # MyBatis-Plus Mapper 接口
@@ -123,7 +134,8 @@ src/main/java/com/rural/education/
 │   │   ├── auth/
 │   │   │   ├── LoginRequest.java
 │   │   │   ├── WxLoginRequest.java
-│   │   │   └── RoleApplyRequest.java
+│   │   │   ├── RoleApplyRequest.java
+│   │   │   └── UpdateProfileRequest.java
 │   │   ├── admin/
 │   │   │   ├── SchoolRequest.java
 │   │   │   ├── SecondaryAdminRequest.java
@@ -154,7 +166,9 @@ src/main/java/com/rural/education/
 │   │   │   └── UpdateStatusRequest.java
 │   │   └── chat/
 │   │       ├── SendMessageRequest.java
-│   │       └── AddParticipantRequest.java
+│   │       ├── AddParticipantRequest.java
+│   │       ├── MarkReadRequest.java
+│   │       └── JoinChatRequest.java
 │   └── response/                               # 响应 DTO
 │       ├── auth/
 │       │   └── LoginResponse.java
@@ -169,6 +183,9 @@ src/main/java/com/rural/education/
 │   ├── MatchPairVO.java
 │   ├── MeetingVO.java
 │   ├── ChatMessageVO.java
+│   ├── ChatParticipantVO.java
+│   ├── ChatConversationVO.java
+│   ├── AdminProfileVO.java
 │   └── VolunteerRecordVO.java
 ├── enums/                                      # 枚举类
 │   ├── UserRole.java                           # 0-L1_ADMIN, 1-L2_ADMIN, 2-TEACHER, 3-STUDENT

@@ -38,8 +38,11 @@ POST /auth/wx-login
     "username": "用户名",
     "role": 0,
     "avatar": "头像URL",
-    "hasProfile": false, // 是否已完善个人信息
-    "roleApplied": false // 是否已申请学生/志愿者角色
+    "phone": "13800138000",
+    "hasProfile": false,
+    "roleApplied": false,
+    "auditStatus": 0,
+    "permissions": ["student_manage", "teacher_audit"]
   }
 }
 ```
@@ -47,6 +50,7 @@ POST /auth/wx-login
 说明：
 - 当前登录链路使用 `wx.login` 获取身份，不依赖微信手机号授权能力。
 - 首次登录自动创建基础用户账号（未绑定学生/志愿者扩展资料），后续通过角色申请接口进入审核流。
+- **重新登录不会覆盖已有用户的 username、avatar、phone**；资料更新请使用 `PUT /auth/me`。
 
 ### 1.2 手机号注册/登录（手动输入）
 ```
@@ -97,6 +101,19 @@ POST /auth/logout
 ```
 POST /auth/refresh
 ```
+
+### 1.6 更新个人资料
+```
+PUT /auth/me
+```
+请求参数：
+```json
+{
+  "username": "新昵称",
+  "avatar": "https://example.com/avatar.png"
+}
+```
+说明：仅更新当前登录用户（userId 从 JWT token 获取），不允许修改 phone 和 wechatOpenid。
 
 ## 2. 用户管理模块
 
@@ -169,7 +186,7 @@ POST /teacher/profile
 ```json
 {
   "realName": "真实姓名",
-  "school": "北京大学",
+  "schoolId": 1,
   "grade": "大一",
   "freeTime": [
     {"dayOfWeek": 1, "start": "19:00", "end": "21:00"},
@@ -191,7 +208,13 @@ GET /teacher/profile
 PUT /teacher/profile
 ```
 
-#### 2.2.4 管理员审核志愿者
+#### 2.2.4 待审核志愿者列表
+```
+GET /admin/teachers/pending
+```
+查询参数：`page`, `size`, `schoolId`（可选，L1 按学校筛选，L2 自动限本校）
+
+#### 2.2.5 管理员审核志愿者
 ```
 PUT /admin/teachers/{teacherId}/audit
 ```
@@ -204,7 +227,7 @@ PUT /admin/teachers/{teacherId}/audit
 权限要求：需具备 `teacher_audit`。
 审核规则：任意具备 `teacher_audit` 权限的二级管理员均可对志愿者申请执行审核通过/拒绝，不要求与学生学校或地区一致。
 
-#### 2.2.5 设置是否持续接受匹配
+#### 2.2.6 设置是否持续接受匹配
 ```
 PUT /teacher/continuous-match
 ```
@@ -294,6 +317,21 @@ GET /admin/students/managed
 POST /admin/students/{studentId}/switch
 ```
 
+### 2.4 学校查询（公开接口）
+
+#### 2.4.1 获取学校列表
+```
+GET /schools
+```
+查询参数：`regionCode`（可选，区域编码）, `keyword`（可选，学校名称关键词）
+说明：**无需登录**，公开访问。
+
+#### 2.4.2 获取学校详情
+```
+GET /schools/{schoolId}
+```
+说明：**无需登录**，公开访问。
+
 ## 3. 匹配结对模块
 
 ### 3.1 获取推荐志愿者列表（为学生端）
@@ -353,21 +391,22 @@ PUT /match/{pairId}/unbind-confirm
 ```
 规则：任意一方发起解绑后，学生、志愿者、对应二级管理员三方都确认才最终解绑。
 状态机规则：
-- 任一方发起后，状态进入 `UNBIND_PENDING`，并重置三方确认位。
+- 任一方发起后，状态进入 `UNBIND_CONFIRMING`。**发起人的确认位自动置 1**（无需再次确认自己的申请），其余两方置 0。
 - 任一方拒绝后，状态进入 `UNBIND_REJECTED`，记录拒绝方、拒绝原因与拒绝时间。
-- 从 `UNBIND_REJECTED` 再次发起解绑时，清理上一次拒绝信息并重新进入 `UNBIND_PENDING`。
+- 从 `UNBIND_REJECTED` 再次发起解绑时，清理上一次拒绝信息并重新进入 `UNBIND_CONFIRMING`，发起人确认位自动置 1。
 - 三方全部同意后，状态进入 `UNBOUND` 并记录 `unbindAcceptTime`。
 
 ### 3.8 查询解绑确认进度
 ```
 GET /match/{pairId}/unbind-progress
 ```
-返回三方当前确认状态与确认时间。
+返回字段：`pairId`、`studentId`、`teacherId`、`studentName`、`teacherName`、`matchStatus`、`unbindRequestBy`、`unbindRequestTime`、三方确认状态与确认时间、拒绝信息。
 
 ### 3.9 获取结对详情
 ```
 GET /match/{pairId}
 ```
+返回字段：`id`、`pairId`、`studentId`、`teacherId`、`studentName`、`teacherName`、`matchStatus`、`applyTime`、`acceptTime`、`rejectReason`、解绑确认进度字段、解绑发起人/时间等。
 
 ## 4. 消息通知模块
 
@@ -416,7 +455,8 @@ POST /meetings
   "topic": "数学辅导课",
   "startTime": "2026-03-27 19:00:00",
   "endTime": "2026-03-27 20:00:00",
-  "meetingLink": "https://meeting.tencent.com/xxx"
+  "meetingLink": "https://meeting.tencent.com/xxx",
+  "meetingPassword": "123456"
 }
 ```
 
@@ -448,24 +488,38 @@ GET /meetings/my
 
 ## 6. 聊天模块
 
-### 6.1 发送消息
+聊天采用 **双通道** 设计：WebSocket 用于实时推送，REST 用于离线/历史数据拉取。
+
+### 6.0 WebSocket 实时通信
+```
+STOMP over SockJS: /ws
+```
+- **鉴权**：CONNECT 帧需携带 `Authorization: Bearer <token>` 头，由 `WebSocketAuthInterceptor` 验证
+- **发送消息**：客户端发送到 `/app/chat.send` → 服务端持久化后推送到 `/user/{userId}/queue/chat`（仅在线参与者）
+- **标记已读**：客户端发送到 `/app/chat.read`
+- **心跳**：客户端发送到 `/app/chat.ping`
+- 离线用户通过下方的 REST 接口轮询拉取消息
+
+### 6.1 发送消息（REST）
 ```
 POST /chat/messages
 ```
 ```json
 {
   "matchPairId": 1,
-  "messageType": "TEXT", // TEXT, IMAGE, VOICE
+  "messageType": "TEXT",
   "content": "你好，今天学习如何？"
 }
 ```
-权限校验：发送者必须存在于 `chat_participant`，且当前未退出会话（`leftTime` 为空）。
+权限校验：发送者必须存在于 `chat_participant` 且未退出会话（`leftTime` 为空）；**L1 管理员不受此限制**。
 
 ### 6.2 获取聊天记录
 ```
 GET /chat/messages
 ```
-查询参数：`matchPairId`, `lastMessageId`（用于分页）, `limit`（默认50）
+查询参数：`matchPairId`（必填）, `lastMessageId`, `limit`（默认 50，最大 200）
+响应：消息列表，每条含 `senderId`、`senderName`、`messageType`、`content`、`sendTime`、`readTime`
+权限：L1 管理员可查看所有会话消息；其他角色必须是会话参与者
 
 ### 6.3 标记消息已读
 ```
@@ -492,6 +546,14 @@ DELETE /chat/pairs/{pairId}/participants/{userId}
 ```
 GET /chat/pairs/{pairId}/participants
 ```
+返回：`ChatParticipantVO` 列表，含 `userId`、`realName`、`participantRole`、`joinedTime` 等
+
+### 6.7 管理员查看所有会话
+```
+GET /admin/chat/conversations
+```
+返回：按 `acceptTime` 倒序的会话列表，含 `matchPairId`、学生/教师姓名、学校名、最后消息、未读计数（相对当前管理员）
+权限：L1 管理员返回所有已结对会话；L2 管理员仅返回本校学生关联的会话
 
 ## 7. 算法配置模块（管理员）
 
@@ -594,7 +656,9 @@ GET /volunteer-records
 
 ## 权限说明
 - 所有API需要根据用户角色进行权限校验
-- 二级管理员在学生侧只能操作其管辖区域的数据
+- 二级管理员在学生侧只能操作其管辖学校的数据（`student_manage` 权限）
 - 志愿者审核（`teacher_audit`）为跨区域能力，可由任意具备权限的二级管理员执行
 - 志愿者和学生只能操作自己的数据
-- 一级管理员拥有所有权限
+- **一级管理员（L1）拥有所有权限**，包括查看所有聊天、所有待审记录、所有学校等；`requireL2WithPermission` 中 L1 自动放行
+- **学校查询接口（`GET /schools`）无需登录**，公开访问
+- **WebSocket 端点（`/ws/**`）由 STOMP CONNECT 层面的 JWT 拦截器鉴权**

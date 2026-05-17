@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -180,7 +181,8 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         }
 
         Page<VolunteerRecordVO> mpPage = new Page<>(current, pageSize);
-        volunteerRecordMapper.selectPendingBySchool(mpPage, filterSchoolId);
+        List<VolunteerRecordVO> records = volunteerRecordMapper.selectPendingBySchool(mpPage, filterSchoolId);
+        mpPage.setRecords(records);
         return mpPage;
     }
 
@@ -274,7 +276,8 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         long current = page == null || page < 1 ? 1 : page;
         long pageSize = size == null || size < 1 ? 10 : Math.min(size, 100);
         Page<VolunteerRecordVO> mpPage = new Page<>(current, pageSize);
-        volunteerRecordMapper.selectRecords(mpPage, filterTeacherId, filterStudentId, status, filterSchoolId);
+        List<VolunteerRecordVO> records = volunteerRecordMapper.selectRecords(mpPage, filterTeacherId, filterStudentId, status, filterSchoolId);
+        mpPage.setRecords(records);
         return mpPage;
     }
 

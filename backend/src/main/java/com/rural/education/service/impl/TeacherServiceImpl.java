@@ -44,7 +44,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
         TeacherProfile profile = new TeacherProfile();
         profile.setUserId(userId);
         profile.setRealName(request.getRealName());
-        profile.setSchool(request.getSchool());
+        profile.setSchoolId(request.getSchoolId());
         profile.setGrade(request.getGrade());
         profile.setFreeTime(toJson(request.getFreeTime()));
         profile.setSkilledSubjects(toJson(request.getSkilledSubjects()));
@@ -65,7 +65,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
                 new LambdaUpdateWrapper<TeacherProfile>()
                         .eq(TeacherProfile::getUserId, userId)
                         .set(TeacherProfile::getRealName, request.getRealName())
-                        .set(TeacherProfile::getSchool, request.getSchool())
+                        .set(TeacherProfile::getSchoolId, request.getSchoolId())
                         .set(TeacherProfile::getGrade, request.getGrade())
                         .set(TeacherProfile::getFreeTime, toJson(request.getFreeTime()))
                         .set(TeacherProfile::getSkilledSubjects, toJson(request.getSkilledSubjects()))
@@ -88,7 +88,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
         TeacherVO vo = new TeacherVO();
         vo.setUserId(row.getUserId());
         vo.setRealName(row.getRealName());
-        vo.setSchool(row.getSchool());
+        vo.setSchoolId(row.getSchoolId());
         vo.setGrade(row.getGrade());
         vo.setPersonalSkills(row.getPersonalSkills());
         vo.setPersonalityDesc(row.getPersonalityDesc());
