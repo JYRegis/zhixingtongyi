@@ -68,7 +68,7 @@ Page({
     activeRejectId: null
   },
   onLoad() {
-    this._pending = SEED.map((r) => ({ ...r }));
+    this._pending = [];
   },
   async onShow() {
     checkOnboardingOrRedirect("pages/match/requests/index");
@@ -91,19 +91,44 @@ Page({
         const remote = await matchApi.pendingApplications();
         this._pending = (Array.isArray(remote) ? remote : []).map((row) => ({
           id: row.id,
-          studentName: row.studentName || `学员${row.studentId || ""}`,
+          studentName: row.studentName || "学员",
           volunteerName: "",
-          timeRaw: row.timeRaw || "",
+          // 兼容后端未来补字段；目前 SQL 不返回，会拿到空串显示 "—"（已记入 gap）
+          timeRaw: row.studentAvailableTime || row.timeRaw || "",
           appliedAt: row.applyTime
         }));
       } catch (e) {
         if (console && console.warn) {
-          console.warn("[match-requests] getPendingApplications fallback to mock", e);
+          console.warn("[match-requests] getPendingApplications fallback", e);
         }
+      }
+      if (!this._pending) {
+        this._pending = [];
+      }
+    } else if (r === "student") {
+      // 学生侧：展示「我已申请、还在等老师处理」的结对（match_pair.status=0）。
+      try {
+        const remote = await matchApi.myPairs(0);
+        const arr = Array.isArray(remote) ? remote : (remote && remote.records) || (remote && remote.list) || [];
+        // 学员侧兜底：自己的「希望上课时间」从本地 profile 取（自己填的，缓存里有）
+        const u0 = (getApp().globalData && getApp().globalData.userInfo) || {};
+        const myTime = (u0 && u0.studentAvailableTime) || "";
+        this._pending = arr.map((row) => ({
+          id: row.id || row.pairId,
+          studentName: "",
+          volunteerName: row.teacherName || "志愿者",
+          timeRaw: myTime,
+          appliedAt: row.applyTime || row.createTime
+        }));
+      } catch (e) {
+        if (console && console.warn) {
+          console.warn("[match-requests] myPairs(0) failed", e);
+        }
+        this._pending = [];
       }
     }
     if (!this._pending) {
-      this._pending = SEED.map((x) => ({ ...x }));
+      this._pending = [];
     }
     const sorted = this._pending
       .slice()
@@ -119,7 +144,7 @@ Page({
     }
     const id = e.currentTarget.dataset.id;
     if (!this._pending) {
-      this._pending = SEED.map((r) => ({ ...r }));
+      this._pending = [];
     }
     try {
       await matchApi.process(id, { action: "accept", reason: "" });
@@ -172,7 +197,7 @@ Page({
     try {
       await matchApi.process(activeRejectId, { action: "reject", reason: rejectReason.trim() });
       if (!this._pending) {
-        this._pending = SEED.map((r) => ({ ...r }));
+        this._pending = [];
       }
       this._pending = this._pending.filter((item) => item.id !== activeRejectId);
       wx.showToast({

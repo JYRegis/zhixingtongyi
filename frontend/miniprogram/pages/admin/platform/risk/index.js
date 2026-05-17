@@ -1,44 +1,26 @@
-const { platformForceUnbind } = require("../../../../utils/pairingStore");
 const { mergeFromStorageIntoApp } = require("../../../../utils/userProfileStore");
 const { checkOnboardingOrRedirect } = require("../../../../utils/onboardingGuard");
+const { dashboardApi, matchApi } = require("../../../../utils/api");
 
 const PAGE_PATH = "pages/admin/platform/risk/index";
 
-const MOCK_RISKS = [
-  { reason: "连续 14 天无沟通记录", risk: "中" },
-  { reason: "多次会议缺席", risk: "高" },
-  { reason: "学员周活跃低于阈值", risk: "低" },
-  { reason: "家长投诉沟通延迟", risk: "中" },
-  { reason: "志愿者连续两周未发周报", risk: "中" },
-  { reason: "会议设备异常 3 次", risk: "高" },
-  { reason: "结对方时区/作息冲突", risk: "低" },
-  { reason: "受援方反馈课堂纪律问题", risk: "高" },
-  { reason: "解绑在途，结对冻结", risk: "中" },
-  { reason: "志愿者临时支教点变更", risk: "低" }
-];
-
 Page({
-  data: {
-    exceptionPairs: MOCK_RISKS
+  data: { exceptionPairs: [], loading: false, riskSummary: [] },
+  onShow() { checkOnboardingOrRedirect(PAGE_PATH); mergeFromStorageIntoApp(); this.load(); },
+  load() {
+    const token = (getApp().globalData && getApp().globalData.token) || wx.getStorageSync("token") || "";
+    if (!token) { this.setData({ exceptionPairs: [], riskSummary: [] }); return; }
+    this.setData({ loading: true });
+    Promise.all([matchApi.myPairs(1).catch(() => []), dashboardApi.overview().catch(() => null), dashboardApi.matchSuccessRate({}).catch(() => null)]).then(([pairs, overview, matchRate]) => {
+      const list = [];
+      const count = Array.isArray(pairs) ? pairs.length : 0;
+      if (count > 5) list.push({ reason: "结对会话较多", risk: "中" });
+      if (overview && overview.pendingAlerts != null && Number(overview.pendingAlerts) > 10) list.push({ reason: "平台待处理告警较多", risk: "高" });
+      if (matchRate && Array.isArray(matchRate) && matchRate.length > 0) list.push({ reason: "匹配成功率可继续优化", risk: "低" });
+      if (!list.length) list.push({ reason: "暂无可计算风险，等待后端风险模型", risk: "低" });
+      this.setData({ exceptionPairs: list, riskSummary: [{ label: "结对数", value: count }, { label: "告警数", value: overview && overview.pendingAlerts != null ? overview.pendingAlerts : 0 }], loading: false });
+    }).catch(() => this.setData({ loading: false, exceptionPairs: [], riskSummary: [] }));
   },
-  onShow() {
-    checkOnboardingOrRedirect(PAGE_PATH);
-    mergeFromStorageIntoApp();
-  },
-  onPullDownRefresh() {
-    this.onShow();
-    wx.stopPullDownRefresh();
-  },
-  onForceUnbind() {
-    wx.showModal({
-      title: "平台处理",
-      content: "对当前示警做「强制解绑」类处理（演示），将不经过三向确认。是否继续？",
-      success: (r) => {
-        if (r.confirm) {
-          platformForceUnbind();
-          wx.showToast({ title: "已处理", icon: "success" });
-        }
-      }
-    });
-  }
+  onPullDownRefresh() { this.load(); wx.stopPullDownRefresh(); },
+  onForceUnbind() { wx.showToast({ title: "请通过结对解绑接口处理", icon: "none" }); }
 });

@@ -1,4 +1,4 @@
-const { getAllPendingForUI, resolveApplication } = require("../../../../utils/onboardingStore");
+const { resolveApplication } = require("../../../../utils/onboardingStore");
 const { mapApplicationRow, ROLE_TITLES } = require("../../../../utils/platformPendingMap");
 const { mergeFromStorageIntoApp } = require("../../../../utils/userProfileStore");
 const { checkOnboardingOrRedirect } = require("../../../../utils/onboardingGuard");
@@ -24,14 +24,17 @@ function pageRecords(payload) {
 }
 
 function mapRemoteUser(row, role) {
-  const name = row.username || row.phone || ("用户 " + row.id);
-  return mapApplicationRow({
-    id: row.id,
-    applicantId: row.id,
+  const name = row.realName || row.real_name || row.username || row.phone || ("用户 " + (row.userId || row.user_id || row.id));
+  const schoolName = row.schoolName || row.school_name || (row.school != null ? String(row.school) : "—");
+  const mapped = mapApplicationRow({
+    id: row.userId || row.user_id || row.id,
+    applicantId: row.userId || row.user_id || row.id,
     role,
-    schoolName: "—",
+    schoolName: schoolName,
     extra: { name }
   });
+  mapped.name = name;
+  return mapped;
 }
 
 const L2_PICKER_INIT = {
@@ -80,20 +83,27 @@ Page({
     const u = app.globalData.userInfo || {};
     const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
     if (token && (this._role === "student" || this._role === "teacher")) {
-      adminApi
-        .users({ role: ROLE_CODE[this._role], page: 1, size: 50 })
+      const api = this._role === "student" ? adminApi.pendingStudents : adminApi.pendingTeachers;
+      api({ page: 1, size: 50 })
         .then((res) => {
-          this.setData({ pendingList: pageRecords(res).map((row) => mapRemoteUser(row, this._role)), _remote: true });
+          const records = pageRecords(res);
+          if (records.length > 0) {
+            this.setData({ pendingList: records.map((row) => mapRemoteUser(row, this._role)), _remote: true });
+          } else {
+            this.setData({ pendingList: [], _remote: true });
+          }
         })
         .catch(() => {
-          const pending = (getAllPendingForUI("admin_level_1", u.phone) || [])
-            .filter((a) => a.role === this._role)
-            .map(mapApplicationRow);
-          this.setData({ pendingList: pending, _remote: false });
+          this._fallbackToUsers();
         });
       return;
     }
-    const pending = (getAllPendingForUI("admin_level_1", u.phone) || [])
+    if (token && (this._role === "admin_level_2" || this._role === "admin_level_1")) {
+      // 管理员待审：用 users 接口按角色查询
+      this._fallbackToUsers();
+      return;
+    }
+    const pending = (this._getFallbackPending(u.phone) || [])
       .filter((a) => a.role === this._role)
       .map(mapApplicationRow);
     this.setData({ pendingList: pending, _remote: false });
@@ -212,6 +222,26 @@ Page({
       return;
     }
     wx.navigateTo({ url: "/pages/common/review-submission-detail/index?type=onboarding&id=" + encodeURIComponent(String(id)) });
+  },
+  _fallbackToUsers() {
+    const roleCode = ROLE_CODE[this._role];
+    adminApi.users({ role: roleCode, page: 1, size: 50 })
+      .then((res) => {
+        const records = pageRecords(res);
+        this.setData({ pendingList: records.map((row) => mapRemoteUser(row, this._role)), _remote: true });
+      })
+      .catch(() => {
+        this.setData({ pendingList: [], _remote: false });
+      });
+  },
+  _getFallbackPending(phone) {
+    const app = getApp();
+    const u = app.globalData.userInfo || {};
+    const cache = this._fallbackPendingCache || [];
+    const list = cache.length
+      ? cache
+      : (require("../../../../utils/onboardingStore").getAllPendingForUI("admin_level_1", phone) || []);
+    return list;
   },
   _resolve(id, ok, note) {
     if (this.data._remote && (this._role === "student" || this._role === "teacher")) {

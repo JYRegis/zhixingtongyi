@@ -1,4 +1,7 @@
 {
   "navigationBarTitleText": "区域管理",
-  "enablePullDownRefresh": true
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "custom-tab-bar": "/custom-tab-bar/index"
+  }
 }

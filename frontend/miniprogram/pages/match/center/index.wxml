@@ -1,16 +1,43 @@
 <view class="page-shell {{_roleThemeClass}}">
   <view class="container match-page">
     <view class="page-hero">
-      <view class="page-hero-eyebrow">SMART MATCH</view>
       <view class="page-hero-title">{{heroTitle}}</view>
-      <view class="page-hero-desc">基于学科、时间与陪伴偏好，推荐更合适的支教结对</view>
     </view>
 
-    <view wx:if="{{(canPairTodo || canUnbind)}}" class="card match-filter-card">
+    <view wx:if="{{(canPairTodo || canUnbind) && role !== 'teacher'}}" class="card match-filter-card">
       <view class="section-title">操作</view>
       <view class="actions">
         <button wx:if="{{canPairTodo}}" class="btn-secondary" bindtap="toRequests">结对待办</button>
         <button wx:if="{{canUnbind}}" class="btn-secondary" bindtap="toUnbind">解绑申请</button>
+      </view>
+    </view>
+
+    <!-- 志愿者：用工作台风格的两张跳转卡片代替推荐列表 -->
+    <view wx:if="{{role === 'teacher'}}" class="match-volunteer-menu">
+      <view class="card workbench-menu-card card-tier" bindtap="toRequests">
+        <view class="workbench-menu-top">
+          <view class="workbench-menu-icon">📥</view>
+          <view class="workbench-menu-left">
+            <view class="workbench-menu-title">结对待办</view>
+            <view class="workbench-menu-desc">查看并处理学员发来的结对申请</view>
+          </view>
+        </view>
+        <view class="workbench-menu-foot">
+          <view class="workbench-menu-arrow">进入 ›</view>
+        </view>
+      </view>
+
+      <view class="card workbench-menu-card card-tier" bindtap="toUnbind">
+        <view class="workbench-menu-top">
+          <view class="workbench-menu-icon">🔗</view>
+          <view class="workbench-menu-left">
+            <view class="workbench-menu-title">解绑申请</view>
+            <view class="workbench-menu-desc">查看当前结对，发起或确认解绑流程</view>
+          </view>
+        </view>
+        <view class="workbench-menu-foot">
+          <view class="workbench-menu-arrow">进入 ›</view>
+        </view>
       </view>
     </view>
 
@@ -24,7 +51,7 @@
       </picker>
     </view>
 
-    <view class="section-header">
+    <view wx:if="{{role !== 'teacher'}}" class="section-header">
       <view class="section-title">推荐</view>
     </view>
 

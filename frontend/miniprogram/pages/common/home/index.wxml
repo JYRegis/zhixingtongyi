@@ -3,14 +3,12 @@
     <view class="home-topbar">
       <view>
         <view class="home-top-title">知行同驿</view>
-        <view class="home-top-desc">云端支教公益平台</view>
       </view>
       <view class="home-top-avatar">知</view>
     </view>
 
     <view class="home-hero-card">
       <view class="home-hero-text">
-        <view class="home-hero-kicker">CLOUD VOLUNTEER CLASSROOM</view>
         <view class="home-title">云端连接，温暖陪伴</view>
         <view class="home-subtitle">连接城市志愿者与乡村孩子，让每一次陪伴都被看见</view>
       </view>
@@ -21,35 +19,32 @@
       </view>
     </view>
 
-    <view class="home-quick-grid">
-      <view class="home-quick-card">
-        <view class="home-quick-icon">🎯</view>
-        <view class="home-quick-title">精准结对</view>
-      </view>
-      <view class="home-quick-card">
-        <view class="home-quick-icon home-quick-icon--green">💬</view>
-        <view class="home-quick-title">安全沟通</view>
-      </view>
-      <view class="home-quick-card">
-        <view class="home-quick-icon home-quick-icon--blue">⏱</view>
-        <view class="home-quick-title">志愿时长</view>
-      </view>
-      <view class="home-quick-card">
-        <view class="home-quick-icon home-quick-icon--purple">📖</view>
-        <view class="home-quick-title">在线课堂</view>
-      </view>
-    </view>
+
 
     <view class="home-panel">
       <view class="home-panel-head">
         <view>
           <view class="home-panel-title">欢迎回来</view>
-          <view class="home-panel-desc">授权登录后进入身份选择，开始你的云支教旅程</view>
         </view>
-        <view class="home-panel-badge">公益</view>
       </view>
-      <button class="home-btn home-btn-primary" bindtap="onGoLogin">微信一键登录</button>
-      <view class="home-login-note">未注册账号将自动创建</view>
+      <button class="home-btn home-btn-primary" bindtap="onWxIdentityLogin" disabled="{{submitting}}">
+        微信一键登录
+      </button>
+
+      <view class="home-input-wrap">
+        <input
+          class="home-input"
+          type="number"
+          maxlength="11"
+          placeholder="请输入 11 位手机号"
+          value="{{manualPhone}}"
+          bindinput="onManualPhoneInput"
+        />
+      </view>
+      <view class="home-dev-tip">手机号登录仅用于开发测试</view>
+      <button class="home-btn home-btn-secondary" bindtap="onManualSubmit" disabled="{{submitting}}">
+        手机号登录
+      </button>
     </view>
   </view>
 </view>

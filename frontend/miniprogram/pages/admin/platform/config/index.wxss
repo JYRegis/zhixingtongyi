@@ -1,0 +1,5 @@
+.empty-state {
+  padding: 32rpx 0;
+  color: #98a2b3;
+  text-align: center;
+}

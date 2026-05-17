@@ -1,48 +1,58 @@
-<view class="page-shell {{_roleThemeClass}}">
-  <view class="container meeting-page">
+<view class="page-shell">
+  <view class="container">
     <view class="page-hero">
-      <view class="page-hero-eyebrow">ONLINE CLASS</view>
       <view class="page-hero-title">会议</view>
-      <view class="meeting-hero-hint">会议在腾讯会议/课堂等外部开好，在此登记时间与链接，便于结对双方查看；不替代腾讯建会。</view>
     </view>
 
-    <view class="meeting-bar" wx:if="{{canCreate}}">
-      <button class="btn-primary meeting-btn-new" size="default" bindtap="onCreate">新建会议</button>
-    </view>
-
-    <view class="card meeting-next-card" wx:if="{{nextMeeting}}">
-      <view class="meeting-next-tag">下一场</view>
-      <view class="meeting-next-title">{{nextMeeting.title}}</view>
-      <view class="desc" wx:if="{{nextMeeting.pairLine}}">{{nextMeeting.pairLine}}</view>
-      <view class="desc">{{nextMeeting.startTime}}</view>
-      <view class="desc" wx:if="{{nextMeeting.roomLink}}">链接：{{nextMeeting.roomLink}}</view>
-      <view class="desc meeting-link-empty" wx:else>尚未填写链接：请在腾讯会议中复制会邀，回到本小程序「新建会议」编辑同一条，或下一场新建时填上</view>
-      <view class="actions">
-        <button class="btn-primary" disabled="{{!nextMeeting.roomLink}}" bindtap="onCopyLink">复制链接</button>
-        <button class="btn-secondary" bindtap="onSubscribeNotice">提醒</button>
-      </view>
-    </view>
-
-    <view class="section-header" wx:if="{{!empty}}">
-      <view class="section-title">历史</view>
-    </view>
-    <view class="card meeting-history-card" wx:if="{{history && history.length}}">
-      <block wx:for="{{history}}" wx:key="id">
-        <view class="list-row">
-          <view>
-            <view class="meeting-history-title">{{item.title}}</view>
-            <view class="desc" wx:if="{{item.pairLine}}">{{item.pairLine}}</view>
-            <view class="desc">{{item.startTime}}</view>
-          </view>
-          <view class="badge badge-success">{{item.status || '已结束'}}</view>
+    <view class="section-title" style="margin: 0 8rpx 12rpx;">即将进行的会议</view>
+    <block wx:if="{{upcomingList.length}}">
+      <view wx:for="{{upcomingList}}" wx:key="id" class="card meeting-upcoming-card">
+        <view class="meeting-upcoming-header">
+          <view class="meeting-upcoming-title">{{item.title}}</view>
+          <view class="meeting-upcoming-status">{{item.status || '待开始'}}</view>
         </view>
-      </block>
-    </view>
+        <view class="list-row">
+          <text>开始时间</text>
+          <text>{{item.startTime}}</text>
+        </view>
+        <view class="list-row" wx:if="{{item.pairLine}}">
+          <text>结对</text>
+          <text>{{item.pairLine}}</text>
+        </view>
+        <view class="list-row" wx:if="{{item.roomLink}}">
+          <text>会议链接 / 会议码</text>
+          <text class="meeting-link-text" selectable user-select>{{item.roomLink}}</text>
+        </view>
+        <view wx:if="{{item.roomLink}}" class="meeting-copy-row">
+          <view class="secondary-btn meeting-copy-btn" data-link="{{item.roomLink}}" bindtap="onCopyLink">复制</view>
+        </view>
+      </view>
+    </block>
+    <view wx:else class="card empty-state" style="margin-bottom: 24rpx;">暂无会议</view>
 
-    <view class="card meeting-empty-card" wx:if="{{empty}}">
-      <view class="meeting-empty-icon">会</view>
-      <view class="empty-title">暂无会议</view>
-      <view class="empty-desc">暂无已登记的会议。可点上方「新建会议」添加。</view>
-    </view>
+    <view class="section-title" style="margin: 0 8rpx 12rpx;">历史会议</view>
+    <block wx:if="{{history.length}}">
+      <view wx:for="{{history}}" wx:key="id" class="card meeting-history-card">
+        <view class="meeting-upcoming-header">
+          <view class="meeting-upcoming-title">{{item.title}}</view>
+          <view class="meeting-history-status">{{item.status}}</view>
+        </view>
+        <view class="list-row">
+          <text>开始时间</text>
+          <text>{{item.startTime}}</text>
+        </view>
+        <view class="list-row" wx:if="{{item.pairLine}}">
+          <text>结对</text>
+          <text>{{item.pairLine}}</text>
+        </view>
+        <view class="list-row" wx:if="{{item.roomLink}}">
+          <text>会议链接 / 会议码</text>
+          <text class="meeting-link-text" selectable user-select>{{item.roomLink}}</text>
+        </view>
+      </view>
+    </block>
+    <view wx:else class="card empty-state" style="margin-bottom: 24rpx;">暂无历史会议</view>
+
+    <button wx:if="{{canCreate}}" class="btn-primary meeting-btn-new" bindtap="onCreate">新建会议</button>
   </view>
 </view>

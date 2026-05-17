@@ -14,10 +14,18 @@ page {
 
 .page-shell {
   min-height: 100vh;
+  /* 为自定义 tabBar (min-height:112rpx + safe-area) 预留底部空间，避免内容被遮挡 */
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
   background:
-    radial-gradient(circle at 16% 0%, rgba(255, 165, 0, 0.1), transparent 28%),
-    radial-gradient(circle at 92% 10%, rgba(255, 140, 0, 0.08), transparent 24%),
+    radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.1), transparent 28%),
+    radial-gradient(circle at 92% 10%, rgba(22, 119, 255, 0.08), transparent 24%),
     linear-gradient(180deg, #ffffff 0%, #f5f7fa 28%, #f5f7fa 100%);
+}
+
+/* 没有自定义 tabBar 的页面（如登录/欢迎/详情等）可加该类去掉底部空隙 */
+.page-shell--no-tabbar {
+  padding-bottom: 0;
 }
 
 .card {
@@ -432,7 +440,7 @@ button::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
   color: var(--ui-primary);
   font-size: 34rpx;
   font-weight: 800;

@@ -2,74 +2,99 @@
   padding-bottom: 48rpx;
 }
 
-.profile-account-card {
-  margin-top: 20rpx;
-  overflow: hidden;
-}
-
-.profile-account-section-title {
-  margin-bottom: 0;
-}
-
-.profile-account-body {
+/* 「登录信息」卡片：头像行采用 field 布局，与基本信息卡片一致 */
+.profile-field--avatar {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 24rpx;
-  margin-top: 8rpx;
-  padding: 0 0 8rpx;
+  justify-content: space-between;
+  gap: 16rpx;
 }
 
-.profile-account-hero {
+.profile-field--avatar .field-label {
   flex-shrink: 0;
 }
 
-.profile-account-avatar {
-  width: 112rpx;
-  height: 112rpx;
-  border-radius: 32rpx;
-  overflow: hidden;
+.profile-account-avatar-wrap {
+  position: relative;
+  width: 96rpx;
+  height: 96rpx;
+  flex-shrink: 0;
 }
 
-.profile-account-avatar--img {
+.profile-account-avatar-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  opacity: 0;
+  line-height: 1;
+}
+
+.profile-account-avatar-btn::after {
+  border: none;
+}
+
+.profile-account-avatar-pic {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
   display: block;
-  width: 112rpx;
-  height: 112rpx;
+  object-fit: cover;
+  border: 2rpx solid #f0f0f0;
+  box-sizing: border-box;
+  background: #fafbfc;
 }
 
-.profile-account-avatar--text {
+.profile-account-avatar-pic--placeholder {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  background: #fafbfc;
+  border: 2rpx dashed #cbd5e1;
+  color: #94a3b8;
+  line-height: 1;
+}
+
+.profile-account-avatar-placeholder-icon {
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.profile-account-avatar-placeholder-text {
+  margin-top: 4rpx;
+  font-size: 18rpx;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.profile-account-avatar-edit-badge {
+  position: absolute;
+  right: -6rpx;
+  bottom: -2rpx;
+  min-width: 52rpx;
+  padding: 0 10rpx;
+  height: 28rpx;
+  line-height: 28rpx;
+  border-radius: 999rpx;
   background: linear-gradient(135deg, var(--ui-primary) 0%, var(--ui-primary-mid) 100%);
   color: #fff;
-  font-size: 44rpx;
-  font-weight: 800;
-  box-shadow: 0 12rpx 28rpx rgba(var(--ui-hero-shadow), 0.18);
-}
-
-.profile-account-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.profile-account-nick {
-  font-size: 32rpx;
-  font-weight: 800;
-  color: #333333;
-  line-height: 1.4;
-}
-
-.profile-account-phone {
-  margin-top: 8rpx;
-  font-size: 26rpx;
-  color: #999999;
-}
-
-.profile-account-actions {
-  margin-top: 20rpx;
-  padding-top: 20rpx;
-  border-top: 1rpx solid #f0f0f0;
+  font-size: 18rpx;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .profile-section-card,
@@ -178,9 +203,9 @@
 }
 
 .profile-chip--on {
-  color: #b65f00;
-  background: #fff3df;
-  border-color: rgba(255, 140, 0, 0.28);
+  color: #0958d9;
+  background: #e6f4ff;
+  border-color: rgba(22, 119, 255, 0.28);
   font-weight: 700;
 }
 
@@ -238,8 +263,8 @@
 }
 
 .profile-page .form-time-chip--on {
-  border-color: rgba(255, 140, 0, 0.28) !important;
-  color: #b65f00 !important;
-  background-color: #fff3df !important;
+  border-color: rgba(22, 119, 255, 0.28) !important;
+  color: #0958d9 !important;
+  background-color: #e6f4ff !important;
   font-weight: 800;
 }

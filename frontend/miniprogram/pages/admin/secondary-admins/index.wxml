@@ -1,0 +1,60 @@
+<view class="page-shell">
+  <view class="container sa-page">
+    <view class="page-hero">
+      <view class="page-hero-title">二级管理员分配</view>
+    </view>
+
+    <view class="section-header">
+      <view class="section-title">查找用户</view>
+    </view>
+    <view class="sa-list card">
+      <view class="sa-row">
+        <view class="sa-row-icon">手</view>
+        <view class="sa-row-main">
+          <text class="sa-row-label">手机号</text>
+          <view class="sa-row-input-wrap">
+            <input class="sa-row-input" placeholder="输入用户手机号" type="number" maxlength="11" value="{{phone}}" bindinput="onPhone" />
+            <view class="sa-search-btn" bindtap="onSearchUser">查找</view>
+          </view>
+        </view>
+      </view>
+      <view class="sa-row" wx:if="{{foundUser}}">
+        <view class="sa-row-icon">✓</view>
+        <view class="sa-row-main">
+          <text class="sa-row-label">已找到用户</text>
+          <text class="sa-row-value">{{foundUser.username || foundUser.phone}}（ID: {{foundUser.id}}）</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-header">
+      <view class="section-title">分配信息</view>
+    </view>
+    <view class="sa-list card">
+      <view class="sa-row">
+        <view class="sa-row-icon">权</view>
+        <view class="sa-row-main">
+          <text class="sa-row-label">管理员类型</text>
+          <picker mode="selector" range="{{roleTypeNames}}" value="{{roleTypeIndex}}" bindchange="onRoleTypeChange">
+            <view class="sa-row-picker">{{roleTypeNames[roleTypeIndex]}}</view>
+          </picker>
+        </view>
+      </view>
+      <view class="sa-row">
+        <view class="sa-row-icon">校</view>
+        <view class="sa-row-main">
+          <text class="sa-row-label">管辖学校</text>
+          <picker mode="selector" range="{{schoolNames}}" value="{{schoolIndex}}" bindchange="onSchoolChange">
+            <view class="sa-row-picker {{schoolIndex >= 0 ? '' : 'sa-row-picker--placeholder'}}">
+              {{schoolIndex >= 0 ? schoolNames[schoolIndex] : '请选择学校'}}
+            </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <view class="sa-submit-wrap">
+      <button class="btn-primary sa-submit-btn" bindtap="onSubmit">提交分配</button>
+    </view>
+  </view>
+</view>

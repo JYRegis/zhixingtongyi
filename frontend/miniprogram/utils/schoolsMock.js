@@ -2,7 +2,12 @@
  * 校与地区主数据（Mock，可改 id 以与本地库 school 表主键一致）
  * kind: support=支教方学校, recipient=受援学校
  * id: 与后端 `school_id` 对齐，请为 Long 主键
+ *
+ * 当后端 GET /schools 可用时，建议使用 fetchSchools() 获取远程数据。
+ * 本文件保留作为后端不可用时的兜底。
  */
+
+const { schoolApi } = require("./api");
 
 const SCHOOLS = [
   { id: 1, name: "海城大学（支教点）", kind: "support" },
@@ -58,11 +63,65 @@ function withSchoolPickerList(kind, placeholder) {
   return [{ id: "", name: p }].concat(getSchoolsByKind(kind));
 }
 
+/**
+ * 从后端获取学校列表，失败时回退本地 Mock
+ * @param {object} [params] 可选筛选参数
+ * @returns {Promise<Array>} 学校列表
+ */
+function fetchSchools(params) {
+  const token = wx.getStorageSync("token") || "";
+  if (!token) {
+    return Promise.resolve(SCHOOLS.slice());
+  }
+  return schoolApi.list(params).then(function (res) {
+    const list = Array.isArray(res) ? res : (res && (res.records || res.list)) || [];
+    if (list.length === 0) {
+      return SCHOOLS.slice();
+    }
+    // 更新本地缓存
+    list.forEach(function (s) {
+      if (s && s.id) {
+        SCHOOL_INDEX[s.id] = s;
+        SCHOOL_INDEX[String(s.id)] = s;
+      }
+    });
+    return list;
+  }).catch(function () {
+    return SCHOOLS.slice();
+  });
+}
+
+/**
+ * 从后端获取单个学校详情，失败时回退本地 Mock
+ * @param {number|string} schoolId
+ * @returns {Promise<object|null>}
+ */
+function fetchSchoolDetail(schoolId) {
+  if (schoolId == null || schoolId === "") {
+    return Promise.resolve(null);
+  }
+  const token = wx.getStorageSync("token") || "";
+  if (!token) {
+    return Promise.resolve(getSchoolById(schoolId));
+  }
+  return schoolApi.detail(schoolId).then(function (res) {
+    if (res && res.id) {
+      SCHOOL_INDEX[res.id] = res;
+      SCHOOL_INDEX[String(res.id)] = res;
+    }
+    return res || getSchoolById(schoolId);
+  }).catch(function () {
+    return getSchoolById(schoolId);
+  });
+}
+
 module.exports = {
   SCHOOLS,
   REGIONS,
   getSchoolName,
   getSchoolsByKind,
   getSchoolById,
-  withSchoolPickerList
+  withSchoolPickerList,
+  fetchSchools,
+  fetchSchoolDetail
 };

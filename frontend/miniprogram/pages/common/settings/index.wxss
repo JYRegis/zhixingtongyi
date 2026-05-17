@@ -92,7 +92,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
   color: var(--ui-primary);
   font-size: 30rpx;
   font-weight: 800;
@@ -134,4 +134,20 @@
   color: #999999;
   line-height: 1.55;
   text-align: center;
+}
+
+.settings-row-badge {
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 10rpx;
+  border-radius: 18rpx;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 22rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 12rpx;
 }

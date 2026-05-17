@@ -1,9 +1,7 @@
 <view class="page-shell {{_roleThemeClass}}">
   <view class="container platform-page">
     <view class="page-hero">
-      <view class="page-hero-eyebrow">REVIEW CENTER</view>
       <view class="page-hero-title">{{sectionTitle}}</view>
-      <view class="page-hero-desc">集中处理入驻申请与身份审核</view>
     </view>
 
     <view wx:if="{{!pendingList.length}}" class="card platform-empty-card">
@@ -16,8 +14,8 @@
         <view class="platform-review-head">
           <view class="platform-review-icon">审</view>
           <view class="platform-review-main">
-            <view class="platform-review-title">{{item.typeLabel || item.roleName}}</view>
-            <view class="platform-review-desc">{{item.schoolName || '—'}}</view>
+            <view class="platform-review-title">{{item.name || item.typeLabel || item.roleName}}</view>
+            <view class="platform-review-desc">{{item.typeLabel}} · {{item.schoolName || '—'}}</view>
           </view>
           <view class="platform-review-status">待审</view>
         </view>

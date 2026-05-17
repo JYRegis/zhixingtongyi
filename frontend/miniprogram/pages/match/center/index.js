@@ -2,13 +2,46 @@ const { to } = require("../../../utils/nav");
 const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { formatSavedTimeForDisplay } = require("../../../utils/classTimeOptions");
+const { freeTimeMapsToSerializedString } = require("../../../utils/dtoMappers");
+
+/**
+ * 后端 freeTime 可能是：
+ * 1. JSON 字符串 '[{"week":6,"slot":"night"}]'
+ * 2. 已解析的数组 [{week:6, slot:"night"}]
+ * 3. 前端格式字符串 'W:6|S:night'
+ * 统一转为前端可识别的 'W:x|S:y' 格式
+ */
+function parseFreeTimeField(freeTime) {
+  if (!freeTime) return "";
+  // 已经是数组
+  if (Array.isArray(freeTime)) {
+    return freeTimeMapsToSerializedString(freeTime);
+  }
+  var str = String(freeTime).trim();
+  // 已经是前端格式
+  if (str.indexOf("W:") === 0 && str.indexOf("|S:") > 0) {
+    return str;
+  }
+  // 尝试 JSON 解析
+  if (str.charAt(0) === "[") {
+    try {
+      var arr = JSON.parse(str);
+      if (Array.isArray(arr)) {
+        return freeTimeMapsToSerializedString(arr);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+  return str;
+}
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
 const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
 const { matchApi } = require("../../../utils/api");
 
 var matchHeroMap = {
   student: { title: "志愿者推荐" },
-  teacher: { title: "推荐与申请" },
+  teacher: { title: "结对管理" },
   admin_level_2: { title: "结对申请" },
   admin_level_1: { title: "匹配" }
 };
@@ -46,7 +79,9 @@ function applySubjectFilter(list, subjectIndex) {
   }
   const want = subjectOptions[subjectIndex];
   return list.filter(function (row) {
-    return row && row.subject === want;
+    if (!row || !row.subject) return false;
+    // 支持多学科（如 "数学、物理"）中包含目标学科
+    return row.subject.indexOf(want) >= 0;
   });
 }
 
@@ -98,10 +133,10 @@ function buildListForRole(role) {
   return out;
 }
 
+// 旧的「支教方 L2」判定依赖本地 Storage Mock 的 l2Scope 字段，后端联调下永远拿不到，
+// 因此目前 L2 在 onShow 已经被无条件踢回工作台，这里固定返回 false 以彻底移除本地兜底。
 function isVolunteerSideL2() {
-  var u = (getApp().globalData && getApp().globalData.userInfo) || {};
-  var p = getByPhone(u.phone) || u;
-  return p.l2Scope === "volunteer_side";
+  return false;
 }
 
 Page({
@@ -127,32 +162,66 @@ Page({
       return;
     }
     if (role0 === "admin_level_2") {
-      const u = (getApp().globalData && getApp().globalData.userInfo) || {};
-      const p = getByPhone(u.phone) || u;
-      if (p.l2Scope === "recipient_side" || p.l2Scope === "volunteer_side") {
-        wx.switchTab({ url: "/pages/common/workbench/index" });
-        return;
-      }
+      // 二级管理员的工作场景在工作台 + 学生/教师审核 + 解绑确认等管理子页，
+      // 不应停留在「匹配」Tab。原先依赖本地 l2Scope 区分支教/受援方的拦截
+      // 在后端联调下永远拿不到值，导致二级管理员能进此页并点「申请结对」。
+      // 这里一律踢回工作台。
+      wx.switchTab({ url: "/pages/common/workbench/index" });
+      return;
     }
     checkOnboardingOrRedirect("pages/match/center/index");
     syncCustomTabBar();
     var role = getApp().globalData.role || "";
-    var fullList = buildListForRole(role);
+    // 产品规则：仅学员可发起结对申请，志愿者只能在「结对待办」中接受/拒绝。
+    // 因此志愿者侧不再展示推荐列表 + 「申请结对」按钮，避免出现走不通的流程。
+    var fullList = role === "student" ? buildListForRole(role) : [];
     if (role === "student") {
       try {
         const remote = await matchApi.recommendations();
-        fullList = (Array.isArray(remote) ? remote : []).map(function (row, idx) {
-          return enrichItem({
-            id: row.teacherId || idx + 1,
-            teacherId: row.teacherId,
-            asVolunteer: row.realName || "志愿者",
-            asStudent: "",
-            timeRaw: row.freeTime || "",
-            score: 90,
-            style: row.school || "",
-            subject: (row.grade || "综合")
-          }, role);
-        });
+        // 拉取当前学员所有结对，构造「已锁定」teacherId 集合。
+        // 后端 apply 拦截规则：status IN (0 已申请, 1 已接受, 3 解绑确认中)，
+        // 这三类的志愿者在匹配中心不再展示，避免点了 toast「已存在待处理或生效中的结对关系」。
+        // status=2 已拒绝 / 4 已解绑 / 5 解绑被拒 仍可重新申请，保留在列表里。
+        var lockedTeacherIds = {};
+        try {
+          const myPairs = await matchApi.myPairs();
+          (Array.isArray(myPairs) ? myPairs : []).forEach(function (p) {
+            var st = Number(p && p.matchStatus);
+            if (p && p.teacherId != null && (st === 0 || st === 1 || st === 3)) {
+              lockedTeacherIds[String(p.teacherId)] = true;
+            }
+          });
+        } catch (errPairs) {
+          if (console && console.warn) {
+            console.warn("[match-center] myPairs fetch failed, skip locked filter", errPairs);
+          }
+        }
+        fullList = (Array.isArray(remote) ? remote : [])
+          .filter(function (row) {
+            return row && row.teacherId != null && !lockedTeacherIds[String(row.teacherId)];
+          })
+          .map(function (row, idx) {
+            // 后端 TeacherRecommendationVO 里：
+            //   skilledSubjects -> 擅长科目（"数学,物理" 字符串）
+            //   grade           -> 年级（"大三/研三"），不能当学科展示
+            //   school          -> 所在学校，作为附属信息
+            var subjects = "";
+            if (Array.isArray(row.skilledSubjects)) {
+              subjects = row.skilledSubjects.filter(Boolean).join("、");
+            } else if (row.skilledSubjects != null && row.skilledSubjects !== "") {
+              subjects = String(row.skilledSubjects).split(/[,，、]/).map(function (s) { return s.trim(); }).filter(Boolean).join("、");
+            }
+            return enrichItem({
+              id: row.teacherId || idx + 1,
+              teacherId: row.teacherId,
+              asVolunteer: row.realName || "志愿者",
+              asStudent: "",
+              timeRaw: parseFreeTimeField(row.freeTime),
+              score: 90,
+              style: row.school || row.grade || "",
+              subject: subjects || "综合"
+            }, role);
+          });
       } catch (e) {
         if (console && console.warn) {
           console.warn("[match-center] matchApi.recommendations fallback to mock", e);
@@ -162,7 +231,8 @@ Page({
     var idx = typeof this.data.subjectIndex === "number" ? this.data.subjectIndex : 0;
     var renderList = applySubjectFilter(fullList, idx);
     var hero = matchHeroMap[role] || matchHeroMap.student;
-    var showSubjectFilter = role === "student" || role === "teacher";
+    // 学科筛选只面向学员（志愿者无推荐列表，无需筛选）
+    var showSubjectFilter = role === "student";
 
     var canUnbind =
       role === "student" || role === "teacher" || (role === "admin_level_2" && isVolunteerSideL2());
@@ -204,6 +274,15 @@ Page({
       if (one && one.teacherId) {
         await matchApi.apply({ teacherId: one.teacherId });
       }
+      // 立即从本地列表移除，无需重新请求后端
+      var newList = this.data.list.filter(function (item) { return item.id !== id; });
+      var idx = this.data.subjectIndex || 0;
+      var newRenderList = applySubjectFilter(newList, idx);
+      this.setData({
+        list: newList,
+        renderList: newRenderList,
+        selectedCountText: newRenderList.length + " 人"
+      });
       wx.showToast({
         title: "已申请" + (one && one.teacher ? " " + one.teacher : ""),
         icon: "success"

@@ -16,15 +16,7 @@ const roleHeroMap = {
  * 与 `custom-tab-bar` 规则一致：学员/教师五栏；平台一级在「聊天」前多「平台」(reLaunch 到 platform/index，该页自嵌条)；支教/受援方二级为三无匹配/会议。
  */
 function isMatchTabVisible(role) {
-  if (role === "admin_level_1") {
-    return false;
-  }
-  const u = (getApp().globalData && getApp().globalData.userInfo) || {};
-  const p = getByPhone(u.phone) || u;
-  if (role === "admin_level_2" && (p.l2Scope === "recipient_side" || p.l2Scope === "volunteer_side")) {
-    return false;
-  }
-  return role === "student" || role === "teacher" || role === "admin_level_2";
+  return role === "student" || role === "teacher";
 }
 
 /**
@@ -48,17 +40,15 @@ function getMenuListForCurrentRole(role) {
   }
   list.push({ title: "聊天", action: "toChat", badge: "沟通" });
   if (role === "student" || role === "teacher") {
+    list.push({ title: "会议", action: "toMeeting", badge: "课堂" });
+  }
+  if (role === "teacher") {
     list.push({ title: "志愿时长", action: "toHoursApply", badge: "申请" });
   }
 
   if (role === "admin_level_1") {
     list.push({ title: "平台管理", action: "toPlatformAdmin", badge: "管理" });
-  } else if (role === "admin_level_2" && l2 === "recipient_side") {
-    list.push({ title: "区域管理", action: "toRegionAdmin", badge: "管理" });
-    list.push({ title: "解绑", action: "toUnbind", badge: "处理" });
-  } else if (role === "admin_level_2" && l2 === "volunteer_side") {
-    list.push({ title: "区域管理", action: "toRegionAdmin", badge: "审核" });
-  } else if (role === "admin_level_2" && isMatchTabVisible(role) && l2 !== "recipient_side" && l2 !== "volunteer_side") {
+  } else if (role === "admin_level_2") {
     list.push({ title: "区域管理", action: "toRegionAdmin", badge: "管理" });
     list.push({ title: "解绑", action: "toUnbind", badge: "处理" });
   }
@@ -70,6 +60,7 @@ function formatMenuList(role) {
   const iconMap = {
     toMatch: "配",
     toChat: "聊",
+    toMeeting: "会",
     toHoursApply: "时",
     toPlatformAdmin: "管",
     toRegionAdmin: "校",
@@ -78,6 +69,7 @@ function formatMenuList(role) {
   const descMap = {
     toMatch: "查看推荐结对与待处理申请",
     toChat: "进入结对沟通与消息列表",
+    toMeeting: "查看会议安排与新建课程",
     toHoursApply: "登记与提交公益服务时长",
     toPlatformAdmin: "处理平台审核、风险与数据",
     toRegionAdmin: "管理学校侧学生与志愿者事务",
@@ -169,6 +161,9 @@ Page({
   },
   toChat() {
     wx.switchTab({ url: "/pages/chat/list/index" });
+  },
+  toMeeting() {
+    wx.switchTab({ url: "/pages/meeting/index" });
   },
   toUnbind() {
     to("/pages/match/unbind/index");

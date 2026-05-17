@@ -1,0 +1,18 @@
+<view class="page-shell">
+  <view class="container">
+    <view class="page-hero">
+      <view class="page-hero-title">用户详情</view>
+    </view>
+    <view class="card" wx:if="{{user}}">
+      <view class="list-row"><text>ID</text><text>{{user.id}}</text></view>
+      <view class="list-row"><text>用户名</text><text>{{user.username || '—'}}</text></view>
+      <view class="list-row"><text>手机号</text><text>{{user.phone || '—'}}</text></view>
+      <view class="list-row"><text>角色</text><text>{{user.roleName || user.role || '—'}}</text></view>
+      <view class="list-row"><text>学校/地区</text><text>{{user.schoolName || user.regionName || '—'}}</text></view>
+      <view class="list-row"><text>状态</text><text>{{user.status || '—'}}</text></view>
+      <button class="primary-btn" bindtap="onEnable">启用用户</button>
+      <button class="primary-btn" style="margin-top:12rpx; background:#fff;color:#111;border:1px solid #ddd;" bindtap="onDisable">禁用用户</button>
+      <button class="primary-btn" style="margin-top:12rpx; background:#fff;color:#111;border:1px solid #ddd;" bindtap="onPromote">升级状态</button>
+    </view>
+  </view>
+</view>

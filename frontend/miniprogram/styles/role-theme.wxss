@@ -1,24 +1,24 @@
 /**
- * 分角色 .theme-* 挂 CSS 变量；未登录首页（theme-guest）为清爽天蓝/蔚蓝系，与学员暖橙、志愿者青等区分。
+ * 分角色 .theme-* 挂 CSS 变量；全站统一为蓝色主题，不同角色仅在浅色辅助色上保留细微差异。
  */
 
 page {
-  --ui-primary: #ff8c00;
-  --ui-primary-mid: #ff9f1a;
-  --ui-hero-start: #ff8c00;
-  --ui-hero-end: #ffa500;
-  --ui-hero-shadow: 255, 140, 0;
+  --ui-primary: #1677ff;
+  --ui-primary-mid: #4096ff;
+  --ui-hero-start: #1677ff;
+  --ui-hero-end: #4096ff;
+  --ui-hero-shadow: 22, 119, 255;
   --ui-page-bg-1: #f5f7fa;
   --ui-page-bg-2: #f5f7fa;
-  --ui-radial: rgba(255, 165, 0, 0.12);
-  --ui-link: #ff8c00;
-  --ui-chip-bg: #fff3df;
-  --ui-chip-text: #b65f00;
-  --ui-surface-note-bg: #fff7ed;
-  --ui-surface-note-text: #b65f00;
-  --ui-btn-secondary-fg: #b65f00;
-  --ui-btn-secondary-bg: #fff7ed;
-  --ui-btn-secondary-border: #ffd596;
+  --ui-radial: rgba(22, 119, 255, 0.12);
+  --ui-link: #1677ff;
+  --ui-chip-bg: #e6f4ff;
+  --ui-chip-text: #0958d9;
+  --ui-surface-note-bg: #e6f4ff;
+  --ui-surface-note-text: #0958d9;
+  --ui-btn-secondary-fg: #0958d9;
+  --ui-btn-secondary-bg: #e6f4ff;
+  --ui-btn-secondary-border: #91caff;
   --ui-stat-top: #ffffff;
   --ui-stat-bot: #e0f2fe;
   --ui-auth-bg-1: #f0f9ff;
@@ -29,24 +29,24 @@ page {
   --ui-saved-on-fg: #1e3a8a;
 }
 
-/* 未登录 / 选角前：天蓝/蔚蓝（首页、落地选身份） - 增强 */
+/* 未登录 / 选角前：标准蓝主题 */
 .theme-guest {
-  --ui-primary: #ff8c00;
-  --ui-primary-mid: #ff9f1a;
-  --ui-hero-start: #ff8c00;
-  --ui-hero-end: #ffa500;
-  --ui-hero-shadow: 255, 140, 0;
+  --ui-primary: #1677ff;
+  --ui-primary-mid: #4096ff;
+  --ui-hero-start: #1677ff;
+  --ui-hero-end: #4096ff;
+  --ui-hero-shadow: 22, 119, 255;
   --ui-page-bg-1: #f5f7fa;
   --ui-page-bg-2: #f5f7fa;
-  --ui-radial: rgba(255, 165, 0, 0.12);
-  --ui-link: #ff8c00;
-  --ui-chip-bg: #fff3df;
-  --ui-chip-text: #b65f00;
-  --ui-surface-note-bg: #fff7ed;
-  --ui-surface-note-text: #b65f00;
-  --ui-btn-secondary-fg: #b65f00;
-  --ui-btn-secondary-bg: #fff7ed;
-  --ui-btn-secondary-border: #ffd596;
+  --ui-radial: rgba(22, 119, 255, 0.12);
+  --ui-link: #1677ff;
+  --ui-chip-bg: #e6f4ff;
+  --ui-chip-text: #0958d9;
+  --ui-surface-note-bg: #e6f4ff;
+  --ui-surface-note-text: #0958d9;
+  --ui-btn-secondary-fg: #0958d9;
+  --ui-btn-secondary-bg: #e6f4ff;
+  --ui-btn-secondary-border: #91caff;
   --ui-stat-top: #ffffff;
   --ui-stat-bot: #e1f5fe;
   --ui-auth-bg-1: #e3f2fd;
@@ -57,52 +57,52 @@ page {
   --ui-saved-on-fg: #01579b;
 }
 
-/* 学员：暖橙/杏，Hero 柔和暖渐变 - 增强 */
+/* 学员：标准蓝主题 */
 .theme-student {
-  --ui-primary: #f57c00;
-  --ui-primary-mid: #e65100;
-  --ui-hero-start: #ffa726;
-  --ui-hero-end: #f57c00;
-  --ui-hero-shadow: 245, 124, 0;
+  --ui-primary: #1677ff;
+  --ui-primary-mid: #0958d9;
+  --ui-hero-start: #4096ff;
+  --ui-hero-end: #1677ff;
+  --ui-hero-shadow: 22, 119, 255;
   --ui-page-bg-1: #f5f7fa;
   --ui-page-bg-2: #f5f7fa;
-  --ui-radial: rgba(255, 167, 38, 0.15);
-  --ui-link: #f57c00;
-  --ui-chip-bg: #ffe0b2;
-  --ui-chip-text: #bf360c;
-  --ui-surface-note-bg: #fff3e0;
-  --ui-surface-note-text: #e65100;
-  --ui-btn-secondary-fg: #e65100;
-  --ui-btn-secondary-bg: #fff3e0;
-  --ui-btn-secondary-border: #ffcc80;
+  --ui-radial: rgba(22, 119, 255, 0.15);
+  --ui-link: #1677ff;
+  --ui-chip-bg: #bae0ff;
+  --ui-chip-text: #0958d9;
+  --ui-surface-note-bg: #e6f4ff;
+  --ui-surface-note-text: #0958d9;
+  --ui-btn-secondary-fg: #0958d9;
+  --ui-btn-secondary-bg: #e6f4ff;
+  --ui-btn-secondary-border: #91caff;
   --ui-stat-top: #ffffff;
-  --ui-stat-bot: #fff3e0;
-  --ui-auth-bg-1: #fff3e0;
-  --ui-auth-bg-2: #ffe0b2;
-  --ui-auth-avatar-empty-1: #ffecb3;
-  --ui-auth-avatar-empty-2: #ffe0b2;
-  --ui-saved-on-bg: #ffe0b2;
-  --ui-saved-on-fg: #e65100;
+  --ui-stat-bot: #e6f4ff;
+  --ui-auth-bg-1: #e6f4ff;
+  --ui-auth-bg-2: #bae0ff;
+  --ui-auth-avatar-empty-1: #cfe5ff;
+  --ui-auth-avatar-empty-2: #bae0ff;
+  --ui-saved-on-bg: #bae0ff;
+  --ui-saved-on-fg: #0958d9;
 }
 
-/* 志愿者：青蓝 / 蓝绿，行动与连接感 - 增强 */
+/* 志愿者：标准蓝主题（辅以浅蓝绿点缀） */
 .theme-teacher {
-  --ui-primary: #ff8c00;
-  --ui-primary-mid: #ff9f1a;
-  --ui-hero-start: #ff8c00;
-  --ui-hero-end: #ffa500;
-  --ui-hero-shadow: 255, 140, 0;
+  --ui-primary: #1677ff;
+  --ui-primary-mid: #4096ff;
+  --ui-hero-start: #1677ff;
+  --ui-hero-end: #4096ff;
+  --ui-hero-shadow: 22, 119, 255;
   --ui-page-bg-1: #f5f7fa;
   --ui-page-bg-2: #f5f7fa;
-  --ui-radial: rgba(255, 165, 0, 0.12);
-  --ui-link: #ff8c00;
-  --ui-chip-bg: #fff3df;
-  --ui-chip-text: #b65f00;
-  --ui-surface-note-bg: #fff7ed;
-  --ui-surface-note-text: #b65f00;
-  --ui-btn-secondary-fg: #b65f00;
-  --ui-btn-secondary-bg: #fff7ed;
-  --ui-btn-secondary-border: #ffd596;
+  --ui-radial: rgba(22, 119, 255, 0.12);
+  --ui-link: #1677ff;
+  --ui-chip-bg: #e6f4ff;
+  --ui-chip-text: #0958d9;
+  --ui-surface-note-bg: #e6f4ff;
+  --ui-surface-note-text: #0958d9;
+  --ui-btn-secondary-fg: #0958d9;
+  --ui-btn-secondary-bg: #e6f4ff;
+  --ui-btn-secondary-border: #91caff;
   --ui-stat-top: #ffffff;
   --ui-stat-bot: #e0f7fa;
   --ui-auth-bg-1: #e0f7fa;
@@ -113,24 +113,24 @@ page {
   --ui-saved-on-fg: #00838f;
 }
 
-/* 学校老师：米白 + 墨绿/橄榄，书卷感 - 增强 */
+/* 二级管理员：标准蓝主题（辅以浅绿点缀） */
 .theme-l2 {
-  --ui-primary: #ff8c00;
-  --ui-primary-mid: #ff9f1a;
-  --ui-hero-start: #ff8c00;
-  --ui-hero-end: #ffa500;
-  --ui-hero-shadow: 255, 140, 0;
+  --ui-primary: #1677ff;
+  --ui-primary-mid: #4096ff;
+  --ui-hero-start: #1677ff;
+  --ui-hero-end: #4096ff;
+  --ui-hero-shadow: 22, 119, 255;
   --ui-page-bg-1: #f5f7fa;
   --ui-page-bg-2: #f5f7fa;
-  --ui-radial: rgba(255, 165, 0, 0.12);
-  --ui-link: #ff8c00;
-  --ui-chip-bg: #fff3df;
-  --ui-chip-text: #b65f00;
-  --ui-surface-note-bg: #fff7ed;
-  --ui-surface-note-text: #b65f00;
-  --ui-btn-secondary-fg: #b65f00;
-  --ui-btn-secondary-bg: #fff7ed;
-  --ui-btn-secondary-border: #ffd596;
+  --ui-radial: rgba(22, 119, 255, 0.12);
+  --ui-link: #1677ff;
+  --ui-chip-bg: #e6f4ff;
+  --ui-chip-text: #0958d9;
+  --ui-surface-note-bg: #e6f4ff;
+  --ui-surface-note-text: #0958d9;
+  --ui-btn-secondary-fg: #0958d9;
+  --ui-btn-secondary-bg: #e6f4ff;
+  --ui-btn-secondary-border: #91caff;
   --ui-stat-top: #ffffff;
   --ui-stat-bot: #f1f8e9;
   --ui-auth-bg-1: #f1f8e9;
@@ -141,24 +141,24 @@ page {
   --ui-saved-on-fg: #1b5e20;
 }
 
-/* 平台：中性灰 + 靛色单点，避免过暖 - 增强 */
+/* 一级管理员：标准蓝主题（辅以浅靛点缀） */
 .theme-l1 {
-  --ui-primary: #ff8c00;
-  --ui-primary-mid: #ff9f1a;
-  --ui-hero-start: #ff8c00;
-  --ui-hero-end: #ffa500;
-  --ui-hero-shadow: 255, 140, 0;
+  --ui-primary: #1677ff;
+  --ui-primary-mid: #4096ff;
+  --ui-hero-start: #1677ff;
+  --ui-hero-end: #4096ff;
+  --ui-hero-shadow: 22, 119, 255;
   --ui-page-bg-1: #f5f7fa;
   --ui-page-bg-2: #f5f7fa;
-  --ui-radial: rgba(255, 165, 0, 0.12);
-  --ui-link: #ff8c00;
-  --ui-chip-bg: #fff3df;
-  --ui-chip-text: #b65f00;
-  --ui-surface-note-bg: #fff7ed;
-  --ui-surface-note-text: #b65f00;
-  --ui-btn-secondary-fg: #b65f00;
-  --ui-btn-secondary-bg: #fff7ed;
-  --ui-btn-secondary-border: #ffd596;
+  --ui-radial: rgba(22, 119, 255, 0.12);
+  --ui-link: #1677ff;
+  --ui-chip-bg: #e6f4ff;
+  --ui-chip-text: #0958d9;
+  --ui-surface-note-bg: #e6f4ff;
+  --ui-surface-note-text: #0958d9;
+  --ui-btn-secondary-fg: #0958d9;
+  --ui-btn-secondary-bg: #e6f4ff;
+  --ui-btn-secondary-border: #91caff;
   --ui-stat-top: #ffffff;
   --ui-stat-bot: #e8eaf6;
   --ui-auth-bg-1: #e8eaf6;
@@ -170,10 +170,10 @@ page {
 }
 
 /* ---------- 底栏选中（依赖 addGlobalClass，!important 以覆盖组件内默认蓝） ---------- */
-.tab-bar.theme-guest .tab-bar-item--active { color: #ff8c00 !important; }
-.tab-bar.theme-student .tab-bar-item--active { color: #f57c00 !important; }
-.tab-bar.theme-teacher .tab-bar-item--active { color: #ff8c00 !important; }
-.tab-bar.theme-l2 .tab-bar-item--active { color: #ff8c00 !important; }
-.tab-bar.theme-l1 .tab-bar-item--active { color: #ff8c00 !important; }
+.tab-bar.theme-guest .tab-bar-item--active { color: #1677ff !important; }
+.tab-bar.theme-student .tab-bar-item--active { color: #1677ff !important; }
+.tab-bar.theme-teacher .tab-bar-item--active { color: #1677ff !important; }
+.tab-bar.theme-l2 .tab-bar-item--active { color: #1677ff !important; }
+.tab-bar.theme-l1 .tab-bar-item--active { color: #1677ff !important; }
 
 /* 与 app.wxss 的 .shell-mesh / .card-tier 共用本文件中的 --ui-page-bg、--ui-radial 等变量，分角色自动换色 */

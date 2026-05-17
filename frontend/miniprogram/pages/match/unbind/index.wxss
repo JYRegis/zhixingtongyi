@@ -16,9 +16,9 @@
 }
 
 .unbind-pair--on {
-  border-color: rgba(255, 140, 0, 0.28);
-  background: #fffaf2;
-  box-shadow: 0 12rpx 36rpx rgba(255, 140, 0, 0.12);
+  border-color: rgba(22, 119, 255, 0.28);
+  background: #f0f9ff;
+  box-shadow: 0 12rpx 36rpx rgba(22, 119, 255, 0.12);
 }
 
 .unbind-pair-main {

@@ -1,9 +1,7 @@
 <view class="page-shell {{_roleThemeClass}}">
   <view class="container req-page">
   <view class="page-hero">
-    <view class="page-hero-eyebrow">PAIRING TASKS</view>
     <view class="page-hero-title">结对待办</view>
-    <view class="page-hero-desc">处理结对申请，确认双方时间与学习需求</view>
   </view>
 
   <view wx:if="{{pendingList.length === 0}}" class="card req-empty-card">

@@ -22,7 +22,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
   color: var(--ui-primary);
   font-size: 32rpx;
   font-weight: 800;

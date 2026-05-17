@@ -1,9 +1,7 @@
 <view class="page-shell {{_roleThemeClass}}">
   <view class="container region-page">
     <view class="page-hero">
-      <view class="page-hero-eyebrow">STUDENT REVIEW</view>
       <view class="page-hero-title">受援方</view>
-      <view class="page-hero-desc">审核本校学员入驻申请</view>
     </view>
     <view wx:if="{{!list.length}}" class="card region-empty-card">
       <view class="region-empty-icon">学</view>

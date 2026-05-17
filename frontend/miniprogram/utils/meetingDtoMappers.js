@@ -77,7 +77,7 @@ function meetingItemVoToListRow(vo) {
     _endTimeMs: isNaN(endMs) ? null : endMs,
     roomLink: (vo && vo.meetingLink) != null ? String(vo.meetingLink) : (vo && vo.meeting_link) || "",
     pairId: matchPairId != null ? String(matchPairId) : "",
-    pairLine: "结对 #" + (matchPairId != null ? matchPairId : "—"),
+    pairLine: "我的结对",
     createdByPhone: "",
     creatorRole: "",
     status: meetingStatusLabel(vo && vo.status != null ? vo.status : vo.meeting_status)
@@ -110,11 +110,9 @@ function pairDetailsToFormOptions(pairs) {
   const list = Array.isArray(pairs) ? pairs : [];
   return list.map(function (p) {
     const id = p && p.id != null ? p.id : 0;
-    const sid = p && p.studentId != null ? p.studentId : "—";
-    const tid = p && p.teacherId != null ? p.teacherId : "—";
     return {
       id: String(id),
-      name: "结对 #" + id + "（学员 " + sid + " · 教师 " + tid + "）"
+      name: p.studentName || "学员"
     };
   });
 }

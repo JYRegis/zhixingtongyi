@@ -2,6 +2,7 @@ const { to } = require("../../../utils/nav");
 const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
+const notificationCenter = require("../../../utils/notificationCenter");
 
 Page({
   data: {
@@ -11,12 +12,29 @@ Page({
     nickname: "",
     avatarChar: "用",
     avatarUrl: "",
-    heroTitle: "设置"
+    heroTitle: "设置",
+    unreadCount: 0
   },
   onShow() {
     checkOnboardingOrRedirect("pages/common/settings/index");
     syncCustomTabBar();
     this.refreshUser();
+    // 订阅全局未读数；同时立即触发一次拉取
+    if (typeof this._unsub !== "function") {
+      const self = this;
+      this._unsub = notificationCenter.subscribe(function (evt) {
+        if (evt && evt.type === "unread-change") {
+          self.setData({ unreadCount: (evt.payload && evt.payload.count) || 0 });
+        }
+      });
+    }
+    try { notificationCenter.refreshNow(); } catch (_) {}
+  },
+  onUnload() {
+    if (typeof this._unsub === "function") {
+      try { this._unsub(); } catch (_) {}
+      this._unsub = null;
+    }
   },
   refreshUser() {
     const app = getApp();

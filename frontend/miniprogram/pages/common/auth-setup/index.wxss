@@ -1,0 +1,133 @@
+.setup-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.14), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #f5f7fa 34%, #f5f7fa 100%);
+  padding: 60rpx 32rpx 80rpx;
+  box-sizing: border-box;
+}
+
+.setup-top {
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.setup-title {
+  font-size: 46rpx;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 1rpx;
+}
+
+.setup-tip {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.setup-card {
+  background: #ffffff;
+  border-radius: 32rpx;
+  padding: 48rpx 32rpx 36rpx;
+  box-shadow: 0 16rpx 40rpx rgba(16, 24, 40, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.setup-avatar-btn {
+  width: 168rpx !important;
+  height: 168rpx !important;
+  min-width: 168rpx !important;
+  padding: 0 !important;
+  margin: 0 0 32rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #ffffff;
+  border: 4rpx solid #e6f4ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12rpx 32rpx rgba(22, 119, 255, 0.16);
+}
+
+.setup-avatar-btn::after {
+  border: none;
+}
+
+.setup-avatar-img {
+  width: 168rpx;
+  height: 168rpx;
+  border-radius: 50%;
+  display: block;
+  object-fit: cover;
+}
+
+.setup-avatar-empty {
+  font-size: 24rpx;
+  color: #94a3b8;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.4;
+  padding: 0 12rpx;
+}
+
+.setup-input-wrap {
+  width: 100%;
+  background: #fafbfc;
+  border-radius: 18rpx;
+  border: 1.5rpx solid #e2e8f0;
+  margin-bottom: 16rpx;
+}
+
+.setup-input {
+  height: 92rpx;
+  line-height: 92rpx;
+  padding: 0 24rpx;
+  font-size: 30rpx;
+  color: #1e293b;
+}
+
+.setup-input::placeholder {
+  color: #94a3b8;
+}
+
+.setup-hint {
+  width: 100%;
+  font-size: 24rpx;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 32rpx;
+}
+
+.setup-submit-btn {
+  width: 100% !important;
+  height: 92rpx;
+  line-height: 92rpx;
+  border-radius: 18rpx;
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 12rpx 28rpx rgba(22, 119, 255, 0.24);
+  margin: 0;
+}
+
+.setup-submit-btn::after {
+  border: none;
+}
+
+.setup-submit-btn[disabled] {
+  background: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  box-shadow: none;
+}
+
+.setup-skip {
+  margin-top: 24rpx;
+  font-size: 26rpx;
+  color: #64748b;
+  text-decoration: underline;
+}

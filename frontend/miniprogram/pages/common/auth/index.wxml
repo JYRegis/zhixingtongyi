@@ -1,37 +1,16 @@
 <view class="auth-page">
   <view class="auth-top">
-    <button class="auth-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-      <image wx:if="{{avatarUrl}}" class="auth-avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
-      <view wx:else class="auth-avatar-empty">头像</view>
-    </button>
-    <view class="auth-top-title">登录</view>
-    <view class="auth-top-tip">请选择一种方式继续</view>
+    <view class="auth-top-title">欢迎回来</view>
   </view>
 
   <view class="auth-form">
     <view class="auth-group">
-      <view class="auth-input-wrap">
-        <input
-          class="auth-input"
-          type="nickname"
-          maxlength="20"
-          placeholder="请输入昵称（可选）"
-          value="{{nickname}}"
-          bindinput="onNicknameInput"
-        />
-      </view>
-      <view class="auth-login-tip">昵称与头像会随登录一起同步到账号资料。</view>
       <button class="auth-wx-phone-btn" bindtap="onWxIdentityLogin">
         <view class="auth-wx-phone-inner">
-          <text>微信登录</text>
+          <text>微信一键登录</text>
         </view>
       </button>
 
-      <view class="auth-or">
-        <view class="auth-or-line"></view>
-        <text class="auth-or-text">或</text>
-        <view class="auth-or-line"></view>
-      </view>
       <view class="auth-input-wrap">
         <input
           class="auth-input"

@@ -1,62 +1,48 @@
 const { ROLE_DISPLAY_NAME } = require("../../utils/roleLabels");
 const { checkOnboardingOrRedirect } = require("../../utils/onboardingGuard");
 const { mergeFromStorageIntoApp, getByPhone } = require("../../utils/userProfileStore");
-const {
-  getMeetingsForUser,
-  splitNextAndHistory,
-  formatMeetingTime,
-  canCreateMeetingRole
-} = require("../../utils/meetingStore");
+const { splitNextAndHistory, formatMeetingTime, canCreateMeetingRole } = require("../../utils/meetingStore");
 const { meetingItemVoToListRow } = require("../../utils/meetingDtoMappers");
-const { USE_BACKEND_MEETING } = require("../../config/demoBackend");
-const { meetingApi } = require("../../utils/api");
-
+const { meetingApi, matchApi } = require("../../utils/api");
 const { to } = require("../../utils/nav");
 const { syncCustomTabBar } = require("../../utils/customTabBar");
 
-function renderMeetingPage(self, r, p, u, useServerList) {
-  const phone = u && u.phone ? String(u.phone) : "";
-  const list = useServerList
-    ? self._serverMeetingRows || []
-    : getMeetingsForUser(phone, r, p);
-  const { nextMeeting, history } = splitNextAndHistory(list, Date.now());
-  let next2 = null;
-  if (nextMeeting) {
-    next2 = {
-      ...nextMeeting,
-      startTime: formatMeetingTime(nextMeeting.startTimeMs)
-    };
-  }
-  const his = (history || []).map((h) => {
-    return {
-      ...h,
-      startTime: formatMeetingTime(h.startTimeMs)
-    };
+function applyPairNames(rows, pairMap, role) {
+  return (rows || []).map((row) => {
+    const pair = pairMap[String(row.pairId)];
+    if (pair) {
+      const sName = pair.studentName || "学员";
+      const tName = pair.teacherName || "志愿者";
+      let line;
+      if (role === "student") line = tName;
+      else if (role === "teacher") line = sName;
+      else line = sName + " — " + tName;
+      return { ...row, pairLine: line };
+    }
+    return row;
   });
-  const can = canCreateMeetingRole(r);
+}
+
+function renderMeetingPage(self, r, p, u, useServerList) {
+  const list = useServerList ? self._serverMeetingRows || [] : [];
+  const { upcoming, history } = splitNextAndHistory(list, Date.now());
+  const upcomingList = (upcoming || []).map((m) => ({ ...m, startTime: formatMeetingTime(m.startTimeMs) }));
+  const his = (history || []).map((h) => ({ ...h, startTime: formatMeetingTime(h.startTimeMs) }));
   self.setData({
     role: r,
     roleName: ROLE_DISPLAY_NAME[r] || "用户",
-    canCreate: can,
-    nextMeeting: next2,
+    canCreate: canCreateMeetingRole(r),
+    upcomingList,
     history: his,
-    empty: !next2 && (!his || his.length === 0)
+    empty: upcomingList.length === 0 && his.length === 0
   });
   syncCustomTabBar();
 }
 
 Page({
-  data: {
-    role: "",
-    roleName: "用户",
-    canCreate: false,
-    nextMeeting: null,
-    history: [],
-    empty: false
-  },
+  data: { role: "", roleName: "用户", canCreate: false, upcomingList: [], history: [], empty: false },
   _serverMeetingRows: null,
   onShow() {
-    const self = this;
     checkOnboardingOrRedirect("pages/meeting/index");
     mergeFromStorageIntoApp();
     const app0 = getApp();
@@ -64,48 +50,35 @@ Page({
     const u = app0.globalData.userInfo || {};
     const p = (u && u.phone && getByPhone(String(u.phone))) || u || {};
     const token = (app0.globalData && app0.globalData.token) || wx.getStorageSync("token") || "";
-    const tryRemote = USE_BACKEND_MEETING && token;
-    if (tryRemote) {
-      const req = r === "student" || r === "teacher" ? meetingApi.myMeetings() : meetingApi.list();
-      req
-        .then(function (rows) {
-          const list = (rows || []).map(function (vo) {
-            return meetingItemVoToListRow(vo);
-          });
-          self._serverMeetingRows = list;
-          renderMeetingPage(self, r, p, u, true);
-        })
-        .catch(function () {
-          self._serverMeetingRows = null;
-          renderMeetingPage(self, r, p, u, false);
+    if (token) {
+      const isStuOrTea = r === "student" || r === "teacher";
+      const meetingReq = isStuOrTea ? meetingApi.myMeetings() : meetingApi.list();
+      const pairReq = isStuOrTea ? matchApi.myPairs(1).catch(() => []) : Promise.resolve([]);
+      Promise.all([meetingReq.catch(() => null), pairReq]).then(([rows, pairs]) => {
+        const pairMap = {};
+        (Array.isArray(pairs) ? pairs : []).forEach((pp) => {
+          const id = pp && (pp.id != null ? pp.id : pp.pairId);
+          if (id != null) pairMap[String(id)] = pp;
         });
+        let mapped = (rows || []).map((vo) => meetingItemVoToListRow(vo));
+        mapped = applyPairNames(mapped, pairMap, r);
+        this._serverMeetingRows = mapped;
+        renderMeetingPage(this, r, p, u, true);
+      });
       return;
     }
     this._serverMeetingRows = null;
     renderMeetingPage(this, r, p, u, false);
   },
-  onCreate() {
-    to("/pages/meeting/create/index");
-  },
-  onPullDownRefresh() {
-    this.onShow();
-    wx.stopPullDownRefresh();
-  },
-  onCopyLink() {
-    const m = this.data.nextMeeting;
-    if (!m || !m.roomLink) {
-      wx.showToast({ title: "暂无可复制链接，请在腾讯会议中复制后于「新建会议」填写", icon: "none" });
+  onCreate() { to("/pages/meeting/create/index"); },
+  onPullDownRefresh() { this.onShow(); wx.stopPullDownRefresh(); },
+  onCopyLink(e) {
+    const link = e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.link;
+    if (!link) {
+      wx.showToast({ title: "暂无可复制链接", icon: "none" });
       return;
     }
-    wx.setClipboardData({
-      data: String(m.roomLink),
-      success: () => wx.showToast({ title: "链接已复制", icon: "success" })
-    });
+    wx.setClipboardData({ data: String(link), success: () => wx.showToast({ title: "链接已复制", icon: "success" }) });
   },
-  onSubscribeNotice() {
-    wx.showToast({
-      title: "订阅提醒功能即将上线",
-      icon: "none"
-    });
-  }
+  onSubscribeNotice() { wx.showToast({ title: "订阅提醒功能即将上线", icon: "none" }); }
 });

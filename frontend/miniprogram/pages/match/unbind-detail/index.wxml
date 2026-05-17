@@ -1,0 +1,94 @@
+<view class="page-shell">
+  <view class="container ud-page">
+    <view class="page-hero">
+      <view class="page-hero-title">解绑详情</view>
+    </view>
+
+    <view wx:if="{{loading}}" class="card empty-state">加载中...</view>
+
+    <!-- 不在「结对中」状态：不允许发起解绑 -->
+    <view wx:elif="{{notPaired && !hasUnbind}}" class="card">
+      <view class="section-title">解绑信息</view>
+      <view class="list-row">
+        <text>结对双方</text>
+        <text>{{studentName}} — {{teacherName}}</text>
+      </view>
+      <view class="list-row">
+        <text>当前状态</text>
+        <text class="badge badge-warning">{{statusText}}</text>
+      </view>
+    </view>
+
+    <!-- 结对中且未发起解绑：可填写原因发起 -->
+    <view wx:elif="{{!hasUnbind && canSubmitUnbind}}" class="card">
+      <view class="section-title">发起解绑</view>
+      <view class="list-row">
+        <text>结对双方</text>
+        <text>{{studentName}} — {{teacherName}}</text>
+      </view>
+      <view class="list-row">
+        <text>状态</text>
+        <text class="badge badge-success">{{statusText}}</text>
+      </view>
+      <view class="field" style="margin-top: 24rpx;">
+        <text class="field-label">解绑原因</text>
+        <textarea class="field-textarea" value="{{reason}}" placeholder="请说明原因" bindinput="onReasonInput" />
+      </view>
+      <button class="btn-primary" style="margin-top: 24rpx;" bindtap="onSubmitUnbind">提交解绑申请</button>
+    </view>
+
+    <view wx:else>
+      <view class="card">
+        <view class="section-title">解绑进度</view>
+        <view class="list-row">
+          <text>结对双方</text>
+          <text>{{studentName}} — {{teacherName}}</text>
+        </view>
+        <view class="list-row">
+          <text>发起方</text>
+          <text>{{initiatorLabel}}</text>
+        </view>
+        <view class="list-row" wx:if="{{unbindReason}}">
+          <text>解绑原因</text>
+          <text>{{unbindReason}}</text>
+        </view>
+      </view>
+
+      <view class="card" style="margin-top: 20rpx;">
+        <view class="section-title">各方确认状态</view>
+        <view class="list-row">
+          <text>学员</text>
+          <text class="badge {{studentConfirm ? 'badge-success' : 'badge-warning'}}">{{studentConfirm ? '已确认' : '未确认'}}</text>
+        </view>
+        <view class="list-row">
+          <text>志愿者</text>
+          <text class="badge {{teacherConfirm ? 'badge-success' : 'badge-warning'}}">{{teacherConfirm ? '已确认' : '未确认'}}</text>
+        </view>
+        <view class="list-row">
+          <text>管理员</text>
+          <text class="badge {{adminConfirm ? 'badge-success' : 'badge-warning'}}">{{adminConfirm ? '已确认' : '未确认'}}</text>
+        </view>
+      </view>
+
+      <view class="card" style="margin-top: 20rpx;" wx:if="{{rejectReason}}">
+        <view class="section-title">拒绝信息</view>
+        <view class="list-row">
+          <text>拒绝原因</text>
+          <text>{{rejectReason}}</text>
+        </view>
+      </view>
+
+      <view class="ud-actions" wx:if="{{canConfirm}}">
+        <button class="btn-primary" bindtap="onConfirm">我同意解绑</button>
+        <button class="btn-secondary" bindtap="onReject">不同意</button>
+      </view>
+      <view class="card" style="margin-top: 20rpx;" wx:elif="{{isInitiator && hasUnbind}}">
+        <view class="section-title">您的状态</view>
+        <view class="list-row">
+          <text>当前角色</text>
+          <text class="badge badge-success">您是发起方，已自动同意</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

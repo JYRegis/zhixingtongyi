@@ -25,12 +25,13 @@ function freeTimeMapsToSerializedString(freeTimeList) {
   const weeks = new Set();
   const slots = new Set();
   freeTimeList.forEach((m) => {
-    if (m && m.week != null) {
-      weeks.add(Number(m.week));
-    }
-    if (m && m.slot) {
-      slots.add(String(m.slot));
-    }
+    if (!m) return;
+    // 兼容 {week, slot} 单条格式
+    if (m.week != null) weeks.add(Number(m.week));
+    if (m.slot) slots.add(String(m.slot));
+    // 兼容 {weekIds, slotIds} 数组格式
+    if (Array.isArray(m.weekIds)) m.weekIds.forEach((w) => weeks.add(Number(w)));
+    if (Array.isArray(m.slotIds)) m.slotIds.forEach((s) => slots.add(String(s)));
   });
   const wArr = Array.from(weeks)
     .filter((n) => n >= 1 && n <= 7)

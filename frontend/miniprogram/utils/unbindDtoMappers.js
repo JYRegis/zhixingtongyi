@@ -28,21 +28,32 @@ function matchStatusLine(ms) {
 /**
  * @param {Array<{ id: number, studentId: number, teacherId: number, matchStatus: number }>} pairs
  */
-function pairVosToUnbindList(pairs) {
+function pairVosToUnbindList(pairs, viewerRole) {
   const list = Array.isArray(pairs) ? pairs : [];
   return list.map(function (vo) {
     const id = vo && vo.id != null ? vo.id : 0;
-    const sid = vo && vo.studentId != null ? vo.studentId : "—";
-    const tid = vo && vo.teacherId != null ? vo.teacherId : "—";
+    const sName = (vo && vo.studentName) || "学员";
+    const tName = (vo && vo.teacherName) || "志愿者";
+    // 只显示对方名字
+    var lineName;
+    if (viewerRole === "student") {
+      lineName = tName;
+    } else if (viewerRole === "teacher") {
+      lineName = sName;
+    } else {
+      lineName = sName + " · " + tName;
+    }
     const m = matchStatusLine(vo && vo.matchStatus);
     return {
       pairId: String(id),
-      lineName: "结对 #" + id + "（学员 " + sid + " · 志愿者 " + tid + "）",
+      lineName: lineName,
       tag: m.tag,
       status: m.status,
       matchStatus: vo && vo.matchStatus,
       _studentId: vo && vo.studentId,
-      _teacherId: vo && vo.teacherId
+      _teacherId: vo && vo.teacherId,
+      _studentName: vo && vo.studentName,
+      _teacherName: vo && vo.teacherName
     };
   });
 }
@@ -59,12 +70,14 @@ function unbindProgressToActiveRequest(prog, pairHint) {
   const pending = ms === 3 || ms === 5;
   const sid = pairHint && pairHint.studentId;
   const tid = pairHint && pairHint.teacherId;
+  const sName = (pairHint && pairHint.studentName) || (sid != null ? "学员（ID " + sid + "）" : "—");
+  const tName = (pairHint && pairHint.teacherName) || (tid != null ? "志愿者（ID " + tid + "）" : "—");
   return {
     id: "api_" + (prog.pairId != null ? prog.pairId : ""),
     status: pending ? "pending_approval" : "other",
     fromRole: "teacher",
-    studentName: sid != null ? "学员（ID " + sid + "）" : "—",
-    partnerName: tid != null ? "志愿者（ID " + tid + "）" : "—",
+    studentName: sName,
+    partnerName: tName,
     reason: "（远程解绑流程；详细原因以服务端为准）",
     initiatorLabel: "某一方",
     agree: {

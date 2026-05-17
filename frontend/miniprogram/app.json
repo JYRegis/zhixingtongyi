@@ -3,6 +3,7 @@
     "pages/common/welcome/index",
     "pages/common/home/index",
     "pages/common/auth/index",
+    "pages/common/auth-setup/index",
     "pages/common/role-select/index",
     "pages/common/onboarding-pending/index",
     "pages/common/onboarding-apply/index",
@@ -16,17 +17,21 @@
     "pages/match/center/index",
     "pages/match/requests/index",
     "pages/match/unbind/index",
+    "pages/match/unbind-detail/index",
     "pages/chat/list/index",
     "pages/chat/room/index",
     "pages/meeting/index",
     "pages/meeting/create/index",
     "pages/admin/region/index",
     "pages/admin/region-students/index",
+    "pages/admin/region-teachers/index",
     "pages/admin/region-hours/index",
+    "pages/admin/users/index",
+    "pages/admin/users/detail/index",
+    "pages/admin/secondary-admins/index",
     "pages/admin/platform/index",
     "pages/admin/platform/review/index",
-    "pages/admin/platform/hours/index",
-    "pages/admin/platform/risk/index"
+    "pages/admin/platform/hours/index"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -38,7 +43,7 @@
   "tabBar": {
     "custom": true,
     "color": "#667085",
-    "selectedColor": "#ff8c00",
+    "selectedColor": "#1677ff",
     "backgroundColor": "#ffffff",
     "borderStyle": "black",
     "list": [

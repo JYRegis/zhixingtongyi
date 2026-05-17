@@ -1,7 +1,6 @@
 <view class="page-shell {{_roleThemeClass}}">
   <view class="settings-page">
     <view class="page-hero settings-main-hero">
-      <view class="page-hero-eyebrow">ACCOUNT</view>
       <view class="page-hero-title">{{heroTitle}}</view>
     </view>
 
@@ -38,6 +37,7 @@
             <text class="settings-row-title">消息通知</text>
             <text class="settings-row-extra">系统通知列表 →</text>
           </view>
+          <view wx:if="{{unreadCount > 0}}" class="settings-row-badge">{{unreadCount > 99 ? '99+' : unreadCount}}</view>
         </view>
       </block>
     </view>

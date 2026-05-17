@@ -1,3 +1,18 @@
+<!-- 顶部横幅：新通知到达时弹出 -->
+<view
+  wx:if="{{bannerVisible}}"
+  class="notif-banner notif-banner--in"
+  bindtap="onBannerTap"
+  catchtouchmove
+>
+  <view class="notif-banner-icon">🔔</view>
+  <view class="notif-banner-body">
+    <view class="notif-banner-title">{{bannerTitle}}</view>
+    <view class="notif-banner-content" wx:if="{{bannerContent}}">{{bannerContent}}</view>
+  </view>
+  <view class="notif-banner-close" catchtap="onBannerClose">×</view>
+</view>
+
 <view class="tab-bar {{themeClass}}">
   <view class="tab-bar-glass"></view>
   <view class="tab-bar-inner">
@@ -16,6 +31,11 @@
       mode="aspectFit"
     />
     <view class="tab-bar-text">{{item.text}}</view>
+    <!-- 仅在「设置」tab 上显示未读红点 -->
+    <view
+      wx:if="{{item.pagePath === '/pages/common/settings/index' && unreadCount > 0}}"
+      class="tab-bar-badge"
+    >{{unreadCount > 99 ? '99+' : unreadCount}}</view>
     </view>
   </view>
   </view>

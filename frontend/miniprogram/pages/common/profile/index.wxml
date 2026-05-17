@@ -4,27 +4,38 @@
       <view class="page-hero-title">{{heroTitle}}</view>
     </view>
 
-    <view class="card profile-account-card">
-      <view class="section-header profile-account-section-title">
-        <view class="section-title">登录信息</view>
-      </view>
-      <view class="profile-account-body">
-        <view class="profile-account-hero">
+    <view class="section-header">
+      <view class="section-title">登录信息</view>
+    </view>
+    <view class="card profile-section-card">
+      <view class="field profile-field profile-field--avatar">
+        <text class="field-label">头像</text>
+        <view class="profile-account-avatar-wrap">
           <image
             wx:if="{{accAvatarUrl}}"
-            class="profile-account-avatar profile-account-avatar--img"
+            class="profile-account-avatar-pic"
             src="{{accAvatarUrl}}"
             mode="aspectFill"
           />
-          <view wx:else class="profile-account-avatar profile-account-avatar--text">{{accAvatarChar}}</view>
-        </view>
-        <view class="profile-account-text">
-          <view class="profile-account-nick">{{accNickname}}</view>
-          <view class="profile-account-phone">手机 {{accPhoneDisplay}}</view>
+          <view wx:else class="profile-account-avatar-pic profile-account-avatar-pic--placeholder">
+            <view class="profile-account-avatar-placeholder-icon">+</view>
+            <view class="profile-account-avatar-placeholder-text">头像</view>
+          </view>
+          <view class="profile-account-avatar-edit-badge">编辑</view>
+          <button
+            class="profile-account-avatar-btn"
+            open-type="chooseAvatar"
+            bindchooseavatar="onAccChooseAvatar"
+          ></button>
         </view>
       </view>
-      <view class="profile-account-actions">
-        <button class="btn-secondary" bindtap="onEditAccount">修改头像、昵称与手机</button>
+      <view class="field profile-field" bindtap="onEditNickname">
+        <text class="field-label">昵称</text>
+        <view class="field-input profile-field-input profile-picker-line">{{accNickname}}</view>
+      </view>
+      <view class="field profile-field" bindtap="onEditPhone">
+        <text class="field-label">手机</text>
+        <view class="field-input profile-field-input profile-picker-line">{{accPhoneDisplay}}</view>
       </view>
     </view>
 
@@ -126,7 +137,6 @@
           bindchange="onContinuousMatchChange"
         />
       </view>
-      <view class="profile-field-hint" style="margin-top: 12rpx">与服务器同步，用于后台记录志愿者是否愿意持续参与匹配；需已连接后端并登录。</view>
     </view>
 
     <view class="card profile-submit-card">

@@ -1,99 +1,60 @@
-const { getApplicationsForL2, resolveApplication } = require("../../../utils/onboardingStore");
-const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
+const { mergeFromStorageIntoApp } = require("../../../utils/userProfileStore");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
-const {
-  getRecipientStudentRegList,
-  getRecipientHoursList,
-  getVolunteerRegList
-} = require("../../../utils/regionL2Display");
+const { adminApi } = require("../../../utils/api");
+
+const PAGE_PATH = "pages/admin/region/index";
+
+function hasPermission(perms, key) {
+  if (!Array.isArray(perms)) return false;
+  return perms.indexOf(key) >= 0 || perms.indexOf("*") >= 0;
+}
 
 Page({
   data: {
-    l2Scope: "",
-    hasScope: false,
-    regionName: "—",
-    volunteerReviewList: [],
-    /** 受援方 hub：待审条数 */
+    regionName: "区域管理",
     studentRegCount: 0,
     hoursCount: 0,
-    noScopeTitle: "请等待平台分配"
+    teacherRegCount: 0,
+    canStudentManage: false,
+    canVolunteerRecordAudit: false,
+    canTeacherAudit: false,
+    loading: false
   },
   onShow() {
-    checkOnboardingOrRedirect("pages/admin/region/index");
+    checkOnboardingOrRedirect(PAGE_PATH);
+    this.refresh();
+  },
+  refresh() {
     mergeFromStorageIntoApp();
-    const u = (getApp().globalData && getApp().globalData.userInfo) || {};
-    const p = getByPhone(u.phone) || u;
-    const scope = p.l2Scope || "";
-    const hasScope = scope === "volunteer_side" || scope === "recipient_side";
-    const regionName = hasScope
-      ? scope === "volunteer_side"
-        ? "支教方"
-        : "受援方"
-      : "未分配";
-    const phone = u.phone;
-    let volList = [];
-    let stuC = 0;
-    let hC = 0;
-    if (hasScope && scope === "volunteer_side" && phone) {
-      volList = getVolunteerRegList(String(phone));
-    } else if (hasScope && scope === "recipient_side" && phone) {
-      stuC = getRecipientStudentRegList(String(phone)).length;
-      hC = getRecipientHoursList(String(phone)).length;
-    }
-    this.setData({
-      l2Scope: scope,
-      hasScope,
-      regionName,
-      noScopeTitle: "请等待平台分配",
-      volunteerReviewList: volList,
-      studentRegCount: stuC,
-      hoursCount: hC
-    });
+    const app = getApp();
+    const u = (app.globalData && app.globalData.userInfo) || {};
+    const perms = Array.isArray(u.permissions) ? u.permissions : [];
+    const canStudentManage = hasPermission(perms, "student_manage");
+    const canVolunteerRecordAudit = hasPermission(perms, "volunteer_record_audit");
+    const canTeacherAudit = hasPermission(perms, "teacher_audit");
+    this.setData({ canStudentManage, canVolunteerRecordAudit, canTeacherAudit });
+
+    const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    if (!token) return;
+    this.setData({ loading: true });
+    const tasks = [];
+    tasks.push(canStudentManage ? adminApi.pendingStudents({ page: 1, size: 50 }).catch(() => null) : Promise.resolve(null));
+    tasks.push(canVolunteerRecordAudit ? adminApi.pendingVolunteerRecords({ page: 1, size: 50 }).catch(() => null) : Promise.resolve(null));
+    tasks.push(canTeacherAudit ? adminApi.pendingTeachers({ page: 1, size: 50 }).catch(() => null) : Promise.resolve(null));
+    Promise.all(tasks).then(([students, hours, teachers]) => {
+      const sList = students && (students.records || students.list) || (Array.isArray(students) ? students : []);
+      const hList = hours && (hours.records || hours.list) || (Array.isArray(hours) ? hours : []);
+      const tList = teachers && (teachers.records || teachers.list) || (Array.isArray(teachers) ? teachers : []);
+      this.setData({
+        studentRegCount: sList.length || 0,
+        hoursCount: hList.length || 0,
+        teacherRegCount: tList.length || 0,
+        loading: false
+      });
+    }).catch(() => this.setData({ loading: false }));
   },
-  onPullDownRefresh() {
-    this.onShow();
-    wx.stopPullDownRefresh();
-  },
-  toRegionStudents() {
-    wx.navigateTo({ url: "/pages/admin/region-students/index" });
-  },
-  toRegionHours() {
-    wx.navigateTo({ url: "/pages/admin/region-hours/index" });
-  },
-  onViewOnboarding(e) {
-    const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
-    if (!id) {
-      return;
-    }
-    wx.navigateTo({ url: "/pages/common/review-submission-detail/index?type=onboarding&id=" + encodeURIComponent(String(id)) });
-  },
-  onCreateAccount() {
-    if (!this.data.hasScope || this.data.l2Scope !== "recipient_side") {
-      wx.showToast({ title: "受援方老师可管学生注册", icon: "none" });
-      return;
-    }
-    wx.showToast({ title: "已记录（Mock）", icon: "success" });
-  },
-  onApproveL2(e) {
-    const id = e.currentTarget.dataset.id;
-    const u = getApp().globalData.userInfo || {};
-    const res = resolveApplication(id, true, { role: "admin_level_2", phone: u.phone, nickname: u.nickname });
-    if (!res.ok) {
-      wx.showToast({ title: res.message || "失败", icon: "none" });
-      return;
-    }
-    wx.showToast({ title: "已处理", icon: "success" });
-    this.onShow();
-  },
-  onRejectL2(e) {
-    const id = e.currentTarget.dataset.id;
-    const u = getApp().globalData.userInfo || {};
-    const res = resolveApplication(id, false, { role: "admin_level_2", phone: u.phone, nickname: u.nickname });
-    if (!res.ok) {
-      wx.showToast({ title: res.message || "失败", icon: "none" });
-      return;
-    }
-    wx.showToast({ title: "已驳回", icon: "none" });
-    this.onShow();
-  }
+  onPullDownRefresh() { this.refresh(); wx.stopPullDownRefresh(); },
+  toRegionStudents() { wx.navigateTo({ url: "/pages/admin/region-students/index" }); },
+  toRegionHours() { wx.navigateTo({ url: "/pages/admin/region-hours/index" }); },
+  toRegionTeachers() { wx.navigateTo({ url: "/pages/admin/region-teachers/index" }); }
 });

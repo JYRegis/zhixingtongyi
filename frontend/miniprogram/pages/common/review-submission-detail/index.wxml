@@ -2,10 +2,7 @@
   <view class="container sub-detail-page">
     <view wx:if="{{!denied && rows.length}}">
       <view class="sub-detail-hero">
-        <view class="page-hero-eyebrow">REVIEW DETAIL</view>
         <view class="page-hero-title">{{pageTitle}}</view>
-        <view class="sub-detail-hint" wx:if="{{type === 'onboarding'}}">以下为用户首次认证时填写的原表与补充说明。</view>
-        <view class="sub-detail-hint" wx:else>以下为发起方提交的认定义务时长与关联信息。</view>
       </view>
       <view class="card sub-detail-card">
         <block wx:for="{{rows}}" wx:key="label" wx:for-index="i">

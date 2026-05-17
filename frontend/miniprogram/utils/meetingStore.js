@@ -103,15 +103,10 @@ function splitNextAndHistory(list, nowMs) {
   const past = sorted
     .filter((m) => (m.startTimeMs || 0) <= t)
     .sort((a, b) => (b.startTimeMs || 0) - (a.startTimeMs || 0));
-  const nextMeeting = future.length > 0 ? { ...future[0] } : null;
-  const pastIds = new Set();
-  if (nextMeeting) {
-    pastIds.add(String(nextMeeting.id));
-  }
-  const history = past
-    .filter((h) => !nextMeeting || String(h.id) !== String(nextMeeting.id))
-    .map((h) => ({ ...h, status: h.status || "已结束" }));
-  return { nextMeeting, history };
+  const upcoming = future.map((m) => ({ ...m }));
+  const nextMeeting = upcoming.length > 0 ? upcoming[0] : null;
+  const history = past.map((h) => ({ ...h, status: h.status || "已结束" }));
+  return { nextMeeting, upcoming, history };
 }
 
 /**
@@ -158,7 +153,7 @@ function formatMeetingTime(ms) {
  * 仅乡村学员、支教志愿者可登记会议（与底栏入口一致；管理员由产品侧不进入本模块）
  */
 function canCreateMeetingRole(role) {
-  return role === "student" || role === "teacher" || role === "admin_level_1" || role === "admin_level_2";
+  return role === "teacher";
 }
 
 /**

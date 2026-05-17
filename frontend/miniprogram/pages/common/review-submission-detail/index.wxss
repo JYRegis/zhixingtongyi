@@ -36,12 +36,12 @@
 .sub-detail-hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
   border-radius: 32rpx;
   padding: 34rpx 32rpx;
   border: none;
   margin-top: 24rpx;
-  box-shadow: 0 18rpx 44rpx rgba(255, 140, 0, 0.24);
+  box-shadow: 0 18rpx 44rpx rgba(22, 119, 255, 0.24);
 }
 
 .sub-detail-hero .page-hero-title {
@@ -78,7 +78,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
   color: var(--ui-primary);
   font-size: 32rpx;
   font-weight: 800;

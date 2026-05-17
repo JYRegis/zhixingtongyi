@@ -1,117 +1,13 @@
-.notif-page {
-  padding-bottom: 48rpx;
+.page-shell{padding-bottom:40rpx}
+.card{padding:28rpx;border-radius:24rpx;background:#fff}
+.list-row{display:flex;justify-content:space-between;align-items:center;padding:16rpx 0;border-bottom:1px solid #f1f2f4}
+.list-row:last-child{border-bottom:none}
+.primary-btn{
+  display:block;
+  width:100%;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
 }
-
-.notif-hero {
-  margin-bottom: 16rpx;
-}
-
-.notif-bar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16rpx;
-  padding: 20rpx;
-}
-.notif-btn-all {
-  font-size: 24rpx;
-}
-.notif-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-.notif-item {
-  padding: 28rpx;
-}
-
-.notif-item-main {
-  display: flex;
-  align-items: flex-start;
-  gap: 18rpx;
-}
-
-.notif-item-icon,
-.notif-empty-icon {
-  width: 76rpx;
-  height: 76rpx;
-  border-radius: 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-  color: var(--ui-primary);
-  font-size: 32rpx;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-
-.notif-item-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.notif-item-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16rpx;
-}
-
-.notif-item-title {
-  font-size: 32rpx;
-  font-weight: 800;
-  color: #333333;
-}
-
-.notif-item-body {
-  margin-top: 12rpx;
-  font-size: 28rpx;
-  color: #666666;
-  line-height: 1.5;
-  margin-bottom: 16rpx;
-  word-break: break-all;
-}
-
-.notif-item-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 24rpx;
-  color: #999999;
-}
-
-.notif-unread {
-  min-height: 44rpx;
-  padding: 0 18rpx;
-  border-radius: 999rpx;
-  display: flex;
-  align-items: center;
-  color: #0066ff;
-  background: #e6f0ff;
-  font-size: 22rpx;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.notif-read {
-  min-height: 44rpx;
-  padding: 0 18rpx;
-  border-radius: 999rpx;
-  display: flex;
-  align-items: center;
-  color: #999999;
-  background: #f5f7fa;
-  font-size: 22rpx;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.notif-empty-card {
-  margin-top: 20rpx;
-  padding: 44rpx 28rpx;
-  text-align: center;
-}
-
-.notif-empty-icon {
-  margin: 0 auto 18rpx;
-}
+.primary-btn::after{border:none}
+.notif-switch-row switch{transform:scale(0.8)}

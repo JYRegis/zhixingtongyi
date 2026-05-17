@@ -1,9 +1,7 @@
 <view class="page-shell {{_roleThemeClass}}">
   <view class="container platform-page">
     <view class="page-hero">
-      <view class="page-hero-eyebrow">PLATFORM OPS</view>
       <view class="page-hero-title">平台管理</view>
-      <view class="page-hero-desc">统一查看审核、时长认定与异常预警</view>
     </view>
 
     <view class="card platform-overview-card">
@@ -36,7 +34,7 @@
       <view class="platform-entry-row">
         <view class="platform-entry-icon">学</view>
         <view class="platform-entry-main">
-          <view class="platform-entry-title">乡村学员待审</view>
+          <view class="platform-entry-title">乡村学员</view>
           <view class="platform-entry-desc">查看学生注册与资料审核</view>
         </view>
         <view class="platform-entry-badge" wx:if="{{cStudent > 0}}">{{cStudent}}</view>
@@ -48,7 +46,7 @@
       <view class="platform-entry-row">
         <view class="platform-entry-icon">教</view>
         <view class="platform-entry-main">
-          <view class="platform-entry-title">支教志愿者待审</view>
+          <view class="platform-entry-title">支教志愿者</view>
           <view class="platform-entry-desc">处理志愿者入驻申请</view>
         </view>
         <view class="platform-entry-badge" wx:if="{{cTeacher > 0}}">{{cTeacher}}</view>
@@ -60,7 +58,7 @@
       <view class="platform-entry-row">
         <view class="platform-entry-icon">校</view>
         <view class="platform-entry-main">
-          <view class="platform-entry-title">学校老师待审</view>
+          <view class="platform-entry-title">学校老师</view>
           <view class="platform-entry-desc">确认学校侧管理身份</view>
         </view>
         <view class="platform-entry-badge" wx:if="{{cL2 > 0}}">{{cL2}}</view>
@@ -68,17 +66,7 @@
       </view>
     </view>
 
-    <view class="card platform-entry-card" bindtap="goReviewL1">
-      <view class="platform-entry-row">
-        <view class="platform-entry-icon">管</view>
-        <view class="platform-entry-main">
-          <view class="platform-entry-title">平台运营待审</view>
-          <view class="platform-entry-desc">审核平台运营权限申请</view>
-        </view>
-        <view class="platform-entry-badge" wx:if="{{cL1 > 0}}">{{cL1}}</view>
-        <view class="platform-entry-arrow">›</view>
-      </view>
-    </view>
+
 
     <view class="card platform-entry-card" bindtap="goHours">
       <view class="platform-entry-row">
@@ -92,14 +80,17 @@
       </view>
     </view>
 
-    <view class="card platform-entry-card" bindtap="goRisk">
+
+
+
+
+    <view class="card platform-entry-card" bindtap="goSecondaryAdmins">
       <view class="platform-entry-row">
-        <view class="platform-entry-icon">警</view>
+        <view class="platform-entry-icon">权</view>
         <view class="platform-entry-main">
-          <view class="platform-entry-title">异常与预警</view>
-          <view class="platform-entry-desc">跟进异常沟通与风险提醒</view>
+          <view class="platform-entry-title">二级管理员分配</view>
+          <view class="platform-entry-desc">为用户分配学校管理权限</view>
         </view>
-        <view class="platform-entry-badge platform-entry-badge--danger" wx:if="{{cRisk > 0}}">{{cRisk}}</view>
         <view class="platform-entry-arrow">›</view>
       </view>
     </view>

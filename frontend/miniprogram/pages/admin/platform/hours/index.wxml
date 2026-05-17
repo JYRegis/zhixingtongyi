@@ -1,9 +1,7 @@
 <view class="page-shell {{_roleThemeClass}}">
   <view class="container platform-page">
     <view class="page-hero">
-      <view class="page-hero-eyebrow">HOURS REVIEW</view>
       <view class="page-hero-title">认定义务时长</view>
-      <view class="page-hero-desc">审核志愿时长申请，确认服务记录真实有效</view>
     </view>
 
     <view wx:if="{{!pendingHours.length}}" class="card platform-empty-card">
