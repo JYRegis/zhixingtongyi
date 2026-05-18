@@ -30,9 +30,10 @@ public class AdminStudentController {
     @GetMapping("/students/pending")
     public ApiResponse<PageResponse<StudentVO>> pendingStudents(
             @RequestParam(required = false, defaultValue = "1") Long page,
-            @RequestParam(required = false, defaultValue = "10") Long size) {
+            @RequestParam(required = false, defaultValue = "10") Long size,
+            @RequestParam(required = false) Long schoolId) {
         Long operatorId = currentUserUtil.getCurrentUserId();
-        return ApiResponse.success(adminService.pendingStudents(operatorId, page, size));
+        return ApiResponse.success(adminService.pendingStudents(operatorId, page, size, schoolId));
     }
 
     @GetMapping("/students/{studentId}/profile")

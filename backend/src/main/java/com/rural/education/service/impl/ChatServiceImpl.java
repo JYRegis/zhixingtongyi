@@ -273,9 +273,11 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
             if (admin == null || admin.getSchoolId() == null) {
                 return List.of();
             }
+            // L2 只能看到自己代管的学生的结对会话
             List<Long> studentIds = studentProfileMapper.selectList(
                     new LambdaQueryWrapper<StudentProfile>()
-                            .eq(StudentProfile::getSchoolId, admin.getSchoolId())
+                            .eq(StudentProfile::getBindAdminId, userId)
+                            .eq(StudentProfile::getAuditStatus, 1)
             ).stream().map(StudentProfile::getUserId).toList();
             if (studentIds.isEmpty()) {
                 return List.of();

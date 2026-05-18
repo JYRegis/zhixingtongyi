@@ -34,7 +34,7 @@ public interface AdminService extends IService<User> {
 
     void switchManagedStudent(Long operatorId, Long studentId);
 
-    PageResponse<StudentVO> pendingStudents(Long operatorId, Long page, Long size);
+    PageResponse<StudentVO> pendingStudents(Long operatorId, Long page, Long size, Long schoolId);
 
     StudentVO studentProfileDetail(Long operatorId, Long studentId);
 
@@ -43,5 +43,7 @@ public interface AdminService extends IService<User> {
     TeacherVO teacherProfileDetail(Long operatorId, Long teacherId);
 
     AdminProfileVO myProfile(Long operatorId);
+
+    void updateMyProfile(Long operatorId, com.rural.education.dto.request.admin.UpdateAdminProfileRequest request);
 }
 

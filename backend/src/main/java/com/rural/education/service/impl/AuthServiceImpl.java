@@ -205,6 +205,22 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             user.setAvatar(request.getAvatar());
             needUpdate = true;
         }
+        if (request.getPhone() != null && !request.getPhone().isBlank()) {
+            String newPhone = request.getPhone().trim();
+            if (!newPhone.matches("^1\\d{10}$")) {
+                throw new BusinessException("手机号格式错误");
+            }
+            Long collide = userMapper.selectCount(
+                    new LambdaQueryWrapper<User>()
+                            .eq(User::getPhone, newPhone)
+                            .ne(User::getId, userId)
+            );
+            if (collide > 0) {
+                throw new BusinessException("该手机号已被其他账号使用");
+            }
+            user.setPhone(newPhone);
+            needUpdate = true;
+        }
         if (needUpdate) {
             userMapper.updateById(user);
         }

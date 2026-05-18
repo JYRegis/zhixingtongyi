@@ -9,9 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -24,7 +24,8 @@ public class ChatStompController {
 
     @MessageMapping("/chat.send")
     public void sendMessage(@Payload SendMessageRequest request,
-                            @AuthenticationPrincipal Long userId) {
+                            Principal principal) {
+        Long userId = Long.valueOf(principal.getName());
         ChatMessageVO vo = chatService.sendMessage(userId, request);
 
         List<ChatParticipantVO> participants = chatService.getParticipants(userId, request.getMatchPairId());
@@ -38,7 +39,8 @@ public class ChatStompController {
 
     @MessageMapping("/chat.read")
     public void markRead(@Payload MarkReadRequest request,
-                         @AuthenticationPrincipal Long userId) {
+                         Principal principal) {
+        Long userId = Long.valueOf(principal.getName());
         chatService.markRead(userId, request.getMessageId());
     }
 

@@ -90,16 +90,43 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     @Transactional(rollbackFor = Exception.class)
     public void assignSecondaryAdmin(Long operatorId, SecondaryAdminRequest request) {
         userAccessService.requireL1Admin(operatorId);
-        userMapper.update(null, new LambdaUpdateWrapper<User>().eq(User::getId, request.getUserId()).set(User::getRole, UserRole.L2_ADMIN.getCode()));
+
+        // 解析 userId：优先使用 userId，否则按 phone 查找或创建
+        Long userId = request.getUserId();
+        if (userId == null) {
+            String phone = request.getPhone();
+            if (phone == null || phone.isBlank()) {
+                throw new BusinessException("userId 与 phone 至少传一个");
+            }
+            User existing = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
+            if (existing != null) {
+                userId = existing.getId();
+            } else {
+                // 新建一个待激活的 L2 账号
+                User newUser = new User();
+                newUser.setPhone(phone);
+                newUser.setUsername(request.getRealName() == null || request.getRealName().isBlank() ? ("L2_" + phone.substring(phone.length() - 4)) : request.getRealName());
+                newUser.setPassword(java.util.UUID.randomUUID().toString());
+                newUser.setRole(UserRole.L2_ADMIN.getCode());
+                newUser.setStatus(UserStatus.ENABLED.getCode());
+                userMapper.insert(newUser);
+                userId = newUser.getId();
+            }
+        }
+
+        // 升级角色为 L2
+        userMapper.update(null, new LambdaUpdateWrapper<User>().eq(User::getId, userId).set(User::getRole, UserRole.L2_ADMIN.getCode()));
+
         String permissions = toJson(request.getPermissions());
+        Long finalUserId = userId;
         AdminProfile admin = adminProfileMapper.selectOne(
-                new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, request.getUserId())
+                new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, finalUserId)
         );
         if (admin != null) {
             adminProfileMapper.update(
                     null,
                     new LambdaUpdateWrapper<AdminProfile>()
-                            .eq(AdminProfile::getUserId, request.getUserId())
+                            .eq(AdminProfile::getUserId, finalUserId)
                             .set(AdminProfile::getRealName, request.getRealName() == null ? "二级管理员" : request.getRealName())
                             .set(AdminProfile::getSchoolId, request.getSchoolId())
                             .set(AdminProfile::getRegionCode, request.getRegionCode())
@@ -107,7 +134,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
             );
         } else {
             AdminProfile newAdmin = new AdminProfile();
-            newAdmin.setUserId(request.getUserId());
+            newAdmin.setUserId(finalUserId);
             newAdmin.setRealName(request.getRealName() == null ? "二级管理员" : request.getRealName());
             newAdmin.setSchoolId(request.getSchoolId());
             newAdmin.setRegionCode(request.getRegionCode());
@@ -213,7 +240,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     }
 
     @Override
-    public PageResponse<StudentVO> pendingStudents(Long operatorId, Long page, Long size) {
+    public PageResponse<StudentVO> pendingStudents(Long operatorId, Long page, Long size, Long schoolId) {
         userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         long current = page == null || page < 1 ? 1 : page;
         long pageSize = size == null || size < 1 ? 10 : Math.min(size, 100);
@@ -229,6 +256,9 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
             if (admin != null && admin.getSchoolId() != null) {
                 wrapper.eq(StudentProfile::getSchoolId, admin.getSchoolId());
             }
+        } else if (schoolId != null) {
+            // L1 按学校筛选
+            wrapper.eq(StudentProfile::getSchoolId, schoolId);
         }
         Page<StudentProfile> p = studentProfileMapper.selectPage(new Page<>(current, pageSize), wrapper);
         Page<StudentVO> voPage = new Page<>(p.getCurrent(), p.getSize(), p.getTotal());
@@ -309,6 +339,25 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         return vo;
     }
 
+    @Override
+    public void updateMyProfile(Long operatorId, com.rural.education.dto.request.admin.UpdateAdminProfileRequest request) {
+        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+        LambdaUpdateWrapper<AdminProfile> wrapper = new LambdaUpdateWrapper<AdminProfile>()
+                .eq(AdminProfile::getUserId, operatorId);
+        boolean hasUpdate = false;
+        if (request.getRealName() != null && !request.getRealName().isBlank()) {
+            wrapper.set(AdminProfile::getRealName, request.getRealName().trim());
+            hasUpdate = true;
+        }
+        if (request.getRegionCode() != null) {
+            wrapper.set(AdminProfile::getRegionCode, request.getRegionCode().trim());
+            hasUpdate = true;
+        }
+        if (hasUpdate) {
+            adminProfileMapper.update(null, wrapper);
+        }
+    }
+
     private StudentVO toStudentVO(StudentProfile row) {
         StudentVO vo = new StudentVO();
         vo.setId(row.getId());
@@ -328,6 +377,12 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
             if (school != null) {
                 vo.setSchoolName(school.getName());
             }
+        }
+        // 补充 user 表的 username 和 phone
+        User user = userMapper.selectById(row.getUserId());
+        if (user != null) {
+            vo.setUsername(user.getUsername());
+            vo.setPhone(user.getPhone());
         }
         try {
             if (row.getSubjectsNeeded() != null) {
