@@ -97,7 +97,7 @@ services:
     container_name: rep-nginx
     profiles: ["nginx"]
     ports:
-      - "${NGINX_PORT:-8081}:8081"
+      - "${NGINX_PORT:-8081}:80"
     volumes:
       - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
