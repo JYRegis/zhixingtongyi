@@ -83,6 +83,7 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         school.setAddress(request.getAddress());
         school.setContactPerson(request.getContactPerson());
         school.setContactPhone(request.getContactPhone());
+        school.setType(request.getType());
         schoolMapper.insert(school);
     }
 
