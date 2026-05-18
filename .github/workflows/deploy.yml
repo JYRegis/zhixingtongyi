@@ -1,0 +1,20 @@
+name: Deploy to Aliyun
+
+# 当 dev-backend 分支有代码 push 时触发
+on:
+  push:
+    branches:
+      - dev-backend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute remote deployment script
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            /home/yangjiayue/redeploy.sh
