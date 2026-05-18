@@ -50,6 +50,7 @@ CREATE TABLE `school` (
   `address` varchar(512) DEFAULT NULL COMMENT '详细地址',
   `contact_person` varchar(64) DEFAULT NULL COMMENT '联系人',
   `contact_phone` varchar(20) DEFAULT NULL COMMENT '联系电话',
+  `type` tinyint NOT NULL DEFAULT 0 COMMENT '学校类型：0-乡村学校（学员），1-高校（志愿者）',
   `deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

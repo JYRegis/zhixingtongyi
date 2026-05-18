@@ -20,8 +20,9 @@ public class SchoolController {
 
     @GetMapping
     public ApiResponse<List<School>> list(@RequestParam(required = false) String regionCode,
-                                          @RequestParam(required = false) String keyword) {
-        return ApiResponse.success(schoolService.listSchools(regionCode, keyword));
+                                          @RequestParam(required = false) String keyword,
+                                          @RequestParam(required = false) Integer type) {
+        return ApiResponse.success(schoolService.listSchools(regionCode, keyword, type));
     }
 
     @GetMapping("/{schoolId}")

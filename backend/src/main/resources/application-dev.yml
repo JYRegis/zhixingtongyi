@@ -32,3 +32,15 @@ wx:
   miniapp:
     appid: ${WX_MINIAPP_APPID:wxbd4c9add97038750}
     secret: ${WX_MINIAPP_SECRET:default-secret}
+
+aliyun:
+  oss:
+    endpoint: ${ALIYUN_OSS_ENDPOINT:oss-cn-beijing.aliyuncs.com}
+    bucket-name: ${ALIYUN_OSS_BUCKET_NAME:zhixingtongyi}
+    access-key-id: ${ALIYUN_OSS_ACCESS_KEY_ID:}
+    access-key-secret: ${ALIYUN_OSS_ACCESS_KEY_SECRET:}
+    sts:
+      region-id: ${ALIYUN_STS_REGION_ID:cn-beijing}
+      role-arn: ${ALIYUN_STS_ROLE_ARN:}
+      role-session-name: ${ALIYUN_STS_ROLE_SESSION_NAME:ztysession}
+      duration-seconds: ${ALIYUN_STS_DURATION_SECONDS:900}

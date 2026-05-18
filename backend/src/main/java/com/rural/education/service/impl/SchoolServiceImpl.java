@@ -16,13 +16,16 @@ import java.util.List;
 public class SchoolServiceImpl extends ServiceImpl<SchoolMapper, School> implements SchoolService {
 
     @Override
-    public List<School> listSchools(String regionCode, String keyword) {
+    public List<School> listSchools(String regionCode, String keyword, Integer type) {
         LambdaQueryWrapper<School> wrapper = new LambdaQueryWrapper<>();
         if (regionCode != null && !regionCode.isBlank()) {
             wrapper.eq(School::getRegionCode, regionCode);
         }
         if (keyword != null && !keyword.isBlank()) {
             wrapper.like(School::getName, keyword);
+        }
+        if (type != null) {
+            wrapper.eq(School::getType, type);
         }
         wrapper.orderByAsc(School::getId);
         return list(wrapper);

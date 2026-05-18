@@ -9,6 +9,7 @@
                COUNT(DISTINCT sp.user_id)  AS studentCount
         FROM school s
                  LEFT JOIN student_profile sp ON s.id = sp.school_id
+        WHERE s.type = 0
         GROUP BY s.region_code, s.name
         ORDER BY studentCount DESC
     </select>
