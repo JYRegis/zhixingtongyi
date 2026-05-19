@@ -51,16 +51,39 @@ Page({
   },
   onApproveL2(e) {
     const id = e.currentTarget.dataset.id;
-    adminApi.auditStudent(id, { status: 1, notes: "" }).then(() => {
-      wx.showToast({ title: "已通过", icon: "success" });
-      this.refresh();
-    }).catch((err) => wx.showToast({ title: (err && err.message) || "失败", icon: "none" }));
+    const self = this;
+    wx.showModal({
+      title: "通过审核",
+      editable: true,
+      placeholderText: "审核备注（选填）",
+      content: "",
+      success(res) {
+        if (!res.confirm) return;
+        const notes = (res.content || "").trim();
+        adminApi.auditStudent(id, { status: 1, notes }).then(() => {
+          wx.showToast({ title: "已通过", icon: "success" });
+          self.refresh();
+        }).catch((err) => wx.showToast({ title: (err && err.message) || "失败", icon: "none" }));
+      }
+    });
   },
   onRejectL2(e) {
     const id = e.currentTarget.dataset.id;
-    adminApi.auditStudent(id, { status: 2, notes: "二级管理员驳回" }).then(() => {
-      wx.showToast({ title: "已驳回", icon: "none" });
-      this.refresh();
-    }).catch((err) => wx.showToast({ title: (err && err.message) || "失败", icon: "none" }));
+    const self = this;
+    wx.showModal({
+      title: "驳回",
+      editable: true,
+      placeholderText: "请填写驳回原因",
+      content: "",
+      success(res) {
+        if (!res.confirm) return;
+        const notes = (res.content || "").trim();
+        if (!notes) { wx.showToast({ title: "请填写驳回原因", icon: "none" }); return; }
+        adminApi.auditStudent(id, { status: 2, notes }).then(() => {
+          wx.showToast({ title: "已驳回", icon: "none" });
+          self.refresh();
+        }).catch((err) => wx.showToast({ title: (err && err.message) || "失败", icon: "none" }));
+      }
+    });
   }
 });

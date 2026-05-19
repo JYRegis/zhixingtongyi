@@ -8,7 +8,7 @@ function pad2(n) { return (n < 10 ? "0" : "") + n; }
 function defaultDate() { const d = new Date(); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
 
 Page({
-  data: { role: "", title: "", dateStr: "", timeStr: "20:00", roomLink: "", manualPairId: "", pairIndex: 0, pairOptions: [], pairLineDisplay: "", pairRequired: false, submitDisabled: false, _pairSource: "local" },
+  data: { role: "", title: "", dateStr: "", timeStr: "20:00", durationMin: "60", roomLink: "", meetingPassword: "", manualPairId: "", pairIndex: 0, pairOptions: [], pairLineDisplay: "", pairRequired: false, submitDisabled: false, _pairSource: "local" },
   onShow() {
     checkOnboardingOrRedirect("pages/meeting/create/index");
     mergeFromStorageIntoApp();
@@ -55,8 +55,9 @@ Page({
     const token0 = (app && app.globalData && app.globalData.token) || wx.getStorageSync("token") || ""; const useRemote = token0 && this.data._pairSource === "api";
     if (useRemote) {
       const link = String(this.data.roomLink || "").trim(); if (!link) { wx.showToast({ title: "请填写会议链接", icon: "none" }); return; }
-      const endMs = st + 60 * 60 * 1000;
-      const body = buildMeetingCreateRequest({ matchPairId: Number(pairId), topic: title, startTimeMs: st, endTimeMs: endMs, meetingLink: link });
+      const dur = parseInt(this.data.durationMin, 10) || 60;
+      const endMs = st + dur * 60 * 1000;
+      const body = buildMeetingCreateRequest({ matchPairId: Number(pairId), topic: title, startTimeMs: st, endTimeMs: endMs, meetingLink: link, meetingPassword: String(this.data.meetingPassword || "").trim() || undefined });
       wx.showLoading({ title: "提交中", mask: true });
       meetingApi.create(body).then(() => { wx.hideLoading(); wx.showToast({ title: "已创建", icon: "success" }); setTimeout(() => wx.navigateBack(), 500); }).catch((err) => { wx.hideLoading(); wx.showModal({ title: "服务器保存失败", content: (err && err.message) || "网络或服务异常", showCancel: false }); });
       return;

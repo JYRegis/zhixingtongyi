@@ -21,7 +21,7 @@
         </view>
         <view class="list-row">
           <text>累计服务时长</text>
-          <text class="badge badge-danger">{{stats.pendingAlerts}}</text>
+          <text>{{stats.totalServiceHours || '—'}}</text>
         </view>
       </view>
     </view>
@@ -75,7 +75,7 @@
           <view class="platform-entry-title">认定义务时长</view>
           <view class="platform-entry-desc">复核志愿服务时长记录</view>
         </view>
-        <view class="platform-entry-badge platform-entry-badge--warn" wx:if="{{cHours > 0}}">{{cHours}}</view>
+        <view class="platform-entry-badge" wx:if="{{cHours > 0}}">{{cHours}}</view>
         <view class="platform-entry-arrow">›</view>
       </view>
     </view>

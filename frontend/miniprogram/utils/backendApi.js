@@ -108,6 +108,9 @@ module.exports = {
   authPhoneLogin,
   authMockLogin,
   authRoleApply,
+  authUpdateProfile: function(payload) {
+    return request({ url: "/auth/me", method: "PUT", data: payload });
+  },
   getStudentProfile,
   saveStudentProfile,
   submitStudentProfile,

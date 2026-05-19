@@ -61,6 +61,8 @@ const TAB_UNBIND = {
 const { getByPhone } = require("../utils/userProfileStore");
 const { getRoleThemeClass, getEffectiveRoleForTheme, getPageRoleThemeClass } = require("../utils/roleTheme");
 const notificationCenter = require("../utils/notificationCenter");
+const { isVolunteerSchool, fetchSchoolDetail } = require("../utils/schoolsMock");
+const { adminApi } = require("../utils/api");
 
 Component({
   data: {
@@ -68,6 +70,7 @@ Component({
     selected: 0,
     themeClass: "theme-guest",
     unreadCount: 0,
+    chatUnreadCount: 0,
     bannerVisible: false,
     bannerTitle: "",
     bannerContent: ""
@@ -79,11 +82,20 @@ Component({
       this._unsub = notificationCenter.subscribe(function (evt) {
         if (!evt) return;
         if (evt.type === "unread-change") {
-          self.setData({ unreadCount: (evt.payload && evt.payload.count) || 0 });
+          const count = (evt.payload && evt.payload.count) || 0;
+          self.setData({ unreadCount: count });
+          // 未读数降到 0 时自动关闭横幅（用户在通知页点了已读后应即时反映）
+          if (count === 0 && self.data.bannerVisible) {
+            self.setData({ bannerVisible: false });
+          }
+        } else if (evt.type === "chat-unread-change") {
+          self.setData({ chatUnreadCount: (evt.payload && evt.payload.count) || 0 });
         } else if (evt.type === "incoming") {
           self._showBanner(evt.payload && evt.payload.latest);
         }
       });
+      // 组件挂载后主动拉一次未读，如果有则弹横幅（覆盖登录后首次进入的场景）
+      try { notificationCenter.peekAndNotify(); } catch (_) {}
     },
     detached() {
       if (typeof this._unsub === "function") {
@@ -114,7 +126,38 @@ Component({
       } else if (role === "admin_level_1") {
         list = [TAB[0], TAB_PLATFORM, TAB[2], TAB[4]];
       } else if (role === "admin_level_2") {
-        list = [TAB[0], TAB_REGION, TAB_UNBIND, TAB[2], TAB[4]];
+        const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
+        const isSupportSide = isVolunteerSchool(schoolId);
+        if (isSupportSide === true) {
+          // 支教方 L2：只有工作台、区域管理、聊天、设置，无解绑
+          list = [TAB[0], TAB_REGION, TAB[2], TAB[4]];
+        } else if (isSupportSide === false) {
+          // 受援方 L2：工作台、区域管理、解绑、聊天、设置
+          list = [TAB[0], TAB_REGION, TAB_UNBIND, TAB[2], TAB[4]];
+        } else {
+          // schoolId 未知或缓存未命中：默认受援方布局，异步确认后刷新
+          list = [TAB[0], TAB_REGION, TAB_UNBIND, TAB[2], TAB[4]];
+          if (schoolId) {
+            var self = this;
+            fetchSchoolDetail(schoolId).then(function () {
+              self.sync(); // 缓存填充后重新 sync
+            });
+          } else {
+            // schoolId 还没拿到，尝试拉 admin profile
+            var self2 = this;
+            adminApi.myProfile().then(function (profile) {
+              if (profile && profile.schoolId) {
+                var app2 = getApp();
+                if (app2 && app2.globalData && app2.globalData.userInfo) {
+                  app2.globalData.userInfo.schoolId = profile.schoolId;
+                }
+                return fetchSchoolDetail(profile.schoolId);
+              }
+            }).then(function () {
+              self2.sync();
+            }).catch(function () {});
+          }
+        }
       } else {
         list = [TAB[0], TAB[1], TAB[2], TAB[4]];
       }
@@ -150,7 +193,7 @@ Component({
       wx.switchTab({ url: path });
     },
     /**
-     * 顶部横幅：检测到新通知时弹出，3.5s 自动收起，可点击进入通知页。
+     * 顶部横幅：检测到新通知时弹出，持续显示直到用户点击或关闭。
      */
     _showBanner(notification) {
       const title = (notification && notification.title) || "新消息";
@@ -160,28 +203,14 @@ Component({
         bannerTitle: String(title),
         bannerContent: String(content)
       });
-      if (this._bannerTimer) clearTimeout(this._bannerTimer);
-      const self = this;
-      this._bannerTimer = setTimeout(function () {
-        self.setData({ bannerVisible: false });
-        self._bannerTimer = null;
-      }, 3500);
     },
     onBannerTap() {
       this.setData({ bannerVisible: false });
-      if (this._bannerTimer) {
-        clearTimeout(this._bannerTimer);
-        this._bannerTimer = null;
-      }
       wx.navigateTo({ url: "/pages/common/notifications/index" });
     },
     onBannerClose(e) {
       // 阻止冒泡到 onBannerTap
       this.setData({ bannerVisible: false });
-      if (this._bannerTimer) {
-        clearTimeout(this._bannerTimer);
-        this._bannerTimer = null;
-      }
     }
   }
 });

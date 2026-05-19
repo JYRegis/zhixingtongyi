@@ -75,7 +75,9 @@ function meetingItemVoToListRow(vo) {
     title: topic,
     startTimeMs: isNaN(startMs) ? Date.now() : startMs,
     _endTimeMs: isNaN(endMs) ? null : endMs,
+    durationText: (!isNaN(startMs) && !isNaN(endMs)) ? Math.round((endMs - startMs) / 60000) + " 分钟" : "",
     roomLink: (vo && vo.meetingLink) != null ? String(vo.meetingLink) : (vo && vo.meeting_link) || "",
+    meetingPassword: (vo && vo.meetingPassword) || "",
     pairId: matchPairId != null ? String(matchPairId) : "",
     pairLine: "我的结对",
     createdByPhone: "",
@@ -93,13 +95,17 @@ function meetingItemVoToListRow(vo) {
  * @param {string} p.meetingLink
  */
 function buildMeetingCreateRequest(p) {
-  return {
+  const req = {
     matchPairId: Number(p.matchPairId),
     topic: String(p.topic || "").trim() || "会议",
     startTime: toApiDateTimeString(p.startTimeMs),
     endTime: toApiDateTimeString(p.endTimeMs),
     meetingLink: String(p.meetingLink || "").trim()
   };
+  if (p.meetingPassword) {
+    req.meetingPassword = String(p.meetingPassword).trim();
+  }
+  return req;
 }
 
 /**
@@ -108,11 +114,19 @@ function buildMeetingCreateRequest(p) {
  */
 function pairDetailsToFormOptions(pairs) {
   const list = Array.isArray(pairs) ? pairs : [];
+  const role = (typeof getApp === "function" && getApp() && getApp().globalData && getApp().globalData.role) || "";
   return list.map(function (p) {
     const id = p && p.id != null ? p.id : 0;
+    const studentName = p.studentName || "学员";
+    const teacherName = p.teacherName || "志愿者";
+    // 只显示对方名字
+    var name;
+    if (role === "teacher") name = studentName;
+    else if (role === "student") name = teacherName;
+    else name = studentName + " — " + teacherName;
     return {
       id: String(id),
-      name: p.studentName || "学员"
+      name: name
     };
   });
 }

@@ -73,7 +73,7 @@ Page({
   onLogout() {
     wx.showModal({
       title: "退出登录",
-      content: "退出后将清除本机的登录状态，是否继续？",
+      content: "确定要退出当前账号吗？",
       success: (res) => {
         if (res.confirm) {
           getApp().logout();

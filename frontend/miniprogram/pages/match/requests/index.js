@@ -93,8 +93,8 @@ Page({
           id: row.id,
           studentName: row.studentName || "学员",
           volunteerName: "",
-          // 兼容后端未来补字段；目前 SQL 不返回，会拿到空串显示 "—"（已记入 gap）
-          timeRaw: row.studentAvailableTime || row.timeRaw || "",
+          // 后端现在返回 studentFreeTime（JSON 字符串），直接使用
+          timeRaw: row.studentFreeTime || row.studentAvailableTime || row.timeRaw || "",
           appliedAt: row.applyTime
         }));
       } catch (e) {

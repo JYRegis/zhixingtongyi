@@ -139,11 +139,15 @@ Page({
     if (role === "student") {
       schoolList = getSchoolsByKind("recipient");
     } else if (role === "teacher") {
+      // 支教方学校：从后端/本地获取所有 type=1 的学校
       schoolList = getSchoolsByKind("support");
     } else if (role === "admin_level_2") {
       schoolList = getSchoolsByKind();
     }
     let schoolId = p.schoolId || u.schoolId || "";
+    if (role === "teacher") {
+      schoolId = schoolId || "";
+    }
     let schoolName = "";
     if (schoolId) {
       const hit = (schoolList || []).find((s) => s.id === schoolId);

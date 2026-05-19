@@ -89,13 +89,9 @@
   width: 72rpx;
   height: 72rpx;
   border-radius: 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 14rpx;
+  box-sizing: border-box;
   background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
-  color: var(--ui-primary);
-  font-size: 30rpx;
-  font-weight: 800;
   flex-shrink: 0;
 }
 

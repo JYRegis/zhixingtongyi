@@ -11,7 +11,7 @@
       <view class="region-recipient-btns">
         <button wx:if="{{canStudentManage}}" class="region-jump-item" bindtap="toRegionStudents" plain="{{true}}" hover-class="list-row--hover" hover-stay-time="100">
           <view class="region-jump-top">
-            <view class="region-jump-icon">学</view>
+            <image class="region-jump-icon" src="/images/icons/user-check.svg" mode="aspectFit" />
             <view class="region-jump-main">
               <view class="region-jump-name">学生注册审核</view>
               <view class="region-jump-meta" wx:if="{{studentRegCount > 0}}">待审 {{studentRegCount}} 条</view>
@@ -22,7 +22,7 @@
         </button>
         <button wx:if="{{canVolunteerRecordAudit}}" class="region-jump-item" bindtap="toRegionHours" plain="{{true}}" hover-class="list-row--hover" hover-stay-time="100">
           <view class="region-jump-top">
-            <view class="region-jump-icon">时</view>
+            <image class="region-jump-icon" src="/images/icons/clock.svg" mode="aspectFit" />
             <view class="region-jump-main">
               <view class="region-jump-name">认定义务时长</view>
               <view class="region-jump-meta" wx:if="{{hoursCount > 0}}">待审 {{hoursCount}} 条</view>
@@ -33,7 +33,7 @@
         </button>
         <button wx:if="{{canTeacherAudit}}" class="region-jump-item" bindtap="toRegionTeachers" plain="{{true}}" hover-class="list-row--hover" hover-stay-time="100">
           <view class="region-jump-top">
-            <view class="region-jump-icon">志</view>
+            <image class="region-jump-icon" src="/images/icons/award.svg" mode="aspectFit" />
             <view class="region-jump-main">
               <view class="region-jump-name">志愿者注册审核</view>
               <view class="region-jump-meta" wx:if="{{teacherRegCount > 0}}">待审 {{teacherRegCount}} 条</view>

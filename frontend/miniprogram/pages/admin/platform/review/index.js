@@ -4,7 +4,7 @@ const { mergeFromStorageIntoApp } = require("../../../../utils/userProfileStore"
 const { checkOnboardingOrRedirect } = require("../../../../utils/onboardingGuard");
 const { getSchoolsByKind, SCHOOLS } = require("../../../../utils/schoolsMock");
 const { SCOPE_OPTIONS, applyL2ScopeToTeacher } = require("../../../../utils/l2ScopeAssign");
-const { adminApi } = require("../../../../utils/api");
+const { adminApi, schoolApi } = require("../../../../utils/api");
 
 const PAGE_PATH = "pages/admin/platform/review/index";
 
@@ -54,18 +54,23 @@ Page({
     {
       roleFilter: "student",
       sectionTitle: "待审",
-      pendingList: []
+      pendingList: [],
+      schoolFilterList: [],
+      schoolFilterIndex: 0
     },
     L2_PICKER_INIT
   ),
   onLoad(q) {
     const r = (q && q.role) || "student";
     this._role = VALID.has(r) ? r : "student";
+    this._schoolId = null;
     this.setData(
       Object.assign(
         {
           roleFilter: this._role,
-          sectionTitle: (ROLE_TITLES[this._role] || "用户") + "待审"
+          sectionTitle: (ROLE_TITLES[this._role] || "用户") + "待审",
+          schoolFilterList: [],
+          schoolFilterIndex: 0
         },
         L2_PICKER_INIT
       )
@@ -75,6 +80,24 @@ Page({
     } catch (e) {
       // ignore
     }
+    // 加载学校列表用于筛选
+    this._loadSchoolFilter();
+  },
+  _loadSchoolFilter() {
+    const token = (getApp().globalData && getApp().globalData.token) || wx.getStorageSync("token") || "";
+    if (!token) return;
+    schoolApi.list().then((res) => {
+      const schools = Array.isArray(res) ? res : (res && (res.records || res.list)) || [];
+      const list = [{ id: "", name: "全部学校" }].concat(schools.map((s) => ({ id: s.id, name: s.name })));
+      this.setData({ schoolFilterList: list });
+    }).catch(() => {});
+  },
+  onSchoolFilterChange(e) {
+    const idx = Number(e.detail.value) || 0;
+    const selected = (this.data.schoolFilterList || [])[idx];
+    this._schoolId = (selected && selected.id) || null;
+    this.setData({ schoolFilterIndex: idx });
+    this.onShow();
   },
   onShow() {
     checkOnboardingOrRedirect(PAGE_PATH);
@@ -83,8 +106,10 @@ Page({
     const u = app.globalData.userInfo || {};
     const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
     if (token && (this._role === "student" || this._role === "teacher")) {
+      const params = { page: 1, size: 50 };
+      if (this._schoolId) params.schoolId = this._schoolId;
       const api = this._role === "student" ? adminApi.pendingStudents : adminApi.pendingTeachers;
-      api({ page: 1, size: 50 })
+      api(params)
         .then((res) => {
           const records = pageRecords(res);
           if (records.length > 0) {
@@ -131,7 +156,18 @@ Page({
       });
       return;
     }
-    this._resolve(id, true, "");
+    const self = this;
+    wx.showModal({
+      title: "通过审核",
+      editable: true,
+      placeholderText: "审核备注（选填）",
+      content: "",
+      success(res) {
+        if (!res.confirm) return;
+        const notes = (res.content || "").trim();
+        self._resolve(id, true, notes);
+      }
+    });
   },
   onL2ScopeIndexChange(e) {
     const ix = Number(e.detail.value);
@@ -206,13 +242,20 @@ Page({
   },
   onReviewReject(e) {
     const id = e.currentTarget.dataset.id;
+    const self = this;
     wx.showModal({
       title: "驳回",
-      content: "确认驳回此条？",
-      success: (r) => {
-        if (r.confirm) {
-          this._resolve(id, false, "");
+      editable: true,
+      placeholderText: "请填写驳回原因",
+      content: "",
+      success(res) {
+        if (!res.confirm) return;
+        const notes = (res.content || "").trim();
+        if (!notes) {
+          wx.showToast({ title: "请填写驳回原因", icon: "none" });
+          return;
         }
+        self._resolve(id, false, notes);
       }
     });
   },
@@ -221,7 +264,10 @@ Page({
     if (!id) {
       return;
     }
-    wx.navigateTo({ url: "/pages/common/review-submission-detail/index?type=onboarding&id=" + encodeURIComponent(String(id)) });
+    // 根据当前审核的角色类型传不同 type，让详情页走对应的数据源
+    const typeMap = { student: "student", teacher: "teacher", admin_level_2: "onboarding", admin_level_1: "onboarding" };
+    const type = typeMap[this._role] || "onboarding";
+    wx.navigateTo({ url: "/pages/common/review-submission-detail/index?type=" + type + "&id=" + encodeURIComponent(String(id)) });
   },
   _fallbackToUsers() {
     const roleCode = ROLE_CODE[this._role];

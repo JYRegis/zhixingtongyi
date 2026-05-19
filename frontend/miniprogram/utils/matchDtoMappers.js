@@ -5,7 +5,7 @@
 
 /**
  * 将 GET /match/recommendations 结果转为与 match/center 中 enrichItem 输入同构
- * @param {Array<{ teacherId: number, realName?: string, school?: string, grade?: string, skilledSubjects?: string, freeTime?: string }>} vos
+ * @param {Array<{ teacherId: number, realName?: string, schoolId?: number, schoolName?: string, grade?: string, skilledSubjects?: Array, freeTime?: Array }>} vos
  * @param {string} role 当前页身份（本函数预期为 student）
  * @param {(item: object, role: string) => object} enrichItem 来自 match/center 的 enrich
  */
@@ -13,11 +13,19 @@ function mapRecommendationsToCenterRows(vos, role, enrichItem) {
   const list = Array.isArray(vos) ? vos : [];
   return list.map(function (vo, i) {
     const firstSubj = pickFirstToken(vo && vo.skilledSubjects);
+    // freeTime 后端现在返回 List<Map>，前端 parseFreeTimeField 兼容多格式
+    const freeTimeVal = vo && vo.freeTime;
+    let timeRaw = "";
+    if (Array.isArray(freeTimeVal)) {
+      timeRaw = JSON.stringify(freeTimeVal);
+    } else if (freeTimeVal != null) {
+      timeRaw = String(freeTimeVal);
+    }
     const item = {
       id: Number(vo.teacherId),
       asVolunteer: (vo && vo.realName) || "教师",
       asStudent: "—",
-      timeRaw: (vo && vo.freeTime) != null ? String(vo.freeTime) : "",
+      timeRaw: timeRaw,
       score: 72 + (i % 18),
       style: (vo && vo.grade) || firstSubj || "综合",
       subject: firstSubj || "综合"

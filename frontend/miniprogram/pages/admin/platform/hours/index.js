@@ -21,7 +21,7 @@ function mapRemoteHour(row) {
     week: row.meetingDate || "—",
     studentName: row.studentName || (row.studentId != null ? "学员 " + row.studentId : "—"),
     volunteerName: row.teacherName || (row.teacherId != null ? "志愿者 " + row.teacherId : "—"),
-    schoolName: "—"
+    schoolName: row.schoolName || "—"
   };
 }
 

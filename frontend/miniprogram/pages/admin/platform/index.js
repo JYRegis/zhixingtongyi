@@ -36,6 +36,7 @@ Page({
         if (teachers) next.volunteerCount = pageTotal(teachers);
         if (overview && overview.pairCount != null) next.pairCount = overview.pairCount;
         if (overview && overview.pendingAlerts != null) next.pendingAlerts = overview.pendingAlerts;
+        if (overview && overview.totalServiceHours != null) next.totalServiceHours = Math.round(overview.totalServiceHours / 60 * 10) / 10;
         const patch = { stats: next, dashboardRows: [] };
         patch.cStudent = pStudents ? pageTotal(pStudents) : (students ? pageTotal(students) : 0);
         patch.cTeacher = pTeachers ? pageTotal(pTeachers) : (teachers ? pageTotal(teachers) : 0);

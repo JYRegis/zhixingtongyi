@@ -3,6 +3,8 @@ const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { getByPhone } = require("../../../utils/userProfileStore");
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
+const { teacherApi } = require("../../../utils/api");
+const { isVolunteerSchool } = require("../../../utils/schoolsMock");
 
 const roleHeroMap = {
   student: { title: "我的学习" },
@@ -49,8 +51,13 @@ function getMenuListForCurrentRole(role) {
   if (role === "admin_level_1") {
     list.push({ title: "平台管理", action: "toPlatformAdmin", badge: "管理" });
   } else if (role === "admin_level_2") {
-    list.push({ title: "区域管理", action: "toRegionAdmin", badge: "管理" });
-    list.push({ title: "解绑", action: "toUnbind", badge: "处理" });
+    const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
+    const isSupportSide = isVolunteerSchool(schoolId) === true;
+    list.push({ title: "区域管理", action: "toRegionAdmin", badge: "管理", _supportSide: isSupportSide });
+    if (!isSupportSide) {
+      // 只有受援方 L2 有解绑功能
+      list.push({ title: "解绑", action: "toUnbind", badge: "处理" });
+    }
   }
   return list;
 }
@@ -58,13 +65,13 @@ function getMenuListForCurrentRole(role) {
 function formatMenuList(role) {
   const raw = getMenuListForCurrentRole(role);
   const iconMap = {
-    toMatch: "配",
-    toChat: "聊",
-    toMeeting: "会",
-    toHoursApply: "时",
-    toPlatformAdmin: "管",
-    toRegionAdmin: "校",
-    toUnbind: "解"
+    toMatch: "/images/icons/match.svg",
+    toChat: "/images/icons/chat.svg",
+    toMeeting: "/images/icons/meeting.svg",
+    toHoursApply: "/images/icons/clock.svg",
+    toPlatformAdmin: "/images/icons/admin.svg",
+    toRegionAdmin: "/images/icons/school.svg",
+    toUnbind: "/images/icons/unlink.svg"
   };
   const descMap = {
     toMatch: "查看推荐结对与待处理申请",
@@ -78,8 +85,10 @@ function formatMenuList(role) {
   return raw.map((item, index) => ({
     ...item,
     featured: index === 0,
-    iconText: iconMap[item.action] || "驿",
-    desc: descMap[item.action] || "进入对应工作入口"
+    iconSrc: iconMap[item.action] || "",
+    desc: item.action === "toRegionAdmin" && item._supportSide
+      ? "审核志愿者注册与管理"
+      : (descMap[item.action] || "进入对应工作入口")
   }));
 }
 
@@ -92,7 +101,8 @@ Page({
     heroTitle: "",
     menuList: [],
     loading: false,
-    _roleThemeClass: ""
+    _roleThemeClass: "",
+    totalHours: ""
   },
   onShow() {
     // checkOnboardingOrRedirect 内已 mergeFromStorageIntoApp；此处勿再于 check 后二次 merge，避免旧版 {remote,u} 合并覆盖档案里的 onboardingStatus
@@ -142,6 +152,26 @@ Page({
       heroTitle: hero.title,
       menuList
     });
+
+    // 志愿者：拉取累计时长
+    if (role === "teacher") {
+      const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+      if (token) {
+        var self = this;
+        teacherApi.getProfile().then(function (profile) {
+          if (profile && profile.totalServiceDuration != null) {
+            var hours = Math.round(profile.totalServiceDuration / 60 * 10) / 10;
+            self.setData({ totalHours: hours + " 小时" });
+          } else {
+            self.setData({ totalHours: "0 小时" });
+          }
+        }).catch(function () {
+          self.setData({ totalHours: "" });
+        });
+      }
+    } else {
+      this.setData({ totalHours: "" });
+    }
   },
   onTapMenu(e) {
     const action = e.currentTarget.dataset.action;

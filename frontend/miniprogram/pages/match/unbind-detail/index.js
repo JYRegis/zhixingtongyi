@@ -6,7 +6,7 @@ function safeDecode(s) {
   try { return decodeURIComponent(s); } catch (_) { return s; }
 }
 
-const INIT_KEY = "unbindInitiators"; // { [pairId]: userId }
+const INIT_KEY = "unbindInitiators"; // { [pairId]: userId } — legacy, kept for backward compat
 
 function readInitiators() {
   try {
@@ -15,6 +15,7 @@ function readInitiators() {
   } catch (_) { return {}; }
 }
 function markInitiator(pairId, userId) {
+  // 后端 unbindRequest 现在自动确认发起人，本地标记仅作兜底
   if (!pairId || !userId) return;
   const all = readInitiators();
   all[String(pairId)] = String(userId);
@@ -158,14 +159,8 @@ Page({
         else myConfirmed = adminConfirm;
         canConfirm = isUnbinding && !myConfirmed && !isInitiator;
 
-        // 发起人尚未自动确认 → 自动调一次 accept，避免再问一遍。仅尝试一次
-        if (isUnbinding && isInitiator && !myConfirmed && !this._autoAcceptTried) {
-          this._autoAcceptTried = true;
-          const roleParam = role === "student" ? "STUDENT" : role === "teacher" ? "TEACHER" : "SECONDARY_ADMIN";
-          matchApi.unbindConfirm(this._pairId, { role: roleParam, action: "accept" })
-            .then(() => this._loadAll())
-            .catch(() => {});
-        }
+        // 后端 unbindRequest 已自动确认发起人，无需前端再调 accept
+        // isInitiator 的确认位应该已经是 1
       }
 
       this.setData({

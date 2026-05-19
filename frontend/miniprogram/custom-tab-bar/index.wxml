@@ -31,9 +31,14 @@
       mode="aspectFit"
     />
     <view class="tab-bar-text">{{item.text}}</view>
-    <!-- 仅在「设置」tab 上显示未读红点 -->
+    <!-- 聊天 tab 显示聊天未读数 -->
     <view
-      wx:if="{{item.pagePath === '/pages/common/settings/index' && unreadCount > 0}}"
+      wx:if="{{item.pagePath === '/pages/chat/list/index' && chatUnreadCount > 0}}"
+      class="tab-bar-badge"
+    >{{chatUnreadCount > 99 ? '99+' : chatUnreadCount}}</view>
+    <!-- 设置 tab 显示通知未读数 -->
+    <view
+      wx:elif="{{item.pagePath === '/pages/common/settings/index' && unreadCount > 0}}"
       class="tab-bar-badge"
     >{{unreadCount > 99 ? '99+' : unreadCount}}</view>
     </view>

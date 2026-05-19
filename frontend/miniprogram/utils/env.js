@@ -110,5 +110,6 @@ function request(options) {
 }
 
 module.exports = {
-  request
+  request,
+  getBaseUrl
 };

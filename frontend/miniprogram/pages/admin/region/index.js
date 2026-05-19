@@ -1,6 +1,7 @@
 const { mergeFromStorageIntoApp } = require("../../../utils/userProfileStore");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { adminApi } = require("../../../utils/api");
+const { fetchSchoolDetail, isVolunteerSchool } = require("../../../utils/schoolsMock");
 
 const PAGE_PATH = "pages/admin/region/index";
 
@@ -31,7 +32,23 @@ Page({
     const perms = Array.isArray(u.permissions) ? u.permissions : [];
     const canStudentManage = hasPermission(perms, "student_manage");
     const canVolunteerRecordAudit = hasPermission(perms, "volunteer_record_audit");
-    const canTeacherAudit = hasPermission(perms, "teacher_audit");
+    const hasTeacherAuditPerm = hasPermission(perms, "teacher_audit");
+    // 志愿者审核仅支教方 L2（学校 type=1）可见
+    const schoolId = u.schoolId || u.school_id || "";
+    var isSupportSide = isVolunteerSchool(schoolId);
+    var canTeacherAudit = false;
+    if (isSupportSide === true) {
+      canTeacherAudit = hasTeacherAuditPerm;
+    } else if (isSupportSide === null && schoolId) {
+      // 缓存未命中：异步拉学校详情后重新 refresh
+      var self = this;
+      this.setData({ canStudentManage, canVolunteerRecordAudit, canTeacherAudit: false, loading: true });
+      fetchSchoolDetail(schoolId).then(function () {
+        self.refresh(); // 缓存填充后重新执行
+      });
+      return;
+    }
+    // isSupportSide === false 或无 schoolId：受援方，canTeacherAudit 保持 false
     this.setData({ canStudentManage, canVolunteerRecordAudit, canTeacherAudit });
 
     const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";

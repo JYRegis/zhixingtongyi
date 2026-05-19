@@ -10,22 +10,19 @@
     </view>
     <block wx:for="{{list}}" wx:key="id">
       <view class="card region-student-card">
-        <view class="region-student-main">
+        <view class="region-student-main" data-id="{{item.id}}" bindtap="onViewOnboarding">
           <view class="region-student-avatar">学</view>
           <view>
             <view class="region-student-name">{{item.displayName}}</view>
             <view class="region-student-school">{{item.schoolName}} · {{item.grade}}</view>
           </view>
-        </view>
-        <view class="list-row list-row--tappable" data-id="{{item.id}}" bindtap="onViewOnboarding" hover-class="list-row--hover" style="margin: -4rpx 0 0">
-          <text>申请资料</text>
-          <text class="list-row-cta">查看 ›</text>
+          <text class="list-row-cta" style="margin-left:auto">查看详情 ›</text>
         </view>
         <view class="list-row list-row--time">
           <text>可上课时间</text>
           <text class="list-row-ellipsis--time">{{item.timeText}}</text>
         </view>
-        <view class="actions">
+        <view class="actions" style="margin-top: 40rpx;">
           <button class="btn-primary" data-id="{{item.id}}" bindtap="onApproveL2">通过</button>
           <button class="btn-secondary" data-id="{{item.id}}" bindtap="onRejectL2">驳回</button>
         </view>

@@ -100,12 +100,15 @@ function splitNextAndHistory(list, nowMs) {
     .filter((m) => m && m.startTimeMs)
     .sort((a, b) => (a.startTimeMs || 0) - (b.startTimeMs || 0));
   const future = sorted.filter((m) => (m.startTimeMs || 0) > t);
+  const ongoing = sorted.filter((m) => (m.startTimeMs || 0) <= t && (m._endTimeMs || Infinity) > t);
   const past = sorted
-    .filter((m) => (m.startTimeMs || 0) <= t)
+    .filter((m) => (m.startTimeMs || 0) <= t && (m._endTimeMs != null ? m._endTimeMs <= t : (m.startTimeMs || 0) <= t - 3600000))
     .sort((a, b) => (b.startTimeMs || 0) - (a.startTimeMs || 0));
-  const upcoming = future.map((m) => ({ ...m }));
+  // 进行中的会议也放在 upcoming 区域展示，标记状态为"进行中"
+  const upcomingRaw = ongoing.map((m) => ({ ...m, status: "进行中" })).concat(future.map((m) => ({ ...m })));
+  const upcoming = upcomingRaw;
   const nextMeeting = upcoming.length > 0 ? upcoming[0] : null;
-  const history = past.map((h) => ({ ...h, status: h.status || "已结束" }));
+  const history = past.map((h) => ({ ...h, status: (h.status === "待开始" || !h.status) ? "已结束" : h.status }));
   return { nextMeeting, upcoming, history };
 }
 

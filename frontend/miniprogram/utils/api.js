@@ -25,7 +25,9 @@ const authApi = {
   phoneLogin(data) { return getData(request({ url: "/auth/phone-login", method: "POST", data })); },
   roleApply(targetRole) { return request({ url: "/auth/role-apply", method: "POST", data: { targetRole } }); },
   logout() { return request({ url: "/auth/logout", method: "POST" }); },
-  refresh() { return getData(request({ url: "/auth/refresh", method: "POST" })); }
+  refresh() { return getData(request({ url: "/auth/refresh", method: "POST" })); },
+  /** 更新当前登录用户昵称/头像（不允许改手机号） */
+  updateProfile(data) { return request({ url: "/auth/me", method: "PUT", data }); }
 };
 
 const studentApi = {
@@ -128,6 +130,8 @@ const adminApi = {
   auditVolunteerRecord(recordId, data) { return request({ url: `/admin/volunteer-records/${recordId}/audit`, method: "PUT", data }); },
   /** 当前管理员资料与权限 */
   myProfile() { return getData(request({ url: "/admin/profile/me" })); },
+  /** 更新管理员自身资料 */
+  updateMyProfile(data) { return request({ url: "/admin/profile/me", method: "PUT", data }); },
   /** 管理端聊天会话列表 */
   chatConversations(params) { const query = buildQuery(params); return getData(request({ url: `/admin/chat/conversations${query}` })); }
 };
@@ -143,10 +147,15 @@ const algorithmApi = {
   recalculateWeights() { return request({ url: "/algorithm/recalculate-weights", method: "POST" }); }
 };
 
+const ossApi = {
+  /** 获取 OSS STS 临时凭证。businessType: AVATAR | CHAT_IMAGE | CHAT_VOICE | EVIDENCE | MEETING_RECORD */
+  getToken(businessType) { return getData(request({ url: "/oss/token", method: "POST", data: { businessType } })); }
+};
+
 function buildQuery(params) {
   const source = params || {};
   const parts = Object.keys(source).filter((key) => source[key] !== undefined && source[key] !== null && source[key] !== "").map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(source[key])}`);
   return parts.length ? `?${parts.join("&")}` : "";
 }
 
-module.exports = { authApi, studentApi, teacherApi, matchApi, meetingApi, notificationApi, chatApi, schoolApi, adminApi, dashboardApi, volunteerRecordApi, systemApi, algorithmApi };
+module.exports = { authApi, studentApi, teacherApi, matchApi, meetingApi, notificationApi, chatApi, schoolApi, adminApi, dashboardApi, volunteerRecordApi, systemApi, algorithmApi, ossApi };

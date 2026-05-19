@@ -16,7 +16,7 @@
     <view wx:if="{{role === 'teacher'}}" class="match-volunteer-menu">
       <view class="card workbench-menu-card card-tier" bindtap="toRequests">
         <view class="workbench-menu-top">
-          <view class="workbench-menu-icon">📥</view>
+          <image class="workbench-menu-icon" src="/images/icons/inbox.svg" mode="aspectFit" />
           <view class="workbench-menu-left">
             <view class="workbench-menu-title">结对待办</view>
             <view class="workbench-menu-desc">查看并处理学员发来的结对申请</view>
@@ -29,7 +29,7 @@
 
       <view class="card workbench-menu-card card-tier" bindtap="toUnbind">
         <view class="workbench-menu-top">
-          <view class="workbench-menu-icon">🔗</view>
+          <image class="workbench-menu-icon" src="/images/icons/unlink.svg" mode="aspectFit" />
           <view class="workbench-menu-left">
             <view class="workbench-menu-title">解绑申请</view>
             <view class="workbench-menu-desc">查看当前结对，发起或确认解绑流程</view>

@@ -5,6 +5,7 @@ const { syncCustomTabBar } = require("../../../utils/customTabBar");
 const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProfileStore");
 const { matchApi, adminApi, chatApi } = require("../../../utils/api");
 const { shouldClearUnread } = require("../../../utils/chatReadStore");
+const notificationCenter = require("../../../utils/notificationCenter");
 
 function enrichPairs(pairs) { return (pairs || []).map((item) => ({ ...item, avatarText: String(item && item.name ? item.name : "聊").slice(0, 1) })); }
 function fmtTime(v) {
@@ -16,9 +17,9 @@ function fmtTime(v) {
   const isToday = d.toDateString() === now.toDateString();
   const z = (n) => (n < 10 ? "0" : "") + n;
   if (isToday) return z(d.getHours()) + ":" + z(d.getMinutes());
-  // 同一年只显示月-日，跨年显示年-月-日
-  if (d.getFullYear() === now.getFullYear()) return (d.getMonth() + 1) + "/" + d.getDate();
-  return d.getFullYear() + "/" + (d.getMonth() + 1) + "/" + d.getDate();
+  // 同一年只显示「月X日」，跨年显示「YYYY年X月X日」
+  if (d.getFullYear() === now.getFullYear()) return (d.getMonth() + 1) + "月" + d.getDate() + "日";
+  return d.getFullYear() + "年" + (d.getMonth() + 1) + "月" + d.getDate() + "日";
 }
 function daysSince(v) {
   if (!v) return 0;
@@ -74,7 +75,7 @@ function mapAdminConversations(conversations) {
       id: String(id),
       partnerId: String(id),
       name: name,
-      tag: "结对会话",
+      tag: "",
       schoolName: c.schoolName || "",
       schoolId: c.schoolId,
       _remote: true,
@@ -100,6 +101,8 @@ Page({
   data: { role: "", roleName: "未登录", pairs: [], l1FilterSchools: [], l1FilterIndex: 0, emptyHint: "" },
   onShow() {
     checkOnboardingOrRedirect("pages/chat/list/index"); syncCustomTabBar(); mergeFromStorageIntoApp();
+    // 进入列表立即刷新 Tab 徽标，确保从其他页切回时数据一致
+    try { notificationCenter.refreshChatUnread(); } catch (_) {}
     const u = (getApp().globalData && getApp().globalData.userInfo) || {}; const profile = getByPhone(u.phone) || u; const role = getApp().globalData.role || ""; const token = (getApp().globalData && getApp().globalData.token) || wx.getStorageSync("token") || "";
     if (role === "admin_level_1") {
       if (token) {
@@ -165,22 +168,36 @@ Page({
   },
   /**
    * 学员/志愿者：异步为每个 pair 拉一条最近消息作为预览。
-   * 限制并发 + 总数避免接口压力。
+   * 与 notificationCenter._tickChat 对齐，遍历全部 pair 计算未读，避免 Tab 与列表不一致。
    */
   _enrichLastMessages(pairs) {
-    const list = (pairs || []).slice(0, 8); // 最多 8 个，避免一次拉太多
+    const list = (pairs || []);
     if (!list.length) return;
     const self = this;
+    const u = (getApp().globalData && getApp().globalData.userInfo) || {};
+    const selfId = String(u.backendUserId || u.id || u.userId || "");
     const tasks = list.map(function (p) {
-      return chatApi.messages({ matchPairId: Number(p.partnerId), page: 1, size: 1 })
+      return chatApi.messages({ matchPairId: Number(p.partnerId), limit: 200 })
         .then(function (res) {
-          const records = (res && (res.records || res.list)) || (Array.isArray(res) ? res : []);
+          const records = (Array.isArray(res) ? res : (res && (res.records || res.list)) || []);
           if (!records.length) return null;
-          const last = records[0];
+          const last = records[0]; // 后端按 id desc 返回，第 0 个就是最新
+          const lastTime = last && (last.sendTime || last.sentTime || last.createTime);
+          // 统计未读：不是自己发的 + readTime 为空
+          let unread = 0;
+          records.forEach(function (m) {
+            if (!m) return;
+            if (String(m.senderId || "") === selfId) return;
+            const rt = m.readTime != null ? m.readTime : m.read_time;
+            if (rt == null || rt === "") unread++;
+          });
+          // 乐观清零：本地查看时间 >= 最新消息时间则视为 0
+          if (shouldClearUnread(p.partnerId, lastTime)) unread = 0;
           return {
             partnerId: p.partnerId,
             lastPreview: (last && (last.content || last.text)) || "",
-            lastTime: fmtTime(last && (last.sentTime || last.createTime))
+            lastTime: fmtTime(lastTime),
+            unreadCount: unread
           };
         })
         .catch(function () { return null; });
@@ -193,7 +210,8 @@ Page({
         if (!ext) return p;
         return Object.assign({}, p, {
           lastPreview: ext.lastPreview || p.lastPreview,
-          lastTime: ext.lastTime || p.lastTime
+          lastTime: ext.lastTime || p.lastTime,
+          unreadCount: ext.unreadCount != null ? ext.unreadCount : p.unreadCount
         });
       });
       self.setData({ pairs: next });

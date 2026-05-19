@@ -52,16 +52,38 @@ Page({
   },
   onApproveHours(e) {
     const id = e.currentTarget.dataset.id;
-    adminApi.auditVolunteerRecord(id, { action: "approve", rejectReason: "" }).then(() => {
-      wx.showToast({ title: "已通过", icon: "success" });
-      this.refresh();
-    }).catch((err) => wx.showToast({ title: (err && err.message) || "失败", icon: "none" }));
+    const self = this;
+    wx.showModal({
+      title: "通过审核",
+      editable: true,
+      placeholderText: "审核备注（选填）",
+      content: "",
+      success(res) {
+        if (!res.confirm) return;
+        adminApi.auditVolunteerRecord(id, { action: "approve", rejectReason: "" }).then(() => {
+          wx.showToast({ title: "已通过", icon: "success" });
+          self.refresh();
+        }).catch((err) => wx.showToast({ title: (err && err.message) || "失败", icon: "none" }));
+      }
+    });
   },
   onRejectHours(e) {
     const id = e.currentTarget.dataset.id;
-    adminApi.auditVolunteerRecord(id, { action: "reject", rejectReason: "二级管理员驳回" }).then(() => {
-      wx.showToast({ title: "已驳回", icon: "none" });
-      this.refresh();
-    }).catch((err) => wx.showToast({ title: (err && err.message) || "失败", icon: "none" }));
+    const self = this;
+    wx.showModal({
+      title: "驳回",
+      editable: true,
+      placeholderText: "请填写驳回原因",
+      content: "",
+      success(res) {
+        if (!res.confirm) return;
+        const reason = (res.content || "").trim();
+        if (!reason) { wx.showToast({ title: "请填写驳回原因", icon: "none" }); return; }
+        adminApi.auditVolunteerRecord(id, { action: "reject", rejectReason: reason }).then(() => {
+          wx.showToast({ title: "已驳回", icon: "none" });
+          self.refresh();
+        }).catch((err) => wx.showToast({ title: (err && err.message) || "失败", icon: "none" }));
+      }
+    });
   }
 });

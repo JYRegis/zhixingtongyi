@@ -60,7 +60,7 @@
     <view wx:else class="card chat-empty">
       <view class="empty-title">暂无消息</view>
       <view class="empty-desc">{{emptyHint}}</view>
-      <button wx:if="{{role === 'student' || role === 'teacher'}}" class="btn-primary chat-empty-btn" bindtap="toMatch">去匹配</button>
+      <button wx:if="{{role === 'student'}}" class="btn-primary chat-empty-btn" bindtap="toMatch">去匹配</button>
     </view>
   </view>
 </view>

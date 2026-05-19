@@ -25,14 +25,14 @@
       </view>
       <block wx:else>
         <view class="settings-row settings-row-btn" bindtap="onGoAccountProfile">
-          <view class="settings-row-icon">资</view>
+          <image class="settings-row-icon" src="/images/icons/user-circle.svg" mode="aspectFit" />
           <view class="settings-row-main">
             <text class="settings-row-title">资料与账号</text>
             <text class="settings-row-extra">头像、昵称、手机、资料表 →</text>
           </view>
         </view>
         <view class="settings-row settings-row-btn" bindtap="onGoNotifications">
-          <view class="settings-row-icon">通</view>
+          <image class="settings-row-icon" src="/images/icons/bell.svg" mode="aspectFit" />
           <view class="settings-row-main">
             <text class="settings-row-title">消息通知</text>
             <text class="settings-row-extra">系统通知列表 →</text>

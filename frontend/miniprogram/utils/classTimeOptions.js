@@ -52,6 +52,24 @@ function parseTimeSelection(saved) {
       .filter((t) => t && ["mor", "noon", "night"].indexOf(t) >= 0);
     return { weekIds, slotIds };
   }
+  // 尝试 JSON 数组格式：[{"week":1,"slot":"mor"}, ...]
+  if (s.charAt(0) === "[") {
+    try {
+      const arr = JSON.parse(s);
+      if (Array.isArray(arr) && arr.length) {
+        const weekIds = [];
+        const slotIds = [];
+        arr.forEach(function (m) {
+          if (!m) return;
+          if (m.week != null) { const w = Number(m.week); if (w >= 1 && w <= 7 && weekIds.indexOf(w) < 0) weekIds.push(w); }
+          if (m.slot) { const sl = String(m.slot); if (["mor", "noon", "night"].indexOf(sl) >= 0 && slotIds.indexOf(sl) < 0) slotIds.push(sl); }
+          if (m.dayOfWeek != null) { const w = Number(m.dayOfWeek); if (w >= 1 && w <= 7 && weekIds.indexOf(w) < 0) weekIds.push(w); }
+        });
+        weekIds.sort(function (a, b) { return a - b; });
+        return { weekIds, slotIds };
+      }
+    } catch (e) { /* ignore */ }
+  }
   return parseLegacyTime(s);
 }
 

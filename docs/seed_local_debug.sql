@@ -39,12 +39,11 @@ DELETE FROM `algorithm_weight_config` WHERE `factor_name` IN ('db_debug_factor',
 -- ----------------------------------------------------------------------------
 -- 1) 学校（school）
 -- ----------------------------------------------------------------------------
-INSERT INTO `school` (`id`, `name`, `region_code`, `address`, `contact_person`, `contact_phone`) VALUES
-(9001, '云龙县第一中学',       '532929', '云南省大理州云龙县诺邓镇',       '王校长', '0872-5500001'),
-(9002, '巍山县民族中学',       '532927', '云南省大理州巍山县南诏镇',       '李校长', '0872-5500002'),
-(9003, '大理州希望小学',       '532900', '云南省大理州大理市下关镇',       '赵校长', '0872-5500003'),
-(9004, '厦门大学（支教方）',   '350200', '福建省厦门市思明区思明南路422号', '校团委', '0592-2180000'),
-(9005, '云南大学（支教方）',   '530100', '云南省昆明市五华区翠湖北路2号',  '校团委', '0871-65033000');
+INSERT INTO `school` (`id`, `name`, `region_code`, `address`, `contact_person`, `contact_phone`, `type`) VALUES
+(9001, '云龙县第一中学',       '532929', '云南省大理州云龙县诺邓镇',       '王校长', '0872-5500001', 0),
+(9002, '巍山县民族中学',       '532927', '云南省大理州巍山县南诏镇',       '李校长', '0872-5500002', 0),
+(9003, '大理州希望小学',       '532900', '云南省大理州大理市下关镇',       '赵校长', '0872-5500003', 0),
+(9004, '同济大学',   '310104', '上海市杨浦区四平路1239号', '校团委', '021-65981111', 1);
 
 -- ----------------------------------------------------------------------------
 -- 2) 用户（user）
@@ -57,8 +56,7 @@ INSERT INTO `user` (`id`, `username`, `password`, `role`, `phone`, `wechat_openi
 -- 二级管理员
 (9002, 'db_云龙管理员_王老师', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 1, '13900009002', 'wx_local_debug_9002', NULL, 1, '2026-04-01 08:00:00', '2026-05-01 08:00:00'),
 (9003, 'db_巍山管理员_李老师', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 1, '13900009003', 'wx_local_debug_9003', NULL, 1, '2026-04-01 08:00:00', '2026-05-01 08:00:00'),
-(9004, 'db_厦大管理员_张老师', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 1, '13900009004', 'wx_local_debug_9004', NULL, 1, '2026-04-01 08:00:00', '2026-05-01 08:00:00'),
-(9005, 'db_只读管理员_赵老师', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 1, '13900009005', 'wx_local_debug_9005', NULL, 1, '2026-04-01 08:00:00', '2026-05-01 08:00:00'),
+(9004, 'db_同济管理员_张老师', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 1, '13900009004', 'wx_local_debug_9004', NULL, 1, '2026-04-01 08:00:00', '2026-05-01 08:00:00'),
 -- 志愿者 9010-9015
 (9010, 'db_志愿者_张明远',     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 2, '13900009010', 'wx_local_debug_9010', NULL, 1, '2026-03-15 08:00:00', '2026-05-01 08:00:00'),
 (9011, 'db_志愿者_李文静',     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 2, '13900009011', 'wx_local_debug_9011', NULL, 1, '2026-03-15 08:00:00', '2026-05-01 08:00:00'),
@@ -87,59 +85,57 @@ INSERT INTO `user` (`id`, `username`, `password`, `role`, `phone`, `wechat_openi
 INSERT INTO `admin_profile` (`id`, `user_id`, `real_name`, `school_id`, `region_code`, `permissions`) VALUES
 (9001, 9001, '陈运营', NULL,  '530000', JSON_ARRAY('*')),
 (9002, 9002, '王老师', 9001, '532929',
-       JSON_ARRAY('user_manage','student_manage','teacher_audit','pair_manage','volunteer_record_audit')),
+       JSON_ARRAY('user_manage','student_manage','pair_manage','volunteer_record_audit')),
 (9003, 9003, '李老师', 9002, '532927',
-       JSON_ARRAY('user_manage','student_manage','teacher_audit','pair_manage','volunteer_record_audit')),
+       JSON_ARRAY('user_manage','student_manage','pair_manage','volunteer_record_audit')),
 (9004, 9004, '张老师', 9004, '350200',
-       JSON_ARRAY('user_manage','teacher_audit')),
-(9005, 9005, '赵老师', 9003, '532900',
-       JSON_ARRAY('user_manage'));
+       JSON_ARRAY('user_manage','teacher_audit'));
 
 -- ----------------------------------------------------------------------------
 -- 4) 志愿者资料（teacher_profile）
 -- ----------------------------------------------------------------------------
 INSERT INTO `teacher_profile` (
-  `id`, `user_id`, `real_name`, `school`, `grade`,
+  `id`, `user_id`, `real_name`, `school_id`, `grade`,
   `free_time`, `skilled_subjects`, `personal_skills`, `personality_desc`,
   `total_service_duration`, `certification_status`, `audit_time`, `audit_notes`,
   `continuous_match`, `create_time`, `update_time`
 ) VALUES
-(9001, 9010, '张明远', '厦门大学', '大三',
+(9001, 9010, '张明远', 9004, '大三',
   JSON_ARRAY(JSON_OBJECT('week', 1, 'slot', 'night'), JSON_OBJECT('week', 3, 'slot', 'night'), JSON_OBJECT('week', 5, 'slot', 'night')),
   JSON_ARRAY('数学','物理'),
   '校级数学建模二等奖，擅长函数与电学。',
   '耐心细致，善于把抽象概念讲成具体例子。',
   720, 1, '2026-03-20 09:00:00', '资料完整，审核通过',
   1, '2026-03-15 08:00:00', '2026-05-01 08:00:00'),
-(9002, 9011, '李文静', '厦门大学', '研一',
+(9002, 9011, '李文静', 9004, '研一',
   JSON_ARRAY(JSON_OBJECT('week', 6, 'slot', 'mor'), JSON_OBJECT('week', 7, 'slot', 'mor')),
   JSON_ARRAY('英语','语文'),
   '英语六级600+，曾任校英语角主讲。',
   '近期论文压力大，暂停接收新匹配。',
   360, 1, '2026-03-22 09:00:00', '通过',
   0, '2026-03-15 08:00:00', '2026-05-01 08:00:00'),
-(9003, 9012, '赵新宇', '云南大学', '大二',
+(9003, 9012, '赵新宇', 9005, '大二',
   JSON_ARRAY(JSON_OBJECT('week', 2, 'slot', 'night'), JSON_OBJECT('week', 4, 'slot', 'night')),
   JSON_ARRAY('化学','生物'),
   '化学竞赛省二等奖。',
   '性格开朗，喜欢举生活化的例子。',
   0, 0, NULL, NULL,
   1, '2026-04-25 08:00:00', '2026-05-01 08:00:00'),
-(9004, 9013, '孙浩然', '云南大学', '大一',
+(9004, 9013, '孙浩然', 9005, '大一',
   JSON_ARRAY(JSON_OBJECT('week', 1, 'slot', 'noon'), JSON_OBJECT('week', 2, 'slot', 'noon'), JSON_OBJECT('week', 3, 'slot', 'noon')),
   JSON_ARRAY('数学'),
   '暂无突出经历。',
   '希望尝试支教。',
   0, 2, '2026-04-22 10:00:00', '在校证明缺失，请补充材料后重新提交',
   1, '2026-04-20 08:00:00', '2026-05-01 08:00:00'),
-(9005, 9014, '周思远', '厦门大学', '研三',
+(9005, 9014, '周思远', 9004, '研三',
   JSON_ARRAY(JSON_OBJECT('week', 1, 'slot', 'night'), JSON_OBJECT('week', 3, 'slot', 'night'), JSON_OBJECT('week', 5, 'slot', 'night'), JSON_OBJECT('week', 7, 'slot', 'noon')),
   JSON_ARRAY('数学','物理','英语'),
   '累计1200分钟支教经验，带过3名学生升入重点高中。',
   '风格沉稳，善于针对薄弱点定向训练。',
   1200, 1, '2025-09-10 09:00:00', '资深志愿者',
   1, '2025-09-01 08:00:00', '2026-05-01 08:00:00'),
-(9006, 9015, '吴晓燕', '云南大学', '大三',
+(9006, 9015, '吴晓燕', 9005, '大三',
   JSON_ARRAY(JSON_OBJECT('week', 4, 'slot', 'night'), JSON_OBJECT('week', 6, 'slot', 'night')),
   JSON_ARRAY('语文','历史'),
   '校文学社主席。',
@@ -417,8 +413,8 @@ INSERT INTO `message_notification` (
 (9003, 9020, 1, '结对已通过', '志愿者张明远已接受您的结对', JSON_OBJECT('pairId', 9001), '2026-04-10 20:01:00', '2026-04-10 20:05:00', 0, NULL),
 (9004, 9024, 1, '结对已通过', '志愿者周思远已接受您的结对', JSON_OBJECT('pairId', 9007), '2026-04-08 18:01:00', '2026-04-08 18:10:00', 0, NULL),
 (9005, 9021, 2, '结对申请被拒', '志愿者表示时间不匹配，请重新选择', JSON_OBJECT('pairId', 9003), '2026-04-15 11:00:00', NULL, 0, NULL),
-(9006, 9010, 3, '解绑申请', '结对9004学员发起解绑，等待您确认', JSON_OBJECT('pairId', 9004), '2026-05-01 10:01:00', NULL, 0, NULL),
-(9007, 9002, 3, '解绑待管理员确认', '结对9004等待二级管理员确认', JSON_OBJECT('pairId', 9004), '2026-05-01 10:02:00', NULL, 0, NULL),
+(9006, 9010, 3, '解绑申请', '马小峰与张明远的结对，学员发起解绑，等待您确认', JSON_OBJECT('pairId', 9004), '2026-05-01 10:01:00', NULL, 0, NULL),
+(9007, 9002, 3, '解绑待管理员确认', '马小峰与张明远的结对等待二级管理员确认', JSON_OBJECT('pairId', 9004), '2026-05-01 10:02:00', NULL, 0, NULL),
 (9008, 9020, 6, '待确认服务时长', '志愿者提交了60分钟服务记录，请确认', JSON_OBJECT('recordId', 9001), '2026-04-29 09:05:00', NULL, 0, NULL),
 (9009, 9024, 6, '待确认服务时长', '志愿者提交了90分钟服务记录，请确认', JSON_OBJECT('recordId', 9006), '2026-04-26 22:10:00', NULL, 0, NULL),
 (9010, 9002, 7, '待审核服务时长', '云龙校区有1条时长待审核', JSON_OBJECT('recordId', 9002), '2026-04-29 22:00:00', NULL, 0, NULL),

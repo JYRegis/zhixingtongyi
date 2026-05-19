@@ -120,3 +120,69 @@
 .list-row--hover {
   opacity: 0.92;
 }
+
+/* 凭证图片上传区域 */
+.evidence-section {
+  margin-top: 24rpx;
+  padding: 0 4rpx;
+}
+
+.evidence-label {
+  font-size: 26rpx;
+  color: #666666;
+  margin-bottom: 16rpx;
+}
+
+.evidence-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.evidence-item {
+  position: relative;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.evidence-img {
+  width: 100%;
+  height: 100%;
+}
+
+.evidence-remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40rpx;
+  height: 40rpx;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 28rpx;
+  line-height: 40rpx;
+  text-align: center;
+  border-bottom-left-radius: 12rpx;
+}
+
+.evidence-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border: 2rpx dashed #d0d5dd;
+}
+
+.evidence-add-icon {
+  font-size: 44rpx;
+  color: #98a2b3;
+  line-height: 1;
+}
+
+.evidence-add-text {
+  font-size: 20rpx;
+  color: #98a2b3;
+  margin-top: 4rpx;
+}

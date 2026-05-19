@@ -24,7 +24,7 @@
         </view>
         <view class="unbind-pair-meta">
           <text class="unbind-pair-chev">详情 ›</text>
-          <text class="badge badge-warning">待处理</text>
+          <text class="badge {{item._myConfirmed ? 'badge-success' : 'badge-warning'}}">{{item._myConfirmed ? '已确认，等待对方' : '待处理'}}</text>
         </view>
       </view>
     </view>
@@ -57,7 +57,7 @@
         </view>
         <view class="unbind-pair-meta">
           <text class="unbind-pair-chev">查看 ›</text>
-          <text class="badge {{item.status === '结对中' ? 'badge-success' : 'badge-warning'}}">{{item.status}}</text>
+          <text class="badge {{item.status === '结对中' ? 'badge-success' : item.status === '已解绑' ? 'badge-muted' : item.status === '已拒绝' ? 'badge-danger' : item._myConfirmed ? 'badge-success' : 'badge-warning'}}">{{item.status}}</text>
         </view>
       </view>
     </view>

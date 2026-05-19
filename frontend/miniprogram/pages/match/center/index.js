@@ -218,7 +218,7 @@ Page({
               asStudent: "",
               timeRaw: parseFreeTimeField(row.freeTime),
               score: 90,
-              style: row.school || row.grade || "",
+              style: row.schoolName || row.school || row.grade || "",
               subject: subjects || "综合"
             }, role);
           });

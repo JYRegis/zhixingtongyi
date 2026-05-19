@@ -5,20 +5,22 @@ const { fetchSchools } = require("../../../utils/schoolsMock");
 const ROLE_TYPES = [
   {
     name: "受援方管理员",
-    desc: "管理学生、审核教师、审核时长、管理结对",
-    permissions: ["user_manage", "student_manage", "teacher_audit", "pair_manage", "volunteer_record_audit"]
+    desc: "管理学生、审核时长、管理结对",
+    permissions: ["user_manage", "student_manage", "pair_manage", "volunteer_record_audit"],
+    side: "recipient"
   },
   {
     name: "支教方管理员",
     desc: "管理用户、审核志愿者",
-    permissions: ["user_manage", "teacher_audit"]
+    permissions: ["user_manage", "teacher_audit"],
+    side: "support"
   }
 ];
 
 Page({
   data: {
     phone: "",
-    foundUser: null,
+    realName: "",
     schoolList: [],
     schoolNames: [],
     schoolIndex: -1,
@@ -30,61 +32,56 @@ Page({
     this._loadSchools();
   },
   _loadSchools() {
-    fetchSchools().then((list) => {
+    const self = this;
+    const roleType = ROLE_TYPES[this.data.roleTypeIndex];
+    const kind = roleType && roleType.side === "support" ? "support" : "recipient";
+    fetchSchools({ kind: kind }).then((list) => {
       const names = list.map((s) => s.name);
-      this.setData({ schoolList: list, schoolNames: names });
+      self.setData({ schoolList: list, schoolNames: names });
     });
   },
-  onPhone(e) {
-    this.setData({ phone: e.detail.value });
-  },
-  onSearchUser() {
-    const phone = (this.data.phone || "").trim();
-    if (phone.length !== 11) {
-      wx.showToast({ title: "请输入11位手机号", icon: "none" });
-      return;
-    }
-    adminApi.users({ phone: phone, page: 1, size: 1 }).then((res) => {
-      const records = (res && (res.records || res.list)) || (Array.isArray(res) ? res : []);
-      if (records.length === 0) {
-        wx.showToast({ title: "未找到该用户", icon: "none" });
-        this.setData({ foundUser: null });
-        return;
-      }
-      const user = records[0];
-      this.setData({ foundUser: user });
-      wx.showToast({ title: "已找到: " + (user.username || user.phone), icon: "none" });
-    }).catch(() => {
-      wx.showToast({ title: "查询失败", icon: "none" });
-      this.setData({ foundUser: null });
-    });
-  },
-  onSchoolChange(e) {
-    this.setData({ schoolIndex: Number(e.detail.value) });
-  },
+  onPhone(e) { this.setData({ phone: e.detail.value }); },
+  onRealName(e) { this.setData({ realName: e.detail.value }); },
+  onSchoolChange(e) { this.setData({ schoolIndex: Number(e.detail.value) }); },
   onRoleTypeChange(e) {
-    this.setData({ roleTypeIndex: Number(e.detail.value) });
+    const idx = Number(e.detail.value);
+    this.setData({ roleTypeIndex: idx, schoolIndex: -1 });
+    this._loadSchools();
   },
   onSubmit() {
-    if (!this.data.foundUser) {
-      wx.showToast({ title: "请先查找用户", icon: "none" });
+    const phone = (this.data.phone || "").trim();
+    if (!/^1\d{10}$/.test(phone)) {
+      wx.showToast({ title: "请输入正确的11位手机号", icon: "none" });
       return;
     }
+    const roleType = ROLE_TYPES[this.data.roleTypeIndex];
+    let schoolId, regionCode;
     if (this.data.schoolIndex < 0) {
-      wx.showToast({ title: "请选择学校", icon: "none" });
+      wx.showToast({ title: "请选择管辖学校", icon: "none" });
       return;
     }
     const school = this.data.schoolList[this.data.schoolIndex];
-    const roleType = ROLE_TYPES[this.data.roleTypeIndex];
+    schoolId = Number(school.id);
+    regionCode = school.regionCode || school.region_code || "";
     const data = {
-      userId: Number(this.data.foundUser.id),
-      schoolId: Number(school.id),
-      regionCode: school.regionCode || school.region_code || "",
+      phone: phone,
+      realName: (this.data.realName || "").trim() || undefined,
+      schoolId: schoolId,
+      regionCode: regionCode,
       permissions: roleType.permissions
     };
+    wx.showLoading({ title: "提交中", mask: true });
     adminApi.assignSecondaryAdmin(data).then(() => {
-      wx.showToast({ title: "分配成功", icon: "success" });
+      wx.hideLoading();
+      const schoolText = (this.data.schoolList[this.data.schoolIndex] || {}).name || "";
+      wx.showModal({
+        title: "分配成功",
+        content: "已为手机号 " + phone + " 创建/更新「" + roleType.name + "」身份，管辖学校：" + schoolText + "。",
+        showCancel: false
+      });
+      this.setData({ phone: "", realName: "", schoolIndex: -1 });
     }).catch((err) => {
+      wx.hideLoading();
       wx.showToast({ title: (err && err.message) || "分配失败", icon: "none" });
     });
   }

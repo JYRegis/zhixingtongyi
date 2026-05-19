@@ -72,12 +72,11 @@ function buildStudentProfileRequest(
  */
 function buildTeacherProfileRequest({ realName, schoolId, grade, weekIds, slotIds, personalityDesc }, options) {
   const opt = options || {};
-  const school = schoolId != null ? getSchoolName(schoolId) : "";
   const skilled =
     opt.skilledSubjects && opt.skilledSubjects.length ? opt.skilledSubjects : ["义教", "通识（演示）"];
   return {
     realName: String(realName || "").trim(),
-    school: school || "未选择学校",
+    schoolId: schoolId != null ? Number(schoolId) : null,
     grade: (grade && String(grade)) || "本科",
     freeTime: weekIdsSlotIdsToFreeTimeMaps(weekIds, slotIds),
     skilledSubjects: skilled,

@@ -52,9 +52,6 @@
 
   <view class="chat-bar" wx:if="{{!l1ViewOnly}}">
     <view class="chat-bar-inner">
-      <view class="chat-bar-icon" bindtap="onMockVoice">
-        <view class="icon-mic"></view>
-      </view>
       <input
         class="chat-bar-input"
         type="text"

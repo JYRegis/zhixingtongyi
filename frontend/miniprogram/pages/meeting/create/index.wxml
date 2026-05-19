@@ -37,6 +37,10 @@
         </picker>
       </view>
       <view class="field">
+        <text class="field-label">时长（分钟）</text>
+        <input class="field-input" type="number" value="{{durationMin}}" data-k="durationMin" bindinput="onText" placeholder="默认60分钟" />
+      </view>
+      <view class="field">
         <text class="field-label">会议链接 / 会议码</text>
         <textarea
           class="field-textarea"
@@ -45,6 +49,10 @@
           bindinput="onText"
           placeholder="选填，粘贴会议链接或会议码"
         />
+      </view>
+      <view class="field">
+        <text class="field-label">会议密码</text>
+        <input class="field-input" value="{{meetingPassword}}" data-k="meetingPassword" bindinput="onText" placeholder="选填，如有密码请填写" />
       </view>
       <view class="actions" style="margin-top: 24rpx;">
         <button class="btn-primary" bindtap="onSubmit" disabled="{{submitDisabled}}">保存</button>

@@ -1,1 +1,2 @@
 @import "../region/index.wxss";
+@import "../platform/index.wxss";

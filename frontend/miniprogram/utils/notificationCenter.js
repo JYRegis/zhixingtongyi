@@ -9,6 +9,8 @@
  *   GET /notifications?unreadOnly=1&page=1&size=10    拿最近的 records 用于横幅展示
  */
 const { notificationApi } = require("./api");
+const { chatApi, adminApi, matchApi } = require("./api");
+const { shouldClearUnread } = require("./chatReadStore");
 
 const POLL_INTERVAL_MS = 30 * 1000;        // 30 秒一次（前台）
 const PEEK_RECENT_SIZE = 5;                 // 检测新增时取最近几条
@@ -17,6 +19,7 @@ let _timer = null;
 let _running = false;
 let _lastTotal = 0;
 let _lastMaxId = 0;
+let _chatUnread = 0;
 const _listeners = new Set();
 let _suppressFirstBanner = true;            // 启动后第一次拉取不视为「新消息」
 
@@ -50,6 +53,7 @@ function subscribe(fn) {
   _listeners.add(fn);
   // 立即把当前未读数告诉新订阅者，避免组件刚 attach 时角标没立刻刷新
   try { fn({ type: "unread-change", payload: { count: getUnreadCount() } }); } catch (_) {}
+  try { fn({ type: "chat-unread-change", payload: { count: _chatUnread } }); } catch (_) {}
   return function () { _listeners.delete(fn); };
 }
 
@@ -63,6 +67,70 @@ function _hasToken() {
 
 function _tick() {
   if (!_hasToken()) return;
+  _tickNotifications();
+  _tickChat();
+}
+
+function _tickChat() {
+  const app = getApp && getApp();
+  const role = (app && app.globalData && app.globalData.role) || "";
+  const isAdmin = role === "admin_level_1" || role === "admin_level_2";
+  const req = isAdmin ? adminApi.chatConversations() : matchApi.myPairs(1);
+  req.then(function (res) {
+    if (isAdmin) {
+      // 与聊天列表算法一致：后端 unreadCount 经过 shouldClearUnread 乐观清零
+      const list = Array.isArray(res) ? res : (res && (res.records || res.list)) || [];
+      var total = 0;
+      list.forEach(function (c) {
+        if (!c) return;
+        const pid = c.matchPairId || c.pairId || c.id;
+        const raw = Number(c.unreadCount || 0);
+        const unread = shouldClearUnread(pid, c.lastMessageTime) ? 0 : raw;
+        total += unread;
+      });
+      _chatUnread = total;
+      _emit("chat-unread-change", { count: total });
+      return;
+    }
+    // 学员 / 志愿者：对所有活跃结对，分别拉近 200 条消息精确统计未读，
+    // 同时套用 shouldClearUnread 让进入聊天室后立即清零（与列表算法对齐）
+    const pairs = Array.isArray(res) ? res : (res && (res.records || res.list)) || [];
+    if (!pairs.length) {
+      _chatUnread = 0;
+      _emit("chat-unread-change", { count: 0 });
+      return;
+    }
+    const selfId = String((app.globalData.userInfo || {}).backendUserId || (app.globalData.userInfo || {}).id || "");
+    const checks = pairs.map(function (p) {
+      const pairId = p && (p.id != null ? p.id : p.pairId);
+      if (!pairId) return Promise.resolve(0);
+      return chatApi.messages({ matchPairId: Number(pairId), limit: 200 }).then(function (msgs) {
+        const arr = Array.isArray(msgs) ? msgs : (msgs && (msgs.records || msgs.list)) || [];
+        if (!arr.length) return 0;
+        // 拿最新一条消息时间用于 shouldClearUnread 判断
+        const last = arr[0]; // 后端按 id desc 返回
+        const lastTime = last && (last.sendTime || last.sentTime || last.createTime);
+        if (shouldClearUnread(pairId, lastTime)) return 0;
+        var count = 0;
+        arr.forEach(function (m) {
+          if (!m) return;
+          if (String(m.senderId || "") === selfId) return;
+          const rt = m.readTime != null ? m.readTime : m.read_time;
+          if (rt == null || rt === "") count++;
+        });
+        return count;
+      }).catch(function () { return 0; });
+    });
+    Promise.all(checks).then(function (counts) {
+      var sum = 0;
+      counts.forEach(function (c) { sum += c; });
+      _chatUnread = sum;
+      _emit("chat-unread-change", { count: sum });
+    });
+  }).catch(function () {});
+}
+
+function _tickNotifications() {
   // 1) 先拿 total
   notificationApi.list({ unreadOnly: 1, page: 1, size: 1 })
     .then(function (res) {
@@ -96,7 +164,7 @@ function _tick() {
           })
           .catch(function () {});
       } else if (_suppressFirstBanner) {
-        // 启动首拉：把 maxId 校准为当前最大未读 id，避免冷启动把历史未读弹一遍
+        // 启动首拉：校准 maxId；如果有未读通知，弹一次横幅提醒用户
         notificationApi.list({ unreadOnly: 1, page: 1, size: PEEK_RECENT_SIZE })
           .then(function (res2) {
             const records = (res2 && (res2.records || res2.list)) || [];
@@ -106,6 +174,16 @@ function _tick() {
             }, 0);
             _lastMaxId = maxId;
             _suppressFirstBanner = false;
+            // 如果登录时就有未读通知，延迟弹一次横幅（等 tabBar 组件 attach 完成）
+            if (records.length > 0 && total > 0) {
+              setTimeout(function () {
+                _emit("incoming", {
+                  count: total,
+                  deltaCount: records.length,
+                  latest: records[0]
+                });
+              }, 2500);
+            }
           })
           .catch(function () { _suppressFirstBanner = false; });
       }
@@ -146,8 +224,30 @@ function decrement(n) {
 function reset() {
   _lastTotal = 0;
   _lastMaxId = 0;
+  _chatUnread = 0;
   setUnreadCount(0);
   _emit("unread-change", { count: 0 });
+  _emit("chat-unread-change", { count: 0 });}
+
+/**
+ * 主动拉一次未读列表，如果有未读直接派发 incoming 事件（无视 _suppressFirstBanner）。
+ * tabBar 组件 attached 时调用，避免错过登录时的初次弹窗。
+ */
+function peekAndNotify() {
+  if (!_hasToken()) return;
+  notificationApi.list({ unreadOnly: 1, page: 1, size: PEEK_RECENT_SIZE })
+    .then(function (res) {
+      const records = (res && (res.records || res.list)) || [];
+      const total = (res && res.total != null ? Number(res.total) : records.length) || 0;
+      if (records.length > 0 && total > 0) {
+        _emit("incoming", {
+          count: total,
+          deltaCount: records.length,
+          latest: records[0]
+        });
+      }
+    })
+    .catch(function () {});
 }
 
 module.exports = {
@@ -157,5 +257,7 @@ module.exports = {
   subscribe: subscribe,
   getUnreadCount: getUnreadCount,
   decrement: decrement,
-  reset: reset
+  reset: reset,
+  peekAndNotify: peekAndNotify,
+  refreshChatUnread: function () { _tickChat(); }
 };
