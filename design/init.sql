@@ -24,7 +24,7 @@ CREATE TABLE `user` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `username` varchar(64) NOT NULL COMMENT '用户名（可用于登录）',
   `password` varchar(255) NOT NULL COMMENT '加密后的密码',
-  `role` tinyint NOT NULL COMMENT '角色：0-一级管理员，1-二级管理员，2-教师（志愿者），3-学员',
+  `role` tinyint DEFAULT NULL COMMENT '角色：0-一级管理员，1-二级管理员，2-教师（志愿者），3-学员；NULL=新用户未选择身份',
   `phone` varchar(20) DEFAULT NULL COMMENT '手机号',
   `wechat_openid` varchar(128) DEFAULT NULL COMMENT '微信OpenID',
   `avatar` varchar(512) DEFAULT NULL COMMENT '头像URL',

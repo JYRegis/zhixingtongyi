@@ -161,6 +161,9 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         long pageSize = size == null || size < 1 ? 10 : Math.min(size, 100);
 
         User user = userAccessService.requireUser(userId);
+        if (user.getRole() == null) {
+            throw new BusinessException("无权限操作");
+        }
         Long filterSchoolId = schoolId;
 
         if (user.getRole() == UserRole.L2_ADMIN.getCode()) {
@@ -255,6 +258,9 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     @Override
     public Page<VolunteerRecordVO> queryRecords(Long userId, Long teacherId, Long studentId, Integer status, Long page, Long size) {
         User user = userAccessService.requireUser(userId);
+        if (user.getRole() == null) {
+            throw new BusinessException("请先选择身份");
+        }
         int role = user.getRole();
         Long filterTeacherId = teacherId;
         Long filterStudentId = studentId;
@@ -288,6 +294,9 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             throw new BusinessException("服务记录不存在");
         }
         User user = userAccessService.requireUser(userId);
+        if (user.getRole() == null) {
+            throw new BusinessException("请先选择身份");
+        }
         int role = user.getRole();
         if (role == UserRole.TEACHER.getCode() && !userId.equals(record.getTeacherId())) {
             throw new BusinessException("无权限查看该记录");

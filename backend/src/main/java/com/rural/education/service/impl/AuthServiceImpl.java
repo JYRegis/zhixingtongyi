@@ -66,7 +66,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
                 user.setUsername(normalizeUsername(preferredName));
                 user.setPassword(UUID.randomUUID().toString());
                 user.setAvatar(request.getUserInfo() != null ? request.getUserInfo().getAvatarUrl() : "");
-                user.setRole(UserRole.STUDENT.getCode());
+                // role 留空：等用户在 role-select 页选择身份后通过 /auth/role-apply 设置
                 user.setStatus(UserStatus.ENABLED.getCode());
                 user.setPhone(phone);
                 userMapper.insert(user);
@@ -105,7 +105,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             user.setUsername(mockName);
             user.setPassword(UUID.randomUUID().toString());
             user.setAvatar("https://example.com/default-avatar.png");
-            user.setRole(UserRole.STUDENT.getCode());
+            // role 留空：等用户在 role-select 页选择身份后通过 /auth/role-apply 设置
             user.setStatus(UserStatus.ENABLED.getCode());
             user.setPhone(phone);
             userMapper.insert(user);
@@ -135,7 +135,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             user.setUsername(normalizeUsername(nick));
             user.setPassword(UUID.randomUUID().toString());
             user.setAvatar(request.getAvatarUrl() == null ? "" : request.getAvatarUrl());
-            user.setRole(UserRole.STUDENT.getCode());
+            // role 留空：等用户在 role-select 页选择身份后通过 /auth/role-apply 设置
             user.setStatus(UserStatus.ENABLED.getCode());
             userMapper.insert(user);
         }
@@ -159,8 +159,13 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
         if (user == null) {
             throw new BusinessException("用户不存在");
         }
-        if (Integer.valueOf(role).equals(user.getRole())) {
-            throw new BusinessException("您已经是该角色，无需重复申请");
+        // 只允许从 NULL（未选择身份）设置为 STUDENT/TEACHER
+        // 已有角色的用户不允许通过 role-apply 修改身份
+        if (user.getRole() != null) {
+            if (Integer.valueOf(role).equals(user.getRole())) {
+                throw new BusinessException("您已经是该角色，无需重复申请");
+            }
+            throw new BusinessException("身份已确定，无法修改");
         }
         user.setRole(role);
         userMapper.updateById(user);

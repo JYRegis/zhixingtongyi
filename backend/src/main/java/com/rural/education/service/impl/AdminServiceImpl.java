@@ -92,27 +92,13 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     public void assignSecondaryAdmin(Long operatorId, SecondaryAdminRequest request) {
         userAccessService.requireL1Admin(operatorId);
 
-        // 解析 userId：优先使用 userId，否则按 phone 查找或创建
         Long userId = request.getUserId();
         if (userId == null) {
-            String phone = request.getPhone();
-            if (phone == null || phone.isBlank()) {
-                throw new BusinessException("userId 与 phone 至少传一个");
-            }
-            User existing = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
-            if (existing != null) {
-                userId = existing.getId();
-            } else {
-                // 新建一个待激活的 L2 账号
-                User newUser = new User();
-                newUser.setPhone(phone);
-                newUser.setUsername(request.getRealName() == null || request.getRealName().isBlank() ? ("L2_" + phone.substring(phone.length() - 4)) : request.getRealName());
-                newUser.setPassword(java.util.UUID.randomUUID().toString());
-                newUser.setRole(UserRole.L2_ADMIN.getCode());
-                newUser.setStatus(UserStatus.ENABLED.getCode());
-                userMapper.insert(newUser);
-                userId = newUser.getId();
-            }
+            throw new BusinessException("userId 不能为空");
+        }
+        User existing = userMapper.selectById(userId);
+        if (existing == null) {
+            throw new BusinessException("用户不存在，请确认对方已登录过小程序");
         }
 
         // 升级角色为 L2
