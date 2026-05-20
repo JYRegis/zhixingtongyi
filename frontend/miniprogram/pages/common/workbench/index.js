@@ -44,7 +44,8 @@ function getMenuListForCurrentRole(role) {
   if (role === "admin_level_2") {
     const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
     const schoolTypeResult = isVolunteerSchool(schoolId);
-    if (schoolTypeResult !== true) {
+    // 只有明确是受援方时才显示聊天（缓存未命中时不显示，等异步加载后刷新）
+    if (schoolTypeResult === false) {
       list.push({ title: "聊天", action: "toChat", badge: "沟通" });
     }
   } else {
@@ -62,7 +63,7 @@ function getMenuListForCurrentRole(role) {
   } else if (role === "admin_level_2") {
     const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
     const schoolTypeResult = isVolunteerSchool(schoolId);
-    const isSupportSide = schoolTypeResult === true;
+    const isSupportSide = schoolTypeResult; // true/false/null 三态
     const isRecipientSide = schoolTypeResult === false;
     list.push({ title: "区域管理", action: "toRegionAdmin", badge: "管理", _supportSide: isSupportSide });
     // 只有明确是受援方时才显示解绑（缓存未命中时不显示，等异步加载后刷新）
@@ -97,8 +98,8 @@ function formatMenuList(role) {
     ...item,
     featured: index === 0,
     iconSrc: iconMap[item.action] || "",
-    desc: item.action === "toRegionAdmin" && item._supportSide
-      ? "审核志愿者注册与管理"
+    desc: item.action === "toRegionAdmin"
+      ? (item._supportSide === true ? "审核志愿者注册与管理" : item._supportSide === false ? "管理学员注册审核与时长认定" : "管理学校侧事务")
       : (descMap[item.action] || "进入对应工作入口")
   }));
 }
@@ -180,7 +181,9 @@ Page({
         var self = this;
         teacherApi.getProfile().then(function (profile) {
           if (profile && profile.totalServiceDuration != null) {
-            var hours = Math.round(profile.totalServiceDuration / 60 * 10) / 10;
+            var minutes = Number(profile.totalServiceDuration) || 0;
+            if (minutes <= 0) { self.setData({ totalHours: "0 小时" }); return; }
+            var hours = Math.round(minutes / 60 * 10) / 10;
             self.setData({ totalHours: hours + " 小时" });
           } else {
             self.setData({ totalHours: "0 小时" });

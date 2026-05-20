@@ -61,7 +61,8 @@
       <view class="card match-teacher-card {{item.highlight ? 'match-teacher-card--featured' : ''}}">
         <view class="match-teacher-top">
           <view class="match-teacher-main">
-            <view class="match-teacher-avatar">{{item.avatarText}}</view>
+            <image wx:if="{{item.avatar}}" class="match-teacher-avatar match-teacher-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+            <view wx:else class="match-teacher-avatar">{{item.avatarText}}</view>
             <view class="match-teacher-info">
               <view class="match-teacher-name">{{item.teacher}}</view>
               <view class="match-teacher-subject">学科：<text class="match-subj-strong">{{item.subject}}</text> · {{item.style}}</view>

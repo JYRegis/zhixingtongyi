@@ -198,6 +198,14 @@
   font-weight: 800;
 }
 
+.match-teacher-avatar-img {
+  width: 78rpx;
+  height: 78rpx;
+  border-radius: 26rpx;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
 .match-teacher-info {
   flex: 1;
   min-width: 0;

@@ -474,7 +474,7 @@ Page({
       l2Note: extra.l2Note,
       organization: extra.orgNote || orgNote,
       applicationNote: extra.applyNote,
-      onboardingStatus: "approved"
+      onboardingStatus: "pending"
     };
     Object.keys(patch).forEach((key) => {
       if (patch[key] === "" || patch[key] == null) {
@@ -482,9 +482,9 @@ Page({
       }
     });
     saveProfile(phone, patch);
-    wx.showToast({ title: "已同步", icon: "success" });
+    wx.showToast({ title: "已提交，等待审核", icon: "success" });
     setTimeout(() => {
-      wx.reLaunch({ url: "/pages/common/workbench/index" });
+      wx.reLaunch({ url: `/pages/common/onboarding-pending/index?role=${encodeURIComponent(role)}&status=pending` });
     }, 500);
   },
   _afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote) {

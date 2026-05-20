@@ -79,7 +79,11 @@ Page({
           userId: remoteUser.phone || phone || (remoteUser.id != null ? String(remoteUser.id) : u.userId)
         });
       } else {
-        // 极端兜底：拿不到手机号时只本地缓存
+        // 个人小程序无手机号：用 authApi.updateProfile 同步到后端
+        const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+        if (token) {
+          await authApi.updateProfile({ username: nickname, avatar: avatarUrl || undefined });
+        }
         app.setLogin(role, { ...u, nickname, avatarUrl });
       }
     } catch (err) {

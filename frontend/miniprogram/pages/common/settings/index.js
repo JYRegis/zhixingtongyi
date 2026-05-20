@@ -41,7 +41,9 @@ Page({
     const role = app.globalData.role || "";
     const userInfo = app.globalData.userInfo || {};
     const nickname = (userInfo.nickname || "").trim() || "未设置昵称";
-    const avatarUrl = (userInfo.avatarUrl || "").trim();
+    const rawUrl = (userInfo.avatarUrl || "").trim();
+    // 加时间戳避免 image 组件缓存旧头像
+    const avatarUrl = rawUrl ? (rawUrl.split("?")[0] + "?t=" + Date.now()) : "";
     const avatarChar = nickname.length ? nickname.charAt(0) : "用";
     const loggedIn = !!role;
     this.setData({

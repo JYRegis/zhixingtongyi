@@ -38,7 +38,9 @@ function checkOnboardingOrRedirect(pageRoute) {
   mergeFromStorageIntoApp();
   const u = app.globalData.userInfo;
   const r = app.globalData.role;
-  if (!u || !u.phone) {
+  // 个人小程序无法获取手机号，用 backendUserId 作为用户标识
+  const uid = u && (u.backendUserId || u.id || u.userId || u.phone || "");
+  if (!u || !uid) {
     return;
   }
   // 用户已登录但没有选择角色：路由到 role-select
@@ -68,8 +70,8 @@ function checkOnboardingOrRedirect(pageRoute) {
     }
     return;
   }
-  const phone0 = String(u.phone);
-  ensureStatusFromApplications(phone0);
+  const userKey = String(uid);
+  ensureStatusFromApplications(userKey);
   // 兜底：后端 hasProfile=true 说明已是登记过的学生/志愿者；即使前端没拉到
   // 审核状态映射（onboardingStatus 为空），也不要把人推回入驻申请页，避免
   // 已通过审核的志愿者（如 13900009010）被误跳到「执教志愿者入驻」界面。
@@ -97,13 +99,13 @@ function checkOnboardingOrRedirect(pageRoute) {
   try {
     var apps = getApplications() || [];
     var appCount = apps.filter(function (a) {
-      return String(a.applicantId) === String(phone0);
+      return String(a.applicantId) === userKey;
     }).length;
     ingestDebugLog({
       hypothesisId: "H4",
       location: "onboardingGuard.js:checkOnboardingOrRedirect",
       message: "guard",
-      data: { st: st, path: path, appCountForPhone: appCount },
+      data: { st: st, path: path, appCountForUser: appCount },
       runId: "pre-fix"
     });
   } catch (e) {

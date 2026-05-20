@@ -21,7 +21,21 @@
               <image wx:elif="{{item.avatarUrl}}" class="msg-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
               <view wx:else class="msg-avatar-text msg-avatar-text--other">{{item.avatarChar}}</view>
             </view>
-            <view class="msg-bubble {{item.isSelf ? 'msg-bubble--self' : 'msg-bubble--other'}}">{{item.text}}</view>
+            <view class="msg-bubble {{item.isSelf ? 'msg-bubble--self' : 'msg-bubble--other'}} {{item.isImage ? 'msg-bubble--image' : ''}}">
+              <image
+                wx:if="{{item.isImage}}"
+                class="msg-image"
+                src="{{item.text}}"
+                mode="widthFix"
+                bindtap="onPreviewImage"
+                data-url="{{item.text}}"
+              />
+              <view wx:elif="{{item.isFile}}" class="msg-file" bindtap="onOpenFile" data-url="{{item.text}}">
+                <view class="msg-file-icon">📄</view>
+                <view class="msg-file-name">{{item.fileName}}</view>
+              </view>
+              <text wx:else>{{item.text}}</text>
+            </view>
           </view>
         </view>
       </block>
@@ -43,8 +57,21 @@
                 class="msg-avatar-text {{item.l1IsStudent ? 'msg-avatar-text--stu' : 'msg-avatar-text--vol'}}"
               >{{item.avatarChar}}</view>
             </view>
-            <view class="msg-bubble {{item.l1IsStudent ? 'msg-bubble--l1stu' : 'msg-bubble--l1vol'}}"
-              >{{item.text}}</view>
+            <view class="msg-bubble {{item.l1IsStudent ? 'msg-bubble--l1stu' : 'msg-bubble--l1vol'}} {{item.isImage ? 'msg-bubble--image' : ''}}">
+              <image
+                wx:if="{{item.isImage}}"
+                class="msg-image"
+                src="{{item.text}}"
+                mode="widthFix"
+                bindtap="onPreviewImage"
+                data-url="{{item.text}}"
+              />
+              <view wx:elif="{{item.isFile}}" class="msg-file" bindtap="onOpenFile" data-url="{{item.text}}">
+                <view class="msg-file-icon">📄</view>
+                <view class="msg-file-name">{{item.fileName}}</view>
+              </view>
+              <text wx:else>{{item.text}}</text>
+            </view>
           </view>
         </view>
       </block>

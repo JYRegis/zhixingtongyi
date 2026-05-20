@@ -385,3 +385,31 @@
   width: 4rpx;
   transform: translateX(-50%);
 }
+
+
+/* 图片消息 */
+.msg-bubble--image {
+  padding: 8rpx;
+  background: transparent !important;
+  box-shadow: none;
+}
+.msg-image {
+  max-width: 280rpx;
+  min-width: 120rpx;
+  border-radius: 12rpx;
+}
+/* 文件消息 */
+.msg-file {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.msg-file-icon {
+  font-size: 40rpx;
+}
+.msg-file-name {
+  font-size: 26rpx;
+  color: #1a73e8;
+  word-break: break-all;
+  max-width: 360rpx;
+}

@@ -5,7 +5,7 @@
     </view>
 
     <view wx:if="{{!pendingHours.length}}" class="card platform-empty-card">
-      <view class="platform-empty-icon">时</view>
+      <image class="platform-empty-icon" src="/images/icons/clock.svg" mode="aspectFit" />
       <view class="empty-title">暂无待审</view>
       <view class="empty-desc">新的时长申请会显示在这里</view>
     </view>

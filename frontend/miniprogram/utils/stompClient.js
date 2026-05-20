@@ -72,6 +72,11 @@ function _parseFrame(data) {
 
 function connect(token, onConnect, onDisconnect) {
   if (_connected && _socket) return;
+  // 清理断开但未释放的旧 socket，避免多连接并存
+  if (_socket && !_connected) {
+    try { _socket.close({}); } catch (_) {}
+    _socket = null;
+  }
   _token = token || "";
   _onConnectCb = onConnect || null;
   _onDisconnectCb = onDisconnect || null;

@@ -111,6 +111,7 @@ function enrichItem(item, role) {
     subject: item.subject,
     /** 列表主标题：按身份为「志愿者名」或「结对学生名」 */
     teacher: displayName,
+    avatar: item.avatar || "",
     avatarText: avatarText,
     timeDisplay: timeDisplay,
     timeRaw: item.timeRaw,
@@ -172,6 +173,7 @@ Page({
     checkOnboardingOrRedirect("pages/match/center/index");
     syncCustomTabBar();
     var role = getApp().globalData.role || "";
+    try {
     // 产品规则：仅学员可发起结对申请，志愿者只能在「结对待办」中接受/拒绝。
     // 因此志愿者侧不再展示推荐列表 + 「申请结对」按钮，避免出现走不通的流程。
     var fullList = role === "student" ? buildListForRole(role) : [];
@@ -216,6 +218,7 @@ Page({
               teacherId: row.teacherId,
               asVolunteer: row.realName || "志愿者",
               asStudent: "",
+              avatar: row.avatar || "",
               timeRaw: parseFreeTimeField(row.freeTime),
               score: 90,
               style: row.schoolName || row.school || row.grade || "",
@@ -249,6 +252,12 @@ Page({
       selectedCountText: renderList.length + " 人",
       subjectLineText: subjectOptions[idx] != null ? subjectOptions[idx] : "全部"
     });
+  } catch (outerErr) {
+    if (console && console.error) {
+      console.error("[match-center] onShow unexpected error", outerErr);
+    }
+    this.setData({ role: role || "", renderList: [], list: [], selectedCountText: "0 人" });
+  }
   },
   onPullDownRefresh: function () {
     this.onShow();

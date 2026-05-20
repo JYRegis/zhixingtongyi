@@ -36,14 +36,18 @@
       >
         <view class="chat-pair-main">
           <view class="chat-pair-avatar">
-            <!-- 管理员视角：双头像 -->
-            <block wx:if="{{item.studentAvatar || item.teacherAvatar}}">
+            <!-- 管理员视角：双头像（始终显示学员+志愿者） -->
+            <block wx:if="{{role === 'admin_level_1' || role === 'admin_level_2'}}">
               <image wx:if="{{item.studentAvatar}}" class="chat-pair-avatar-img chat-pair-avatar-img--left" src="{{item.studentAvatar}}" mode="aspectFill" />
               <view wx:else class="chat-pair-avatar-text chat-pair-avatar-text--left">{{item.studentName ? item.studentName[0] : '学'}}</view>
               <image wx:if="{{item.teacherAvatar}}" class="chat-pair-avatar-img chat-pair-avatar-img--right" src="{{item.teacherAvatar}}" mode="aspectFill" />
               <view wx:else class="chat-pair-avatar-text chat-pair-avatar-text--right">{{item.teacherName ? item.teacherName[0] : '教'}}</view>
             </block>
-            <!-- 普通用户：单头像 -->
+            <!-- 学员/志愿者：对方头像 -->
+            <block wx:elif="{{item.otherAvatar}}">
+              <image class="chat-pair-avatar-img chat-pair-avatar-single-img" src="{{item.otherAvatar}}" mode="aspectFill" />
+            </block>
+            <!-- 兜底：文字头像 -->
             <block wx:else>
               <view class="chat-pair-avatar-single">{{item.avatarText}}</view>
             </block>

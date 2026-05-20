@@ -37,8 +37,9 @@ Page({
     const token = (getApp().globalData && getApp().globalData.token) || wx.getStorageSync("token") || "";
     if (!token) { this.setData({ list: [] }); return; }
     this.setData({ loading: true });
-    adminApi.managedStudents().then((rows) => {
-      this.setData({ list: (Array.isArray(rows) ? rows : []).map(mapRemoteStudent), loading: false });
+    adminApi.pendingStudents({ page: 1, size: 50 }).then((res) => {
+      const rows = Array.isArray(res) ? res : (res && (res.records || res.list)) || [];
+      this.setData({ list: rows.map(mapRemoteStudent), loading: false });
     }).catch(() => {
       this.setData({ list: [], loading: false });
     });

@@ -86,14 +86,24 @@ Page({
   _remoteHoursRows(row) {
     const minutes = Number(row && row.duration ? row.duration : 0);
     const hours = minutes ? Math.round((minutes / 60) * 10) / 10 : "—";
-    return { pageTitle: "认定义务时长", rows: [
+    var evidenceImages = [];
+    if (row.evidenceImages) {
+      try {
+        var parsed = typeof row.evidenceImages === "string" ? JSON.parse(row.evidenceImages) : row.evidenceImages;
+        if (Array.isArray(parsed)) evidenceImages = parsed;
+      } catch (_) {}
+    }
+    var rows = [
       { label: "志愿者", value: row.teacherName || "—" },
       { label: "学员", value: row.studentName || "—" },
       { label: "服务日期", value: row.meetingDate || "—" },
       { label: "服务时长", value: hours + " 小时（" + minutes + " 分钟）" },
-      { label: "服务说明", value: row.serviceDesc || "—" },
-      { label: "AI 摘要", value: row.aiSummary || "—" }
-    ] };
+      { label: "服务说明", value: row.serviceDesc || "—" }
+    ];
+    if (evidenceImages.length) {
+      rows.push({ label: "志愿凭证", value: "", type: "images", images: evidenceImages });
+    }
+    return { pageTitle: "认定义务时长", rows: rows };
   },
   _loadRemote(id, type) {
     if (type === "hours") { return volunteerRecordApi.detail(id).then((row) => { if (!row) throw new Error("记录不存在"); return this._remoteHoursRows(row); }).catch(() => { return volunteerRecordApi.list({ page: 1, size: 200 }).then((res) => { const row = pageRecords(res).find((x) => x && String(x.id) === String(id)); if (!row) throw new Error("记录不存在"); return this._remoteHoursRows(row); }); }); }
@@ -114,5 +124,11 @@ Page({
     if (this._type === "hours") { const row = getHoursRequestById(id); if (!row || !canViewHoursSubmission(r, phone, row)) { this.setData({ denied: true, rows: [] }); wx.showToast({ title: "无权限或记录不存在", icon: "none" }); return; } const { pageTitle, rows } = buildHoursRows(row); this.setData({ type: "hours", pageTitle, rows, denied: false }); return; }
     const a = getApplicationById(id); if (!a || !canViewOnboardingSubmission(r, phone, a)) { this.setData({ denied: true, rows: [] }); wx.showToast({ title: "无权限或记录不存在", icon: "none" }); return; }
     const { pageTitle, rows } = buildOnboardingRows(a); this.setData({ type: "onboarding", pageTitle, rows, denied: false });
+  },
+  onPreviewEvidence(e) {
+    const url = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.url;
+    const urls = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.urls;
+    if (!url) return;
+    wx.previewImage({ current: url, urls: Array.isArray(urls) ? urls : [url] });
   }
 });

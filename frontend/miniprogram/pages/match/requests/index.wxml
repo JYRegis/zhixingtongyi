@@ -5,7 +5,7 @@
   </view>
 
   <view wx:if="{{pendingList.length === 0}}" class="card req-empty-card">
-    <view class="req-empty-icon">待</view>
+    <image class="req-empty-icon" src="/images/icons/inbox.svg" mode="aspectFit" />
     <view class="empty-title">暂无待办</view>
     <view class="empty-desc">新的结对申请会显示在这里</view>
   </view>
@@ -13,7 +13,7 @@
   <block wx:for="{{pendingList}}" wx:key="id">
     <view class="card req-card">
       <view class="req-card-head">
-        <view class="req-avatar">{{item.avatarText}}</view>
+        <image class="req-avatar" src="/images/icons/user-check.svg" mode="aspectFit" />
         <view class="req-main">
           <view class="req-name">{{item.primaryName}}</view>
           <view class="req-sub">{{item.primaryLabel}}</view>

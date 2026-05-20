@@ -8,6 +8,17 @@ const { shouldClearUnread } = require("../../../utils/chatReadStore");
 const notificationCenter = require("../../../utils/notificationCenter");
 
 function enrichPairs(pairs) { return (pairs || []).map((item) => ({ ...item, avatarText: String(item && item.name ? item.name : "聊").slice(0, 1) })); }
+function previewText(msg) {
+  if (!msg) return "";
+  var type = msg.messageType != null ? msg.messageType : msg.message_type;
+  if (type === 1 || type === "IMAGE" || type === "image") return "[图片]";
+  if (type === 2 || type === "VOICE" || type === "voice") return "[语音]";
+  if (type === "FILE" || type === "file") return "[文件]";
+  var content = msg.content || msg.text || "";
+  // 兜底：如果内容是 http 开头的 URL 且没有 messageType，也当图片处理
+  if (/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|bmp)/i.test(content)) return "[图片]";
+  return content;
+}
 function fmtTime(v) {
   if (!v) return "";
   const t = typeof v === "string" ? Date.parse(v.replace(" ", "T")) : Date.parse(String(v));
@@ -45,6 +56,8 @@ function mapRemotePairs(pairs, role) {
     const otherName = role === "student" ? (p.teacherName || "志愿者") : (p.studentName || "学员");
     const otherSchool = role === "student" ? (p.teacherSchool || "") : (p.studentSchool || "");
     const otherRoleLabel = role === "student" ? "志愿者" : "学员";
+    // 对方头像：学员看志愿者头像，志愿者看学员头像
+    const otherAvatar = role === "student" ? (p.teacherAvatar || "") : (p.studentAvatar || "");
     const sInfo = statusInfo(p && p.matchStatus);
     const days = daysSince(p && p.acceptTime);
     return {
@@ -58,6 +71,7 @@ function mapRemotePairs(pairs, role) {
       lastPreview: "",
       lastTime: "",
       unreadCount: 0,
+      otherAvatar: otherAvatar,
       statusText: sInfo.text,
       statusLevel: sInfo.level,
       durationText: days > 0 ? "已结对 " + days + " 天" : (p && p.acceptTime ? "今日开始结对" : "")
@@ -79,7 +93,7 @@ function mapAdminConversations(conversations) {
       schoolName: c.schoolName || "",
       schoolId: c.schoolId,
       _remote: true,
-      lastPreview: c.lastMessage || "暂无消息",
+      lastPreview: previewText({ content: c.lastMessage, messageType: c.lastMessageType }) || "暂无消息",
       lastTime: fmtTime(c.lastMessageTime),
       unreadCount: unread,
       studentAvatar: c.studentAvatar || "",
@@ -200,7 +214,7 @@ Page({
           if (shouldClearUnread(p.partnerId, lastTime)) unread = 0;
           return {
             partnerId: p.partnerId,
-            lastPreview: (last && (last.content || last.text)) || "",
+            lastPreview: previewText(last),
             lastTime: fmtTime(lastTime),
             unreadCount: unread
           };

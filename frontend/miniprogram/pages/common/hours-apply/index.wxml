@@ -68,7 +68,7 @@
     <view class="card">
       <view class="section-title">我的申请</view>
       <view wx:if="{{myList.length}}">
-        <view class="list-row" wx:for="{{myList}}" wx:key="id" bindtap="onViewItem" data-id="{{item.id}}">
+        <view class="list-row" wx:for="{{myList}}" wx:key="id">
           <text>{{item.week}} · {{item.hours}}h</text>
           <text>{{item.statusLabel}}</text>
         </view>

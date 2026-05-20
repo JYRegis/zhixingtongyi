@@ -23,7 +23,8 @@ function writeMap(m) {
 function markPairSeen(pairId) {
   if (!pairId && pairId !== 0) return;
   var m = readMap();
-  m[String(pairId)] = Date.now();
+  // 加 1000ms 余量，避免同一秒内收到的消息被误判为已读
+  m[String(pairId)] = Date.now() + 1000;
   writeMap(m);
 }
 

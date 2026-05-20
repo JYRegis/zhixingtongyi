@@ -102,5 +102,5 @@ Page({
     if (!res || !res.ok) { wx.showToast({ title: (res && res.message) || "提交失败", icon: "none" }); return; }
     wx.showToast({ title: "已提交", icon: "success" }); this.setData({ hoursInput: "", serviceDesc: "" }); this.syncData();
   },
-  onViewItem(e) { const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id; if (!id) return; wx.navigateTo({ url: "/pages/common/review-submission-detail/index?type=hours&id=" + encodeURIComponent(String(id)) }); }
+  onViewItem() { /* 已禁用跳转 */ }
 });

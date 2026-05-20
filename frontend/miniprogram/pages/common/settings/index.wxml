@@ -17,7 +17,7 @@
     </view>
     <view class="settings-list card">
       <view wx:if="{{!loggedIn}}" class="settings-row settings-row-btn" bindtap="onGoLogin">
-        <view class="settings-row-icon">登</view>
+        <image class="settings-row-icon" src="/images/icons/user-circle.svg" mode="aspectFit" />
         <view class="settings-row-main">
           <text class="settings-row-title">用户登录</text>
           <text class="settings-row-extra">去登录 →</text>

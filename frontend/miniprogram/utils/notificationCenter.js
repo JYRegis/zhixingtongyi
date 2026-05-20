@@ -12,7 +12,7 @@ const { notificationApi } = require("./api");
 const { chatApi, adminApi, matchApi } = require("./api");
 const { shouldClearUnread } = require("./chatReadStore");
 
-const POLL_INTERVAL_MS = 30 * 1000;        // 30 秒一次（前台）
+const POLL_INTERVAL_MS = 60 * 1000;        // 60 秒一次（前台），降低真机请求压力
 const PEEK_RECENT_SIZE = 5;                 // 检测新增时取最近几条
 
 let _timer = null;
@@ -105,7 +105,7 @@ function _tickChat() {
     const checks = pairs.map(function (p) {
       const pairId = p && (p.id != null ? p.id : p.pairId);
       if (!pairId) return Promise.resolve(0);
-      return chatApi.messages({ matchPairId: Number(pairId), limit: 50 }).then(function (msgs) {
+      return chatApi.messages({ matchPairId: Number(pairId), limit: 20 }).then(function (msgs) {
         const arr = Array.isArray(msgs) ? msgs : (msgs && (msgs.records || msgs.list)) || [];
         if (!arr.length) return 0;
         // 拿最新一条消息时间用于 shouldClearUnread 判断

@@ -1,9 +1,9 @@
 /**
- * 阿里云 OSS 直传工具（基于 STS 临时凭证）
+ * 阿里云 OSS 直传工具（基于服务端签名）
  *
  * 使用流程：
- *   1. 调用后端 POST /oss/token 获取 STS 凭证
- *   2. 使用 wx.uploadFile 直传到 OSS
+ *   1. 调用后端 POST /oss/token 获取 policy + signature
+ *   2. 使用 wx.uploadFile 直传到 OSS（PostObject 方式）
  *
  * 支持的 businessType：
  *   AVATAR       - 用户头像
@@ -113,8 +113,8 @@ function uploadFiles(options) {
   if (!filePaths.length) return Promise.reject(new Error("没有文件需要上传"));
 
   return ossApi.getToken(businessType).then(function (token) {
-    if (!token || !token.accessKeyId) {
-      throw new Error("获取 OSS 凭证失败");
+    if (!token || !token.accessKeyId || !token.policy || !token.signature) {
+      throw new Error("获取上传签名失败");
     }
     var tasks = filePaths.map(function (filePath, idx) {
       return _uploadSingle(token, filePath, fileNames[idx] || "");
@@ -124,8 +124,8 @@ function uploadFiles(options) {
 }
 
 /**
- * 上传单个文件到 OSS（直传）
- * @param {object} token - STS 凭证
+ * 上传单个文件到 OSS（服务端签名直传）
+ * @param {object} token - 后端返回的签名信息
  * @param {string} filePath - 本地临时文件路径
  * @param {string} [fileName] - 原始文件名
  * @returns {Promise<string>} OSS 完整 URL
@@ -133,7 +133,7 @@ function uploadFiles(options) {
 function _uploadSingle(token, filePath, fileName) {
   var ext = _getExtension(fileName || filePath);
   var key = token.dir + _generateFileName() + ext;
-  var host = "https://" + token.bucket + "." + token.endpoint.replace(/^https?:\/\//, "");
+  var host = token.host || ("https://" + token.bucket + "." + token.endpoint.replace(/^https?:\/\//, ""));
 
   return new Promise(function (resolve, reject) {
     wx.uploadFile({
@@ -142,10 +142,9 @@ function _uploadSingle(token, filePath, fileName) {
       name: "file",
       formData: {
         key: key,
-        policy: "",  // STS 模式不需要 policy
+        policy: token.policy,
         OSSAccessKeyId: token.accessKeyId,
-        signature: "", // STS 模式不需要 signature
-        "x-oss-security-token": token.securityToken,
+        signature: token.signature,
         success_action_status: "200"
       },
       success: function (res) {

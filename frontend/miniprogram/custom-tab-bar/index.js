@@ -77,6 +77,7 @@ Component({
   },
   lifetimes: {
     attached() {
+      this._schoolDetailRetried = false;
       this.sync();
       const self = this;
       this._unsub = notificationCenter.subscribe(function (evt) {

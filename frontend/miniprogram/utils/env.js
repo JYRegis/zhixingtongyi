@@ -86,6 +86,14 @@ function request(options) {
           return;
         }
         if (res.statusCode < 200 || res.statusCode >= 300) {
+          // 401 未授权：token 过期或无效，清除登录态并跳转登录页
+          if (res.statusCode === 401 && !shouldOmitAuthHeader(options, token)) {
+            try {
+              const app2 = getApp();
+              if (app2 && app2.logout) app2.logout();
+              wx.reLaunch({ url: "/pages/common/home/index" });
+            } catch (_) {}
+          }
           const msg = (body && body.message) || "请求失败";
           const e1 = new Error(msg);
           e1.statusCode = res.statusCode;

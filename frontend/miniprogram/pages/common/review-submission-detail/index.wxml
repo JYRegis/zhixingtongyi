@@ -8,7 +8,22 @@
         <block wx:for="{{rows}}" wx:key="label" wx:for-index="i">
           <view class="sub-detail-row">
             <text class="sub-detail-k">{{item.label}}</text>
-            <text class="sub-detail-v">{{item.value}}</text>
+            <block wx:if="{{item.type === 'images'}}">
+              <view class="sub-detail-images">
+                <image
+                  wx:for="{{item.images}}"
+                  wx:for-item="img"
+                  wx:key="*this"
+                  class="sub-detail-evidence-img"
+                  src="{{img}}"
+                  mode="aspectFill"
+                  bindtap="onPreviewEvidence"
+                  data-url="{{img}}"
+                  data-urls="{{item.images}}"
+                />
+              </view>
+            </block>
+            <text wx:else class="sub-detail-v">{{item.value}}</text>
           </view>
         </block>
       </view>

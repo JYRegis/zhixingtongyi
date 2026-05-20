@@ -46,28 +46,26 @@
   justify-content: center;
 }
 
-/* 管理员双头像：两个小圆叠放 */
+.chat-pair-avatar-single-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+/* 管理员双头像：左右并排完整显示 */
 .chat-pair-avatar-img--left,
 .chat-pair-avatar-text--left {
-  position: absolute;
-  top: 4rpx;
-  left: 4rpx;
-  width: 48rpx;
-  height: 48rpx;
+  width: 36rpx;
+  height: 36rpx;
   border-radius: 50%;
   border: 2rpx solid #ffffff;
-  z-index: 2;
 }
 .chat-pair-avatar-img--right,
 .chat-pair-avatar-text--right {
-  position: absolute;
-  bottom: 4rpx;
-  right: 4rpx;
-  width: 48rpx;
-  height: 48rpx;
+  width: 36rpx;
+  height: 36rpx;
   border-radius: 50%;
   border: 2rpx solid #ffffff;
-  z-index: 1;
 }
 .chat-pair-avatar-img--left,
 .chat-pair-avatar-img--right {
@@ -80,7 +78,7 @@
   justify-content: center;
   background: #d1e9ff;
   color: #1677ff;
-  font-size: 22rpx;
+  font-size: 20rpx;
   font-weight: 700;
 }
 

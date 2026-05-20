@@ -103,10 +103,15 @@ App({
       wx.setStorageSync("userInfo", merged);
       saveProfile(phone, merged);
     } else {
+      // 个人小程序无手机号，用 backendUserId 作为 key 持久化
+      const uidKey = String(backendUserId || u.userId || "");
       this.globalData.role = role;
       this.globalData.userInfo = u;
       wx.setStorageSync("role", role);
       wx.setStorageSync("userInfo", u);
+      if (uidKey) {
+        saveProfile(uidKey, u);
+      }
     }
     // 登录后立即启动通知轮询
     try { notificationCenter.start(); } catch (_) {}

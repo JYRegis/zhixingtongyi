@@ -48,8 +48,8 @@ Page({
   },
   onSubmit() {
     const userId = (this.data.userId || "").trim();
-    if (!userId || !/^\d+$/.test(userId)) {
-      wx.showToast({ title: "请输入正确的邀请码（纯数字）", icon: "none" });
+    if (!userId || !/^\d+$/.test(userId) || userId.length > 20) {
+      wx.showToast({ title: "请输入正确的邀请码（纯数字，不超过20位）", icon: "none" });
       return;
     }
     const roleType = ROLE_TYPES[this.data.roleTypeIndex];

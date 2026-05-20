@@ -4,6 +4,16 @@ const { mergeFromStorageIntoApp, getByPhone } = require("../../../utils/userProf
 const { matchApi } = require("../../../utils/api");
 const { pairVosToUnbindList } = require("../../../utils/unbindDtoMappers");
 
+function formatDateTime(v) {
+  if (!v) return "";
+  var str = String(v).replace("T", " ");
+  // 去掉毫秒和时区后缀（如 .000+08:00）
+  str = str.replace(/\.\d+.*$/, "");
+  // 截取到分钟 "2025-05-20 15:30"
+  if (str.length > 16) str = str.slice(0, 16);
+  return str;
+}
+
 Page({
   data: {
     role: "",
@@ -41,7 +51,7 @@ Page({
         id: String(item.pairId || item.id),
         studentName: item.studentName || "学员",
         partnerName: item.teacherName || "志愿者",
-        _createdAtText: item.unbindRequestTime || "",
+        _createdAtText: formatDateTime(item.unbindRequestTime),
         _myConfirmed: !!(item.adminUnbindConfirm)
       }));
       this.setData({ l2RequestList: list });
