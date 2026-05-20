@@ -107,10 +107,11 @@ Page({
     mergeFromStorageIntoApp();
     const app = getApp();
     const u = app.globalData.userInfo || {};
-    if (!u.phone) {
+    // 个人小程序可能没有手机号，用 backendUserId 作为标识
+    const phone = String(u.phone || u.backendUserId || u.userId || "");
+    if (!phone) {
       return;
     }
-    const phone = String(u.phone);
     const p = getByPhone(phone) || u;
     const st = p.onboardingStatus != null && p.onboardingStatus !== "" ? p.onboardingStatus : "none";
     if (st === "approved") {

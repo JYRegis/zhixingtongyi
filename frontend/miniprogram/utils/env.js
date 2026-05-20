@@ -80,12 +80,17 @@ function request(options) {
       success: (res) => {
         const body = res.data;
         if (body === "" || body == null) {
-          reject(new Error(`接口返回空响应(${res.statusCode})，请检查后端日志`));
+          const e0 = new Error(`接口返回空响应(${res.statusCode})，请检查后端日志`);
+          e0.statusCode = res.statusCode;
+          reject(e0);
           return;
         }
         if (res.statusCode < 200 || res.statusCode >= 300) {
           const msg = (body && body.message) || "请求失败";
-          reject(new Error(msg));
+          const e1 = new Error(msg);
+          e1.statusCode = res.statusCode;
+          if (body && body.code != null) e1.code = body.code;
+          reject(e1);
           return;
         }
         if (!body || typeof body !== "object" || !Object.prototype.hasOwnProperty.call(body, "code")) {
@@ -96,7 +101,10 @@ function request(options) {
           resolve(body.data);
           return;
         }
-        reject(new Error(body.message || "请求失败"));
+        const e2 = new Error(body.message || "请求失败");
+        e2.statusCode = res.statusCode;
+        e2.code = body.code;
+        reject(e2);
       },
       fail: (err) => {
         if (err && err.errMsg && err.errMsg.indexOf("timeout") >= 0) {

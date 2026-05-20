@@ -18,6 +18,7 @@
             <view class="msg-avatar">
               <image wx:if="{{item.isSelf && myAvatarUrl}}" class="msg-avatar-img" src="{{myAvatarUrl}}" mode="aspectFill" />
               <view wx:elif="{{item.isSelf}}" class="msg-avatar-text">{{myAvatarChar}}</view>
+              <image wx:elif="{{item.avatarUrl}}" class="msg-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
               <view wx:else class="msg-avatar-text msg-avatar-text--other">{{item.avatarChar}}</view>
             </view>
             <view class="msg-bubble {{item.isSelf ? 'msg-bubble--self' : 'msg-bubble--other'}}">{{item.text}}</view>
@@ -37,7 +38,8 @@
           </view>
           <view class="msg-content {{item.l1IsStudent ? 'msg-content--l1left' : 'msg-content--l1right'}}">
             <view class="msg-avatar">
-              <view
+              <image wx:if="{{item.avatarUrl}}" class="msg-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
+              <view wx:else
                 class="msg-avatar-text {{item.l1IsStudent ? 'msg-avatar-text--stu' : 'msg-avatar-text--vol'}}"
               >{{item.avatarChar}}</view>
             </view>

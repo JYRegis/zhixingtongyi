@@ -36,7 +36,17 @@
       >
         <view class="chat-pair-main">
           <view class="chat-pair-avatar">
-            {{item.avatarText}}
+            <!-- 管理员视角：双头像 -->
+            <block wx:if="{{item.studentAvatar || item.teacherAvatar}}">
+              <image wx:if="{{item.studentAvatar}}" class="chat-pair-avatar-img chat-pair-avatar-img--left" src="{{item.studentAvatar}}" mode="aspectFill" />
+              <view wx:else class="chat-pair-avatar-text chat-pair-avatar-text--left">{{item.studentName ? item.studentName[0] : '学'}}</view>
+              <image wx:if="{{item.teacherAvatar}}" class="chat-pair-avatar-img chat-pair-avatar-img--right" src="{{item.teacherAvatar}}" mode="aspectFill" />
+              <view wx:else class="chat-pair-avatar-text chat-pair-avatar-text--right">{{item.teacherName ? item.teacherName[0] : '教'}}</view>
+            </block>
+            <!-- 普通用户：单头像 -->
+            <block wx:else>
+              <view class="chat-pair-avatar-single">{{item.avatarText}}</view>
+            </block>
             <view wx:if="{{item.unreadCount > 0}}" class="chat-pair-unread">{{item.unreadCount > 99 ? '99+' : item.unreadCount}}</view>
           </view>
           <view class="chat-pair-content">

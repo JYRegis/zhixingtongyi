@@ -21,6 +21,7 @@ let _reconnectTimer = null;
 let _token = "";
 let _onConnectCb = null;
 let _onDisconnectCb = null;
+let _manualDisconnect = false;
 
 function _getWsUrl() {
   const base = getBaseUrl();
@@ -74,6 +75,7 @@ function connect(token, onConnect, onDisconnect) {
   _token = token || "";
   _onConnectCb = onConnect || null;
   _onDisconnectCb = onDisconnect || null;
+  _manualDisconnect = false;
 
   const url = _getWsUrl();
   _socket = wx.connectSocket({
@@ -126,8 +128,10 @@ function connect(token, onConnect, onDisconnect) {
     _connected = false;
     _stopHeartbeat();
     if (_onDisconnectCb) _onDisconnectCb();
-    // Auto reconnect after 5s
-    _scheduleReconnect();
+    // 仅在非主动断开时自动重连
+    if (!_manualDisconnect) {
+      _scheduleReconnect();
+    }
   });
 
   _socket.onError(function (err) {
@@ -156,7 +160,7 @@ function _scheduleReconnect() {
   if (_reconnectTimer) return;
   _reconnectTimer = setTimeout(function () {
     _reconnectTimer = null;
-    if (!_connected && _token) {
+    if (!_connected && _token && !_manualDisconnect) {
       connect(_token, _onConnectCb, _onDisconnectCb);
     }
   }, 5000);
@@ -193,6 +197,7 @@ function send(destination, body) {
 }
 
 function disconnect() {
+  _manualDisconnect = true;
   _stopHeartbeat();
   if (_reconnectTimer) {
     clearTimeout(_reconnectTimer);
@@ -203,6 +208,7 @@ function disconnect() {
   }
   _connected = false;
   _subscriptions = {};
+  _token = "";
   if (_socket) {
     _socket.close({});
     _socket = null;

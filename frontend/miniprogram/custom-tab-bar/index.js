@@ -129,21 +129,24 @@ Component({
         const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
         const isSupportSide = isVolunteerSchool(schoolId);
         if (isSupportSide === true) {
-          // 支教方 L2：只有工作台、区域管理、聊天、设置，无解绑
-          list = [TAB[0], TAB_REGION, TAB[2], TAB[4]];
+          // 支教方 L2：只有工作台、区域管理、设置，无解绑无聊天
+          list = [TAB[0], TAB_REGION, TAB[4]];
         } else if (isSupportSide === false) {
           // 受援方 L2：工作台、区域管理、解绑、聊天、设置
           list = [TAB[0], TAB_REGION, TAB_UNBIND, TAB[2], TAB[4]];
         } else {
-          // schoolId 未知或缓存未命中：默认受援方布局，异步确认后刷新
+          // schoolId 未知或缓存未命中：默认受援方布局，异步确认后刷新（防止无限循环）
           list = [TAB[0], TAB_REGION, TAB_UNBIND, TAB[2], TAB[4]];
-          if (schoolId) {
+          if (this._schoolDetailRetried) {
+            // 已经尝试过一次仍未命中，停止重试
+          } else if (schoolId) {
+            this._schoolDetailRetried = true;
             var self = this;
             fetchSchoolDetail(schoolId).then(function () {
-              self.sync(); // 缓存填充后重新 sync
-            });
+              self.sync();
+            }).catch(function () {});
           } else {
-            // schoolId 还没拿到，尝试拉 admin profile
+            this._schoolDetailRetried = true;
             var self2 = this;
             adminApi.myProfile().then(function (profile) {
               if (profile && profile.schoolId) {

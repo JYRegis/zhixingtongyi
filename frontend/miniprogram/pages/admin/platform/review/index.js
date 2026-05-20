@@ -86,7 +86,11 @@ Page({
   _loadSchoolFilter() {
     const token = (getApp().globalData && getApp().globalData.token) || wx.getStorageSync("token") || "";
     if (!token) return;
-    schoolApi.list().then((res) => {
+    // 学员审核只显示受援方学校(type=0)，志愿者审核只显示支教方学校(type=1)
+    const params = {};
+    if (this._role === "student") params.type = 0;
+    else if (this._role === "teacher") params.type = 1;
+    schoolApi.list(params).then((res) => {
       const schools = Array.isArray(res) ? res : (res && (res.records || res.list)) || [];
       const list = [{ id: "", name: "全部学校" }].concat(schools.map((s) => ({ id: s.id, name: s.name })));
       this.setData({ schoolFilterList: list });
@@ -95,7 +99,7 @@ Page({
   onSchoolFilterChange(e) {
     const idx = Number(e.detail.value) || 0;
     const selected = (this.data.schoolFilterList || [])[idx];
-    this._schoolId = (selected && selected.id) || null;
+    this._schoolId = (selected && selected.id) ? Number(selected.id) : null;
     this.setData({ schoolFilterIndex: idx });
     this.onShow();
   },

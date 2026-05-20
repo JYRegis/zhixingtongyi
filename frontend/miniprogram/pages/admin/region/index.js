@@ -40,11 +40,19 @@ Page({
     if (isSupportSide === true) {
       canTeacherAudit = hasTeacherAuditPerm;
     } else if (isSupportSide === null && schoolId) {
-      // 缓存未命中：异步拉学校详情后重新 refresh
+      // 缓存未命中：异步拉学校详情后重新 refresh（用标志位防止无限循环）
       var self = this;
       this.setData({ canStudentManage, canVolunteerRecordAudit, canTeacherAudit: false, loading: true });
+      if (this._schoolDetailFetched) {
+        // 已经拉过一次仍命中不到，停止重试，按受援方处理
+        this.setData({ loading: false });
+        return;
+      }
+      this._schoolDetailFetched = true;
       fetchSchoolDetail(schoolId).then(function () {
-        self.refresh(); // 缓存填充后重新执行
+        self.refresh();
+      }).catch(function () {
+        self.setData({ loading: false });
       });
       return;
     }

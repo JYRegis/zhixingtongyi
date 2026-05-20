@@ -32,7 +32,7 @@
 
     <view class="card platform-entry-card" bindtap="goReviewStudent">
       <view class="platform-entry-row">
-        <view class="platform-entry-icon">学</view>
+        <image class="platform-entry-icon" src="/images/icons/graduation.svg" mode="aspectFit" />
         <view class="platform-entry-main">
           <view class="platform-entry-title">乡村学员</view>
           <view class="platform-entry-desc">查看学生注册与资料审核</view>
@@ -44,7 +44,7 @@
 
     <view class="card platform-entry-card" bindtap="goReviewTeacher">
       <view class="platform-entry-row">
-        <view class="platform-entry-icon">教</view>
+        <image class="platform-entry-icon" src="/images/icons/award.svg" mode="aspectFit" />
         <view class="platform-entry-main">
           <view class="platform-entry-title">支教志愿者</view>
           <view class="platform-entry-desc">处理志愿者入驻申请</view>
@@ -54,23 +54,11 @@
       </view>
     </view>
 
-    <view class="card platform-entry-card" bindtap="goReviewL2">
-      <view class="platform-entry-row">
-        <view class="platform-entry-icon">校</view>
-        <view class="platform-entry-main">
-          <view class="platform-entry-title">学校老师</view>
-          <view class="platform-entry-desc">确认学校侧管理身份</view>
-        </view>
-        <view class="platform-entry-badge" wx:if="{{cL2 > 0}}">{{cL2}}</view>
-        <view class="platform-entry-arrow">›</view>
-      </view>
-    </view>
-
 
 
     <view class="card platform-entry-card" bindtap="goHours">
       <view class="platform-entry-row">
-        <view class="platform-entry-icon">时</view>
+        <image class="platform-entry-icon" src="/images/icons/clock.svg" mode="aspectFit" />
         <view class="platform-entry-main">
           <view class="platform-entry-title">认定义务时长</view>
           <view class="platform-entry-desc">复核志愿服务时长记录</view>
@@ -86,7 +74,7 @@
 
     <view class="card platform-entry-card" bindtap="goSecondaryAdmins">
       <view class="platform-entry-row">
-        <view class="platform-entry-icon">权</view>
+        <image class="platform-entry-icon" src="/images/icons/key.svg" mode="aspectFit" />
         <view class="platform-entry-main">
           <view class="platform-entry-title">二级管理员分配</view>
           <view class="platform-entry-desc">为用户分配学校管理权限</view>

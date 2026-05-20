@@ -103,6 +103,6 @@ Page({
       wx.reLaunch({ url: "/pages/common/workbench/index" });
       return;
     }
-    wx.reLaunch({ url: "/pages/common/role-select/index" });
+    wx.navigateTo({ url: "/pages/common/role-select/index" });
   }
 });

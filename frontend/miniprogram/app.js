@@ -41,7 +41,19 @@ App({
       }
       if (base) {
         const p = base.phone && getByPhone(String(base.phone));
-        this.globalData.userInfo = p ? { ...p, ...base } : base;
+        // 合并顺序：会话(base) ← 档案(p)。与 mergeFromStorageIntoApp 保持一致，
+        // 让 zhixing_user_profiles 中的 onboardingStatus / l2Scope 等档案字段为权威。
+        if (p) {
+          this.globalData.userInfo = {
+            ...base,
+            ...p,
+            // 钉住本次会话关键字段，避免档案里旧 token/role 覆盖会话
+            phone: String(base.phone),
+            role: base.role || p.role,
+          };
+        } else {
+          this.globalData.userInfo = base;
+        }
         wx.setStorageSync("userInfo", this.globalData.userInfo);
       } else if (savedRole) {
         this.globalData.userInfo = { nickname: "缓存用户", role: savedRole };

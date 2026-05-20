@@ -6,6 +6,7 @@ const ALLOWED_NO_ONBOARD = new Set([
   "pages/common/auth/index",
   "pages/common/auth-setup/index",
   "pages/common/role-select/index",
+  "pages/common/invite-code/index",
   "pages/common/onboarding-apply/index",
   "pages/common/onboarding-pending/index",
   "pages/common/template/index"
@@ -37,10 +38,34 @@ function checkOnboardingOrRedirect(pageRoute) {
   mergeFromStorageIntoApp();
   const u = app.globalData.userInfo;
   const r = app.globalData.role;
-  if (!r || !u || !u.phone) {
+  if (!u || !u.phone) {
+    return;
+  }
+  // 用户已登录但没有选择角色：路由到 role-select
+  if (!r) {
+    const path0 = (pageRoute || "").replace(/^\//, "");
+    if (path0 === "pages/common/home/index" ||
+        path0 === "pages/common/auth/index" ||
+        path0 === "pages/common/auth-setup/index" ||
+        path0 === "pages/common/role-select/index" ||
+        path0 === "pages/common/onboarding-apply/index" ||
+        path0 === "pages/common/invite-code/index") {
+      return;
+    }
+    wx.reLaunch({ url: "/pages/common/role-select/index" });
     return;
   }
   if ((r === "admin_level_1" || r === "admin_level_2") && ((app.globalData && app.globalData.token) || wx.getStorageSync("token"))) {
+    // 二级管理员如果还没被分配权限（pending_assignment），不允许进入业务页
+    const assignSt = u.onboardingStatus;
+    if (r === "admin_level_2" && assignSt === "pending_assignment") {
+      const path1 = (pageRoute || "").replace(/^\//, "");
+      if (path1 === "pages/common/home/index" || path1 === "pages/common/role-select/index" || path1 === "pages/common/auth-setup/index") {
+        return;
+      }
+      wx.reLaunch({ url: "/pages/common/home/index" });
+      return;
+    }
     return;
   }
   const phone0 = String(u.phone);

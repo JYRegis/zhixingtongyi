@@ -10,7 +10,7 @@ function safe(p) { return p.catch(() => null); }
 function buildStatRow(title, value, hint) { return { title, value: String(value != null ? value : 0), hint: hint || "" }; }
 
 Page({
-  data: { stats: { volunteerCount: 328, studentCount: 612, pairCount: 198, pendingAlerts: 24 }, cStudent: 0, cTeacher: 0, cL1: 0, cL2: 0, cHours: 0, cRisk: 0, dashboardRows: [], statRows: [] },
+  data: { stats: { volunteerCount: 0, studentCount: 0, pairCount: 0, pendingAlerts: 0, totalServiceHours: 0 }, cStudent: 0, cTeacher: 0, cL1: 0, cL2: 0, cHours: 0, cRisk: 0, dashboardRows: [], statRows: [] },
   onShow() {
     checkOnboardingOrRedirect("pages/admin/platform/index");
     mergeFromStorageIntoApp();
@@ -34,8 +34,7 @@ Page({
         const next = { ...this.data.stats };
         if (students) next.studentCount = pageTotal(students);
         if (teachers) next.volunteerCount = pageTotal(teachers);
-        if (overview && overview.pairCount != null) next.pairCount = overview.pairCount;
-        if (overview && overview.pendingAlerts != null) next.pendingAlerts = overview.pendingAlerts;
+        if (overview && overview.matchedPairs != null) next.pairCount = overview.matchedPairs;
         if (overview && overview.totalServiceHours != null) next.totalServiceHours = Math.round(overview.totalServiceHours / 60 * 10) / 10;
         const patch = { stats: next, dashboardRows: [] };
         patch.cStudent = pStudents ? pageTotal(pStudents) : (students ? pageTotal(students) : 0);

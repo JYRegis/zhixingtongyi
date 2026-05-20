@@ -1,0 +1,17 @@
+<view class="page-shell">
+  <view class="container invite-page">
+    <view class="page-hero">
+      <view class="page-hero-title">注册成功</view>
+    </view>
+
+    <view class="card invite-card">
+      <view class="invite-label">你的邀请码</view>
+      <view class="invite-code">{{inviteCode}}</view>
+      <view class="invite-hint">请将此邀请码告知一级管理员，由其为你分配学校和权限。</view>
+      <view class="invite-hint">分配完成后重新打开小程序即可使用。</view>
+      <button class="btn-secondary invite-copy-btn" bindtap="onCopy">复制邀请码</button>
+    </view>
+
+    <button class="btn-primary invite-back-btn" bindtap="onBack">返回首页</button>
+  </view>
+</view>

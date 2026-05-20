@@ -19,8 +19,7 @@ const ROLE_TYPES = [
 
 Page({
   data: {
-    phone: "",
-    realName: "",
+    userId: "",
     schoolList: [],
     schoolNames: [],
     schoolIndex: -1,
@@ -40,8 +39,7 @@ Page({
       self.setData({ schoolList: list, schoolNames: names });
     });
   },
-  onPhone(e) { this.setData({ phone: e.detail.value }); },
-  onRealName(e) { this.setData({ realName: e.detail.value }); },
+  onUserIdInput(e) { this.setData({ userId: e.detail.value }); },
   onSchoolChange(e) { this.setData({ schoolIndex: Number(e.detail.value) }); },
   onRoleTypeChange(e) {
     const idx = Number(e.detail.value);
@@ -49,23 +47,21 @@ Page({
     this._loadSchools();
   },
   onSubmit() {
-    const phone = (this.data.phone || "").trim();
-    if (!/^1\d{10}$/.test(phone)) {
-      wx.showToast({ title: "请输入正确的11位手机号", icon: "none" });
+    const userId = (this.data.userId || "").trim();
+    if (!userId || !/^\d+$/.test(userId)) {
+      wx.showToast({ title: "请输入正确的邀请码（纯数字）", icon: "none" });
       return;
     }
     const roleType = ROLE_TYPES[this.data.roleTypeIndex];
-    let schoolId, regionCode;
     if (this.data.schoolIndex < 0) {
       wx.showToast({ title: "请选择管辖学校", icon: "none" });
       return;
     }
     const school = this.data.schoolList[this.data.schoolIndex];
-    schoolId = Number(school.id);
-    regionCode = school.regionCode || school.region_code || "";
+    const schoolId = Number(school.id);
+    const regionCode = school.regionCode || school.region_code || "";
     const data = {
-      phone: phone,
-      realName: (this.data.realName || "").trim() || undefined,
+      userId: Number(userId),
       schoolId: schoolId,
       regionCode: regionCode,
       permissions: roleType.permissions
@@ -76,10 +72,10 @@ Page({
       const schoolText = (this.data.schoolList[this.data.schoolIndex] || {}).name || "";
       wx.showModal({
         title: "分配成功",
-        content: "已为手机号 " + phone + " 创建/更新「" + roleType.name + "」身份，管辖学校：" + schoolText + "。",
+        content: "已分配「" + roleType.name + "」身份，管辖学校：" + schoolText + "。",
         showCancel: false
       });
-      this.setData({ phone: "", realName: "", schoolIndex: -1 });
+      this.setData({ userId: "", schoolIndex: -1 });
     }).catch((err) => {
       wx.hideLoading();
       wx.showToast({ title: (err && err.message) || "分配失败", icon: "none" });

@@ -4,7 +4,7 @@ const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { getByPhone } = require("../../../utils/userProfileStore");
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
 const { teacherApi } = require("../../../utils/api");
-const { isVolunteerSchool } = require("../../../utils/schoolsMock");
+const { isVolunteerSchool, fetchSchoolDetail } = require("../../../utils/schoolsMock");
 
 const roleHeroMap = {
   student: { title: "我的学习" },
@@ -40,7 +40,16 @@ function getMenuListForCurrentRole(role) {
     }
     list.push({ title: "匹配", action: "toMatch", badge: badge });
   }
-  list.push({ title: "聊天", action: "toChat", badge: "沟通" });
+  // 支教方 L2 不需要聊天功能
+  if (role === "admin_level_2") {
+    const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
+    const schoolTypeResult = isVolunteerSchool(schoolId);
+    if (schoolTypeResult !== true) {
+      list.push({ title: "聊天", action: "toChat", badge: "沟通" });
+    }
+  } else {
+    list.push({ title: "聊天", action: "toChat", badge: "沟通" });
+  }
   if (role === "student" || role === "teacher") {
     list.push({ title: "会议", action: "toMeeting", badge: "课堂" });
   }
@@ -52,10 +61,12 @@ function getMenuListForCurrentRole(role) {
     list.push({ title: "平台管理", action: "toPlatformAdmin", badge: "管理" });
   } else if (role === "admin_level_2") {
     const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
-    const isSupportSide = isVolunteerSchool(schoolId) === true;
+    const schoolTypeResult = isVolunteerSchool(schoolId);
+    const isSupportSide = schoolTypeResult === true;
+    const isRecipientSide = schoolTypeResult === false;
     list.push({ title: "区域管理", action: "toRegionAdmin", badge: "管理", _supportSide: isSupportSide });
-    if (!isSupportSide) {
-      // 只有受援方 L2 有解绑功能
+    // 只有明确是受援方时才显示解绑（缓存未命中时不显示，等异步加载后刷新）
+    if (isRecipientSide) {
       list.push({ title: "解绑", action: "toUnbind", badge: "处理" });
     }
   }
@@ -137,9 +148,18 @@ Page({
     const menuList = formatMenuList(role);
     let hero = roleHeroMap[role] || roleHeroMap.guest;
     if (role === "admin_level_2") {
-      const pr = (userInfo.phone && getByPhone(String(userInfo.phone))) || userInfo;
-      if (pr.l2Scope === "volunteer_side") {
+      const schoolId = userInfo.schoolId || userInfo.school_id || "";
+      const schoolTypeResult = isVolunteerSchool(schoolId);
+      if (schoolTypeResult === true) {
         hero = { title: "审核管理" };
+      }
+      // 缓存未命中时异步拉学校详情后刷新（一次性）
+      if (schoolTypeResult === null && !this._workbenchSchoolFetched) {
+        this._workbenchSchoolFetched = true;
+        var self0 = this;
+        if (schoolId) {
+          fetchSchoolDetail(schoolId).then(function () { self0.syncPageData(); }).catch(function () {});
+        }
       }
     }
     const nickname = userInfo.nickname || (role ? roleName : "知行同驿");

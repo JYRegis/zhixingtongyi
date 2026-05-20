@@ -1,0 +1,40 @@
+.invite-page {
+  padding-bottom: 60rpx;
+}
+
+.invite-card {
+  margin-top: 40rpx;
+  padding: 48rpx 32rpx;
+  text-align: center;
+}
+
+.invite-label {
+  font-size: 28rpx;
+  color: #6b7280;
+  margin-bottom: 20rpx;
+}
+
+.invite-code {
+  font-size: 72rpx;
+  font-weight: 800;
+  color: #1677ff;
+  letter-spacing: 8rpx;
+  padding: 24rpx 0;
+  font-family: "Menlo", "Courier New", monospace;
+}
+
+.invite-hint {
+  font-size: 26rpx;
+  color: #9ca3af;
+  line-height: 1.6;
+  margin-top: 8rpx;
+}
+
+.invite-copy-btn {
+  margin-top: 32rpx;
+}
+
+.invite-back-btn {
+  margin-top: 40rpx;
+  width: 100%;
+}

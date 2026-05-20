@@ -29,9 +29,16 @@
           ></button>
         </view>
       </view>
-      <view class="field profile-field" bindtap="onEditNickname">
+      <view class="field profile-field">
         <text class="field-label">昵称</text>
-        <view class="field-input profile-field-input profile-picker-line">{{accNickname}}</view>
+        <input
+          class="field-input profile-field-input"
+          placeholder="请输入昵称"
+          value="{{accNickname}}"
+          data-field="_nickname"
+          bindinput="onNicknameInlineInput"
+          bindblur="onNicknameInlineBlur"
+        />
       </view>
       <view class="field profile-field" bindtap="onEditPhone">
         <text class="field-label">手机</text>

@@ -61,8 +61,8 @@ Page({
         wx.setStorageSync("token", token);
       }
       const backendRole = remoteUser && remoteUser.role != null ? intToAppRole(remoteUser.role) : "";
-      const effectiveRole = backendRole || "student";
-      remoteUser = { ...(remoteUser || {}), _effectiveRole: effectiveRole };
+      // 不再默认 "student"：role 为空表示新用户未选择身份
+      remoteUser = { ...(remoteUser || {}), _effectiveRole: backendRole };
     } catch (e) {
       wx.showToast({ title: (e && e.message) || "登录失败", icon: "none" });
       this.setData({ submitting: false });
@@ -70,7 +70,7 @@ Page({
     }
     const phoneFromBackend = (remoteUser && remoteUser.phone) || "";
     const finalPhone = /^1\d{10}$/.test(String(phoneFromBackend)) ? String(phoneFromBackend) : "";
-    const finalRole = (remoteUser && remoteUser._effectiveRole) || "student";
+    const finalRole = (remoteUser && remoteUser._effectiveRole) || "";
     // 后端登录响应只含 hasProfile，不返回审核状态。这里对学员/志愿者额外拉一次资料，
     // 后端登录响应已包含 auditStatus 和 permissions，无需二次调用 getProfile
     let onboardingStatus = "";
@@ -101,8 +101,17 @@ Page({
     setTimeout(() => {
       const isNewUser = !(remoteUser && remoteUser.hasProfile);
       const isAdmin = isAdminRole(finalRole);
+      // 没有角色：新用户首次登录，先进 auth-setup 设头像/昵称，再进 role-select
+      if (!finalRole) {
+        if (isNewUser) {
+          wx.navigateTo({ url: "/pages/common/auth-setup/index" });
+        } else {
+          wx.navigateTo({ url: "/pages/common/role-select/index" });
+        }
+        return;
+      }
       if (isNewUser && !isAdmin) {
-        wx.reLaunch({ url: "/pages/common/auth-setup/index" });
+        wx.navigateTo({ url: "/pages/common/auth-setup/index" });
         return;
       }
       if (onboardingStatus === "pending" || (!onboardingStatus && auditStatusCode === 0)) {

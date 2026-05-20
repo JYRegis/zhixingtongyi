@@ -25,35 +25,26 @@ Page({
       return;
     }
     const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
-    if (isLearnerRole(role) && token) {
-      const target = appRoleToRoleApplyTarget(role);
-      this.setData({ submitting: true });
-      wx.showLoading({ title: "同步身份", mask: true });
-      try {
-        await authApi.roleApply(target);
-      } catch (err) {
-        wx.hideLoading();
-        this.setData({ submitting: false });
-        wx.showToast({ title: (err && err.message) || "身份同步失败", icon: "none" });
-        return;
-      }
-      wx.hideLoading();
-    }
-    if (isAdminRole(role)) {
-      wx.showToast({ title: "开发测试身份，不向后端申请", icon: "none" });
-    }
-    app.setLogin(role, {
-      ...userInfo,
-      role: role,
-      roleApplied: isLearnerRole(role) ? true : userInfo.roleApplied
-    });
-    this.setData({ submitting: false });
-    if (isAdminRole(role)) {
-      wx.reLaunch({ url: "/pages/common/workbench/index" });
+    if (isLearnerRole(role)) {
+      // 学员/志愿者：不立即改变角色，只跳转到申请页填资料
+      // roleApply 和角色变更在审核通过后由后端处理
+      this.setData({ submitting: false });
+      wx.navigateTo({
+        url: `/pages/common/onboarding-apply/index?role=${encodeURIComponent(role)}`
+      });
       return;
     }
-    wx.redirectTo({
-      url: `/pages/common/onboarding-apply/index?role=${encodeURIComponent(role)}`
-    });
+    if (role === "admin_level_2") {
+      // 学校老师：不需要填申请单，跳转到邀请码页面
+      // 不调 setLogin，避免污染全局状态（用户可能返回重新选择）
+      this.setData({ submitting: false });
+      const uid = userInfo.backendUserId || userInfo.id || userInfo.userId || "";
+      wx.navigateTo({ url: "/pages/common/invite-code/index?code=" + encodeURIComponent(String(uid)) });
+      return;
+    }
+    // 其他情况：兜底
+    app.setLogin(role, { ...userInfo, role: role });
+    this.setData({ submitting: false });
+    wx.reLaunch({ url: "/pages/common/workbench/index" });
   }
 });

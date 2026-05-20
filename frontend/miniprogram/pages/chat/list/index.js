@@ -82,6 +82,11 @@ function mapAdminConversations(conversations) {
       lastPreview: c.lastMessage || "暂无消息",
       lastTime: fmtTime(c.lastMessageTime),
       unreadCount: unread,
+      studentAvatar: c.studentAvatar || "",
+      teacherAvatar: c.teacherAvatar || "",
+      studentName: c.studentName || "",
+      teacherName: c.teacherName || "",
+      avatarText: (c.studentName || "聊").slice(0, 1),
       statusText: "",
       statusLevel: "",
       durationText: ""
@@ -101,8 +106,8 @@ Page({
   data: { role: "", roleName: "未登录", pairs: [], l1FilterSchools: [], l1FilterIndex: 0, emptyHint: "" },
   onShow() {
     checkOnboardingOrRedirect("pages/chat/list/index"); syncCustomTabBar(); mergeFromStorageIntoApp();
-    // 进入列表立即刷新 Tab 徽标，确保从其他页切回时数据一致
-    try { notificationCenter.refreshChatUnread(); } catch (_) {}
+    // 不在此处主动 refreshChatUnread：列表自身会通过 _enrichLastMessages 拉消息计算未读，
+    // notificationCenter 的 30s 轮询会异步同步 Tab 徽标，避免重复请求。
     const u = (getApp().globalData && getApp().globalData.userInfo) || {}; const profile = getByPhone(u.phone) || u; const role = getApp().globalData.role || ""; const token = (getApp().globalData && getApp().globalData.token) || wx.getStorageSync("token") || "";
     if (role === "admin_level_1") {
       if (token) {
@@ -215,6 +220,12 @@ Page({
         });
       });
       self.setData({ pairs: next });
+      // 把刚算出的总未读数同步给 Tab 徽标，避免再触发一次 30s 轮询
+      try {
+        var total = 0;
+        next.forEach(function (p) { total += Number(p.unreadCount || 0); });
+        notificationCenter.setChatUnread(total);
+      } catch (_) {}
     });
   },
   onOpenRoom(e) { const { id, name } = e.currentTarget.dataset; if (!id) return; wx.navigateTo({ url: `/pages/chat/room/index?partnerId=${encodeURIComponent(id)}&partnerName=${encodeURIComponent(name || "聊天")}` }); },

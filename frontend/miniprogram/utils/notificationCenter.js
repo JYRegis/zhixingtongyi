@@ -92,8 +92,9 @@ function _tickChat() {
       _emit("chat-unread-change", { count: total });
       return;
     }
-    // 学员 / 志愿者：对所有活跃结对，分别拉近 200 条消息精确统计未读，
-    // 同时套用 shouldClearUnread 让进入聊天室后立即清零（与列表算法对齐）
+    // 学员 / 志愿者：对所有活跃结对，分别拉近 50 条消息估算未读，
+    // 同时套用 shouldClearUnread 让进入聊天室后立即清零（与列表算法对齐）。
+    // 注：聊天列表页 _enrichLastMessages 会用更大窗口(200条)精确重算并主动调用 setChatUnread 覆盖。
     const pairs = Array.isArray(res) ? res : (res && (res.records || res.list)) || [];
     if (!pairs.length) {
       _chatUnread = 0;
@@ -104,7 +105,7 @@ function _tickChat() {
     const checks = pairs.map(function (p) {
       const pairId = p && (p.id != null ? p.id : p.pairId);
       if (!pairId) return Promise.resolve(0);
-      return chatApi.messages({ matchPairId: Number(pairId), limit: 200 }).then(function (msgs) {
+      return chatApi.messages({ matchPairId: Number(pairId), limit: 50 }).then(function (msgs) {
         const arr = Array.isArray(msgs) ? msgs : (msgs && (msgs.records || msgs.list)) || [];
         if (!arr.length) return 0;
         // 拿最新一条消息时间用于 shouldClearUnread 判断
@@ -259,5 +260,11 @@ module.exports = {
   decrement: decrement,
   reset: reset,
   peekAndNotify: peekAndNotify,
-  refreshChatUnread: function () { _tickChat(); }
+  refreshChatUnread: function () { _tickChat(); },
+  /** 直接设置聊天未读数（页面已计算过时调用，避免重复请求） */
+  setChatUnread: function (n) {
+    var v = Math.max(0, Number(n) || 0);
+    _chatUnread = v;
+    _emit("chat-unread-change", { count: v });
+  }
 };
