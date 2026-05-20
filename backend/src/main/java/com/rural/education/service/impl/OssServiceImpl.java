@@ -1,12 +1,5 @@
 package com.rural.education.service.impl;
 
-import com.aliyuncs.DefaultAcsClient;
-import com.aliyuncs.auth.sts.AssumeRoleRequest;
-import com.aliyuncs.auth.sts.AssumeRoleResponse;
-import com.aliyuncs.exceptions.ClientException;
-import com.aliyuncs.http.MethodType;
-import com.aliyuncs.profile.DefaultProfile;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.config.OssConfig;
 import com.rural.education.dto.response.OssTokenResponse;
 import com.rural.education.enums.OssBusinessType;
@@ -15,18 +8,28 @@ import com.rural.education.service.OssService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Base64;
 
+/**
+ * OSS 服务端签名直传实现。
+ * 使用 AccessKey 生成 PostObject 所需的 policy + signature，
+ * 前端拿到后直接上传到 OSS，不需要 STS/RAM 角色。
+ */
 @Service
 @RequiredArgsConstructor
 public class OssServiceImpl implements OssService {
 
     private final OssConfig ossConfig;
-    private final ObjectMapper objectMapper;
+
+    /** 签名有效期（秒） */
+    private static final long EXPIRE_SECONDS = 300; // 5 分钟
 
     @Override
     public OssTokenResponse generateStsToken(String businessType) {
@@ -38,55 +41,46 @@ public class OssServiceImpl implements OssService {
         }
 
         String dir = type.getDir() + "/" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + "/";
+        String host = "https://" + ossConfig.getBucketName() + "." + ossConfig.getEndpoint();
 
-        String policy = buildPolicy(ossConfig.getBucketName(), dir);
+        // 计算过期时间（ISO 8601 UTC）
+        Instant expireAt = Instant.now().plusSeconds(EXPIRE_SECONDS);
+        String expiration = expireAt.atOffset(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
-        DefaultProfile profile = DefaultProfile.getProfile(
-                ossConfig.getStsRegionId(),
-                ossConfig.getAccessKeyId(),
-                ossConfig.getAccessKeySecret()
-        );
-        DefaultAcsClient client = new DefaultAcsClient(profile);
+        // 构建 policy JSON
+        String policyJson = "{\"expiration\":\"" + expiration + "\","
+                + "\"conditions\":["
+                + "[\"content-length-range\",0,104857600],"  // 最大 100MB
+                + "[\"starts-with\",\"$key\",\"" + dir + "\"]"
+                + "]}";
 
-        AssumeRoleRequest request = new AssumeRoleRequest();
-        request.setSysMethod(MethodType.POST);
-        request.setRoleArn(ossConfig.getRoleArn());
-        request.setRoleSessionName(ossConfig.getRoleSessionName());
-        request.setPolicy(policy);
-        request.setDurationSeconds(ossConfig.getDurationSeconds());
+        // Base64 编码 policy
+        String policyBase64 = Base64.getEncoder().encodeToString(
+                policyJson.getBytes(StandardCharsets.UTF_8));
 
-        try {
-            AssumeRoleResponse response = client.getAcsResponse(request);
-            AssumeRoleResponse.Credentials credentials = response.getCredentials();
+        // HMAC-SHA1 签名
+        String signature = hmacSha1(ossConfig.getAccessKeySecret(), policyBase64);
 
-            return OssTokenResponse.builder()
-                    .accessKeyId(credentials.getAccessKeyId())
-                    .accessKeySecret(credentials.getAccessKeySecret())
-                    .securityToken(credentials.getSecurityToken())
-                    .expiration(credentials.getExpiration())
-                    .bucket(ossConfig.getBucketName())
-                    .endpoint(ossConfig.getEndpoint())
-                    .dir(dir)
-                    .build();
-        } catch (ClientException e) {
-            throw new BusinessException("获取 STS 凭证失败: " + e.getMessage());
-        }
+        return OssTokenResponse.builder()
+                .accessKeyId(ossConfig.getAccessKeyId())
+                .policy(policyBase64)
+                .signature(signature)
+                .bucket(ossConfig.getBucketName())
+                .endpoint(ossConfig.getEndpoint())
+                .dir(dir)
+                .host(host)
+                .build();
     }
 
-    private String buildPolicy(String bucket, String dir) {
+    private String hmacSha1(String key, String data) {
         try {
-            Map<String, Object> statement = new LinkedHashMap<>();
-            statement.put("Effect", "Allow");
-            statement.put("Action", List.of("oss:PutObject", "oss:GetObject"));
-            statement.put("Resource", List.of("acs:oss:*:*:" + bucket + "/" + dir + "*"));
-
-            Map<String, Object> policy = new LinkedHashMap<>();
-            policy.put("Version", "1");
-            policy.put("Statement", List.of(statement));
-
-            return objectMapper.writeValueAsString(policy);
+            Mac mac = Mac.getInstance("HmacSHA1");
+            mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA1"));
+            byte[] rawHmac = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(rawHmac);
         } catch (Exception e) {
-            throw new BusinessException("构建 OSS 策略失败");
+            throw new BusinessException("签名计算失败: " + e.getMessage());
         }
     }
 }

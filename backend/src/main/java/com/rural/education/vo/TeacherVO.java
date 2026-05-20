@@ -13,6 +13,7 @@ public class TeacherVO {
 
     // Profile fields
     private String realName;
+    private String avatar;
     private Long schoolId;
     private String schoolName;
     private String grade;

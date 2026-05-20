@@ -31,4 +31,6 @@ public class MatchPairVO {
     private LocalDateTime unbindRejectTime;
     private String studentFreeTime;
     private String studentGrade;
+    private String studentAvatar;
+    private String teacherAvatar;
 }

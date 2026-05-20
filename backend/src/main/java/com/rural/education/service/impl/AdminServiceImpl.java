@@ -273,8 +273,21 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         LambdaQueryWrapper<TeacherProfile> wrapper = new LambdaQueryWrapper<TeacherProfile>()
                 .eq(TeacherProfile::getCertificationStatus, AuditStatus.PENDING.getCode())
                 .orderByDesc(TeacherProfile::getUpdateTime);
-        if (schoolId != null) {
-            wrapper.eq(TeacherProfile::getSchoolId, schoolId);
+        // L2 管理员只能审核自己学校的志愿者
+        Long filterSchoolId = schoolId;
+        User operator = userMapper.selectById(operatorId);
+        if (operator != null && Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(operator.getRole())) {
+            if (filterSchoolId == null) {
+                AdminProfile adminProfile = adminProfileMapper.selectOne(
+                        new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, operatorId)
+                );
+                if (adminProfile != null && adminProfile.getSchoolId() != null) {
+                    filterSchoolId = adminProfile.getSchoolId();
+                }
+            }
+        }
+        if (filterSchoolId != null) {
+            wrapper.eq(TeacherProfile::getSchoolId, filterSchoolId);
         }
         Page<TeacherProfile> p = teacherProfileMapper.selectPage(new Page<>(current, pageSize), wrapper);
         Page<TeacherVO> voPage = new Page<>(p.getCurrent(), p.getSize(), p.getTotal());
@@ -387,6 +400,11 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         TeacherVO vo = new TeacherVO();
         vo.setUserId(row.getUserId());
         vo.setRealName(row.getRealName());
+        // 获取用户头像
+        try {
+            User u = userMapper.selectById(row.getUserId());
+            if (u != null) vo.setAvatar(u.getAvatar());
+        } catch (Exception ignored) {}
         vo.setSchoolId(row.getSchoolId());
         if (row.getSchoolId() != null) {
             School school = schoolMapper.selectById(row.getSchoolId());

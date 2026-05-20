@@ -18,40 +18,12 @@ public class OssConfig {
     @Value("${aliyun.oss.bucket-name}")
     private String bucketName;
 
-    @Value("${aliyun.oss.sts.region-id:cn-beijing}")
-    private String stsRegionId;
-
-    @Value("${aliyun.oss.sts.role-arn}")
-    private String roleArn;
-
-    @Value("${aliyun.oss.sts.role-session-name:ztysession}")
-    private String roleSessionName;
-
-    @Value("${aliyun.oss.sts.duration-seconds:900}")
-    private Long durationSeconds;
-
     public String getEndpoint() {
         return endpoint;
     }
 
     public String getBucketName() {
         return bucketName;
-    }
-
-    public String getStsRegionId() {
-        return stsRegionId;
-    }
-
-    public String getRoleArn() {
-        return roleArn;
-    }
-
-    public String getRoleSessionName() {
-        return roleSessionName;
-    }
-
-    public Long getDurationSeconds() {
-        return durationSeconds;
     }
 
     public String getAccessKeyId() {

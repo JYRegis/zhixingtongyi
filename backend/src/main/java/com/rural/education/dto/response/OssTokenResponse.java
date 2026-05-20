@@ -11,10 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OssTokenResponse {
     private String accessKeyId;
-    private String accessKeySecret;
-    private String securityToken;
-    private String expiration;
+    private String policy;
+    private String signature;
     private String bucket;
     private String endpoint;
     private String dir;
+    /** OSS 上传地址（前端直接用） */
+    private String host;
 }

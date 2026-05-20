@@ -72,7 +72,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         record.setMeetingDate(request.getMeetingDate());
         record.setServiceDesc(request.getServiceDesc());
         record.setAiSummary(request.getAiSummary());
-        record.setStatus(RecordStatus.PENDING_STUDENT_CONFIRM.getCode());
+        record.setStatus(RecordStatus.PENDING_ADMIN_AUDIT.getCode());
         record.setCreateTime(LocalDateTime.now());
         if (request.getEvidenceImages() != null && !request.getEvidenceImages().isEmpty()) {
             try {
@@ -83,14 +83,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         }
         volunteerRecordMapper.insert(record);
 
-        NotificationEvent studentEvent = new NotificationEvent();
-        studentEvent.setUserId(pair.getStudentId());
-        studentEvent.setType(NotificationType.DURATION_STUDENT_CONFIRM.getCode());
-        studentEvent.setTitle("请确认服务记录");
-        studentEvent.setContent("志愿者提交了新的服务时长记录，请确认");
-        studentEvent.setParamsJson(jsonParam("recordId", record.getId()));
-        notificationAsyncPublisher.publish(studentEvent);
-
+        // 直接通知管理员审核，跳过学员确认环节
         StudentProfile studentProfile = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, pair.getStudentId())
         );
@@ -98,8 +91,8 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             NotificationEvent adminEvent = new NotificationEvent();
             adminEvent.setUserId(studentProfile.getBindAdminId());
             adminEvent.setType(NotificationType.DURATION_STUDENT_CONFIRM.getCode());
-            adminEvent.setTitle("请确认服务记录");
-            adminEvent.setContent("志愿者为学生提交了新的服务时长记录，请提醒学生确认");
+            adminEvent.setTitle("志愿时长待审核");
+            adminEvent.setContent("志愿者提交了新的服务时长记录，请审核");
             adminEvent.setParamsJson(jsonParam("recordId", record.getId()));
             notificationAsyncPublisher.publish(adminEvent);
         }

@@ -11,6 +11,7 @@ import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.TeacherProfileMapper;
 import com.rural.education.dto.request.teacher.TeacherProfileRequest;
 import com.rural.education.model.entity.TeacherProfile;
+import com.rural.education.model.entity.User;
 import com.rural.education.vo.TeacherVO;
 import com.rural.education.service.TeacherService;
 import com.rural.education.service.UserAccessService;
@@ -88,6 +89,10 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
         TeacherVO vo = new TeacherVO();
         vo.setUserId(row.getUserId());
         vo.setRealName(row.getRealName());
+        try {
+            User u = userAccessService.requireUser(row.getUserId());
+            if (u != null) vo.setAvatar(u.getAvatar());
+        } catch (Exception ignored) {}
         vo.setSchoolId(row.getSchoolId());
         vo.setGrade(row.getGrade());
         vo.setPersonalSkills(row.getPersonalSkills());

@@ -718,6 +718,19 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                 vo.setTeacherName(tp.getRealName());
             }
         }
+        // 填充头像：从 user 表取 avatar
+        if (vo.getStudentId() != null && vo.getStudentAvatar() == null) {
+            User studentUser = userMapper.selectById(vo.getStudentId());
+            if (studentUser != null && studentUser.getAvatar() != null) {
+                vo.setStudentAvatar(studentUser.getAvatar());
+            }
+        }
+        if (vo.getTeacherId() != null && vo.getTeacherAvatar() == null) {
+            User teacherUser = userMapper.selectById(vo.getTeacherId());
+            if (teacherUser != null && teacherUser.getAvatar() != null) {
+                vo.setTeacherAvatar(teacherUser.getAvatar());
+            }
+        }
     }
 
     @Override
