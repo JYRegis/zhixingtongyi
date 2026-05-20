@@ -10,6 +10,7 @@ public class ChatParticipantVO {
     private Long matchPairId;
     private Long userId;
     private String realName;
+    private String avatar;
     private Integer participantRole;
     private Integer isDefaultMember;
     private LocalDateTime joinedTime;

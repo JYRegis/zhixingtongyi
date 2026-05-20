@@ -252,6 +252,13 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
             vo.setJoinedTime(p.getJoinedTime());
             vo.setLeftTime(p.getLeftTime());
             vo.setRealName(resolveParticipantName(p.getUserId()));
+            // 获取用户头像
+            try {
+                User pUser = userAccessService.requireUser(p.getUserId());
+                vo.setAvatar(pUser.getAvatar());
+            } catch (Exception e) {
+                vo.setAvatar(null);
+            }
             return vo;
         }).toList();
     }
@@ -302,12 +309,22 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                     }
                 }
             }
+            // 学员头像
+            try {
+                User studentUser = userAccessService.requireUser(pair.getStudentId());
+                vo.setStudentAvatar(studentUser.getAvatar());
+            } catch (Exception e) { /* ignore */ }
             TeacherProfile tp = teacherProfileMapper.selectOne(
                     new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, pair.getTeacherId())
             );
             if (tp != null) {
                 vo.setTeacherName(tp.getRealName());
             }
+            // 志愿者头像
+            try {
+                User teacherUser = userAccessService.requireUser(pair.getTeacherId());
+                vo.setTeacherAvatar(teacherUser.getAvatar());
+            } catch (Exception e) { /* ignore */ }
             ChatMessage last = chatMessageMapper.selectOne(
                     new LambdaQueryWrapper<ChatMessage>()
                             .eq(ChatMessage::getMatchPairId, pair.getId())

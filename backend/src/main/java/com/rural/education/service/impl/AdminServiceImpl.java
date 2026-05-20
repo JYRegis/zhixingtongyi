@@ -114,15 +114,15 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
                     null,
                     new LambdaUpdateWrapper<AdminProfile>()
                             .eq(AdminProfile::getUserId, finalUserId)
-                            .set(AdminProfile::getRealName, request.getRealName() == null ? "二级管理员" : request.getRealName())
                             .set(AdminProfile::getSchoolId, request.getSchoolId())
                             .set(AdminProfile::getRegionCode, request.getRegionCode())
                             .set(AdminProfile::getPermissions, permissions)
             );
         } else {
+            String displayName = existing.getUsername() != null ? existing.getUsername() : "二级管理员";
             AdminProfile newAdmin = new AdminProfile();
             newAdmin.setUserId(finalUserId);
-            newAdmin.setRealName(request.getRealName() == null ? "二级管理员" : request.getRealName());
+            newAdmin.setRealName(displayName);
             newAdmin.setSchoolId(request.getSchoolId());
             newAdmin.setRegionCode(request.getRegionCode());
             newAdmin.setPermissions(permissions);
