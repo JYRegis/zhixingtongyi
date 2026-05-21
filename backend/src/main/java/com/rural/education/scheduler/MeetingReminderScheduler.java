@@ -5,7 +5,9 @@ import com.rural.education.dto.common.NotificationEvent;
 import com.rural.education.enums.MeetingStatus;
 import com.rural.education.enums.NotificationType;
 import com.rural.education.model.entity.Meeting;
+import com.rural.education.model.entity.MatchPair;
 import com.rural.education.model.mapper.MeetingMapper;
+import com.rural.education.model.mapper.MatchPairMapper;
 import com.rural.education.service.NotificationAsyncPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class MeetingReminderScheduler {
 
     private final MeetingMapper meetingMapper;
+    private final MatchPairMapper matchPairMapper;
     private final NotificationAsyncPublisher notificationAsyncPublisher;
     private final ObjectMapper objectMapper;
 
@@ -49,10 +52,16 @@ public class MeetingReminderScheduler {
                 } catch (Exception e) {
                     paramsJson = "{}";
                 }
-                // 给学生和志愿者各发一条提醒
-                Long studentId = meeting.getStudentId();
-                Long teacherId = meeting.getTeacherId();
-                for (Long uid : new Long[]{studentId, teacherId}) {
+                // 通过 matchPairId 查学生和志愿者 ID
+                Long studentId = null;
+                Long teacherId = null;
+                if (meeting.getMatchPairId() != null) {
+                    MatchPair pair = matchPairMapper.selectById(meeting.getMatchPairId());
+                    if (pair != null) {
+                        studentId = pair.getStudentId();
+                        teacherId = pair.getTeacherId();
+                    }
+                }                for (Long uid : new Long[]{studentId, teacherId}) {
                     if (uid == null) continue;
                     NotificationEvent event = new NotificationEvent();
                     event.setUserId(uid);
