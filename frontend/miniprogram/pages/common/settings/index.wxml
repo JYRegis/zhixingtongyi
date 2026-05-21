@@ -42,6 +42,21 @@
       </block>
     </view>
 
+    <!-- 志愿者专属：持续匹配开关 -->
+    <view wx:if="{{loggedIn && role === 'teacher'}}" class="section-header">
+      <view class="section-title">匹配设置</view>
+    </view>
+    <view wx:if="{{loggedIn && role === 'teacher'}}" class="settings-list card">
+      <view class="settings-row">
+        <image class="settings-row-icon" src="/images/icons/match.svg" mode="aspectFit" />
+        <view class="settings-row-main">
+          <text class="settings-row-title">持续接收匹配</text>
+          <text class="settings-row-desc">关闭后不再出现在学员推荐列表中</text>
+        </view>
+        <switch checked="{{continuousMatch}}" bindchange="onContinuousMatchChange" color="#1677ff" />
+      </view>
+    </view>
+
     <view wx:if="{{loggedIn}}" class="section-header">
       <view class="section-title">退出</view>
     </view>

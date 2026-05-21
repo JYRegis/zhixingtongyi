@@ -13,7 +13,7 @@ function previewText(msg) {
   var type = msg.messageType != null ? msg.messageType : msg.message_type;
   if (type === 1 || type === "IMAGE" || type === "image") return "[图片]";
   if (type === 2 || type === "VOICE" || type === "voice") return "[语音]";
-  if (type === "FILE" || type === "file") return "[文件]";
+  if (type === 3 || type === "FILE" || type === "file") return "[文件]";
   var content = msg.content || msg.text || "";
   // 兜底：如果内容是 http 开头的 URL 且没有 messageType，也当图片处理
   if (/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|bmp)/i.test(content)) return "[图片]";

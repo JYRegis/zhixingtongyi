@@ -44,8 +44,8 @@ function getMenuListForCurrentRole(role) {
   if (role === "admin_level_2") {
     const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
     const schoolTypeResult = isVolunteerSchool(schoolId);
-    // 只有明确是受援方时才显示聊天（缓存未命中时不显示，等异步加载后刷新）
-    if (schoolTypeResult === false) {
+    // 缓存未命中时默认按受援方显示（显示聊天），等异步确认后刷新
+    if (schoolTypeResult !== true) {
       list.push({ title: "聊天", action: "toChat", badge: "沟通" });
     }
   } else {
@@ -64,9 +64,9 @@ function getMenuListForCurrentRole(role) {
     const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
     const schoolTypeResult = isVolunteerSchool(schoolId);
     const isSupportSide = schoolTypeResult; // true/false/null 三态
-    const isRecipientSide = schoolTypeResult === false;
+    const isRecipientSide = schoolTypeResult !== true; // 缓存未命中时默认按受援方
     list.push({ title: "区域管理", action: "toRegionAdmin", badge: "管理", _supportSide: isSupportSide });
-    // 只有明确是受援方时才显示解绑（缓存未命中时不显示，等异步加载后刷新）
+    // 缓存未命中时默认显示解绑（受援方布局），确认是支教方后异步刷新移除
     if (isRecipientSide) {
       list.push({ title: "解绑", action: "toUnbind", badge: "处理" });
     }

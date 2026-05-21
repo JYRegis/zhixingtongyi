@@ -4,7 +4,9 @@
     class="chat-body"
     scroll-into-view="{{scrollInto}}"
     scroll-with-animation
+    bindscrolltoupper="onScrollToUpper"
   >
+    <view wx:if="{{hasMore}}" class="chat-load-more">上滑加载更多</view>
     <view wx:if="{{!messages.length}}" class="chat-empty">
       <view class="chat-empty-icon">💬</view>
       <view class="chat-empty-title">还没有聊天记录</view>
@@ -21,7 +23,7 @@
               <image wx:elif="{{item.avatarUrl}}" class="msg-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
               <view wx:else class="msg-avatar-text msg-avatar-text--other">{{item.avatarChar}}</view>
             </view>
-            <view class="msg-bubble {{item.isSelf ? 'msg-bubble--self' : 'msg-bubble--other'}} {{item.isImage ? 'msg-bubble--image' : ''}}">
+            <view class="msg-bubble {{item.isSelf ? 'msg-bubble--self' : 'msg-bubble--other'}} {{item.isImage || item.isFile ? 'msg-bubble--image' : ''}}">
               <image
                 wx:if="{{item.isImage}}"
                 class="msg-image"
@@ -30,9 +32,12 @@
                 bindtap="onPreviewImage"
                 data-url="{{item.text}}"
               />
-              <view wx:elif="{{item.isFile}}" class="msg-file" bindtap="onOpenFile" data-url="{{item.text}}">
-                <view class="msg-file-icon">📄</view>
-                <view class="msg-file-name">{{item.fileName}}</view>
+              <view wx:elif="{{item.isFile}}" class="msg-file-card" bindtap="onOpenFile" data-url="{{item.text}}">
+                <image class="msg-file-icon" src="/images/icons/file.svg" mode="aspectFit" />
+                <view class="msg-file-info">
+                  <view class="msg-file-name">{{item.fileName}}</view>
+                  <view class="msg-file-hint">点击下载查看</view>
+                </view>
               </view>
               <text wx:else>{{item.text}}</text>
             </view>
@@ -57,7 +62,7 @@
                 class="msg-avatar-text {{item.l1IsStudent ? 'msg-avatar-text--stu' : 'msg-avatar-text--vol'}}"
               >{{item.avatarChar}}</view>
             </view>
-            <view class="msg-bubble {{item.l1IsStudent ? 'msg-bubble--l1stu' : 'msg-bubble--l1vol'}} {{item.isImage ? 'msg-bubble--image' : ''}}">
+            <view class="msg-bubble {{item.l1IsStudent ? 'msg-bubble--l1stu' : 'msg-bubble--l1vol'}} {{item.isImage || item.isFile ? 'msg-bubble--image' : ''}}">
               <image
                 wx:if="{{item.isImage}}"
                 class="msg-image"
@@ -66,9 +71,12 @@
                 bindtap="onPreviewImage"
                 data-url="{{item.text}}"
               />
-              <view wx:elif="{{item.isFile}}" class="msg-file" bindtap="onOpenFile" data-url="{{item.text}}">
-                <view class="msg-file-icon">📄</view>
-                <view class="msg-file-name">{{item.fileName}}</view>
+              <view wx:elif="{{item.isFile}}" class="msg-file-card" bindtap="onOpenFile" data-url="{{item.text}}">
+                <image class="msg-file-icon" src="/images/icons/file.svg" mode="aspectFit" />
+                <view class="msg-file-info">
+                  <view class="msg-file-name">{{item.fileName}}</view>
+                  <view class="msg-file-hint">点击下载查看</view>
+                </view>
               </view>
               <text wx:else>{{item.text}}</text>
             </view>
@@ -92,9 +100,6 @@
         bindinput="onInput"
         bindconfirm="onSend"
       />
-      <view class="chat-bar-icon" bindtap="onMockImage">
-        <view class="icon-image"></view>
-      </view>
       <view wx:if="{{canSend}}" class="chat-bar-send" bindtap="onSend">发送</view>
       <view wx:else class="chat-bar-icon" bindtap="onMoreAction">
         <view class="icon-plus"></view>
