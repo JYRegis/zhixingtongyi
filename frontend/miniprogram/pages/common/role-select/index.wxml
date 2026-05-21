@@ -13,7 +13,9 @@
       data-role="{{item.value}}"
       bindtap="onChooseRole"
     >
-      <view class="role-card-icon">{{item.icon}}</view>
+      <view class="role-card-icon">
+        <image class="role-card-icon-img" src="{{item.iconSrc}}" mode="aspectFit" />
+      </view>
       <view class="role-card-main">
         <view class="role-card-iam">{{item.iam}}</view>
         <view class="role-card-hint">{{item.hint}}</view>

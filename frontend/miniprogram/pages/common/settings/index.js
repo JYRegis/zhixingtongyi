@@ -3,6 +3,7 @@ const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
 const notificationCenter = require("../../../utils/notificationCenter");
+const { teacherApi } = require("../../../utils/api");
 
 Page({
   data: {
@@ -13,7 +14,8 @@ Page({
     avatarChar: "用",
     avatarUrl: "",
     heroTitle: "设置",
-    unreadCount: 0
+    unreadCount: 0,
+    continuousMatch: true
   },
   onShow() {
     checkOnboardingOrRedirect("pages/common/settings/index");
@@ -54,6 +56,18 @@ Page({
       avatarChar,
       avatarUrl
     });
+    // 志愿者：拉取持续匹配状态
+    if (role === "teacher") {
+      const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+      if (token) {
+        var self = this;
+        teacherApi.getProfile().then(function (profile) {
+          if (profile && profile.continuousMatch != null) {
+            self.setData({ continuousMatch: !!profile.continuousMatch });
+          }
+        }).catch(function () {});
+      }
+    }
   },
   onGoLogin() {
     wx.reLaunch({ url: "/pages/common/home/index" });
@@ -71,6 +85,15 @@ Page({
       return;
     }
     to("/pages/common/notifications/index");
+  },
+  onContinuousMatchChange(e) {
+    const enabled = !!(e.detail && e.detail.value);
+    this.setData({ continuousMatch: enabled });
+    teacherApi.updateContinuousMatch(enabled).then(function () {
+      wx.showToast({ title: enabled ? "已开启匹配" : "已暂停匹配", icon: "success" });
+    }).catch(function (err) {
+      wx.showToast({ title: (err && err.message) || "设置失败", icon: "none" });
+    });
   },
   onLogout() {
     wx.showModal({

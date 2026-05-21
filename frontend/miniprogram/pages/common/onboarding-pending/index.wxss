@@ -23,6 +23,20 @@
   font-weight: 800;
 }
 
+.ob-pend-ico-img {
+  width: 96rpx;
+  height: 96rpx;
+  margin: 0 auto 24rpx;
+  padding: 20rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
+  box-sizing: border-box;
+}
+
+.ob-pend-ico-img--rejected {
+  background: linear-gradient(135deg, #fef3f2 0%, #fee4e2 100%);
+}
+
 .ob-pend-ico--rejected {
   background: linear-gradient(135deg, #fef3f2 0%, #fee4e2 100%);
   color: #b42318;

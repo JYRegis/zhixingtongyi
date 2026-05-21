@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow: hidden;
   background:
     radial-gradient(circle at 12% 0%, rgba(22, 119, 255, 0.1), transparent 24%),
     #f5f7fa;
@@ -50,10 +51,19 @@
   flex: 1;
   padding: 24rpx 24rpx 0;
   box-sizing: border-box;
+  overflow: hidden;
+  height: 0;
 }
 
 .chat-body-bottom-pad {
   height: 24rpx;
+}
+
+.chat-load-more {
+  text-align: center;
+  font-size: 24rpx;
+  color: #999;
+  padding: 16rpx 0;
 }
 
 /* ---------- empty ---------- */
@@ -220,7 +230,8 @@
 }
 
 .msg-avatar-text--other {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
+  color: #1677ff;
 }
 
 .msg-bubble {
@@ -399,17 +410,35 @@
   border-radius: 12rpx;
 }
 /* 文件消息 */
-.msg-file {
+.msg-file-card {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 16rpx;
+  padding: 16rpx 20rpx;
+  background: #f5f7fa;
+  border-radius: 12rpx;
+  min-width: 280rpx;
 }
 .msg-file-icon {
-  font-size: 40rpx;
+  width: 56rpx;
+  height: 56rpx;
+  flex-shrink: 0;
+}
+.msg-file-info {
+  flex: 1;
+  overflow: hidden;
 }
 .msg-file-name {
   font-size: 26rpx;
-  color: #1a73e8;
+  color: #333;
   word-break: break-all;
-  max-width: 360rpx;
+  max-width: 300rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.msg-file-hint {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
 }

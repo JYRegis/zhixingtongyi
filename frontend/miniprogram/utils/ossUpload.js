@@ -79,6 +79,14 @@ function chooseAndUploadFiles(options) {
           reject(new Error("未选择文件"));
           return;
         }
+        // 文件大小限制 5MB
+        var MAX_SIZE = 5 * 1024 * 1024;
+        for (var i = 0; i < files.length; i++) {
+          if (files[i].size && files[i].size > MAX_SIZE) {
+            reject(new Error("文件不能超过 5MB"));
+            return;
+          }
+        }
         var paths = files.map(function (f) { return f.path; });
         var names = files.map(function (f) { return f.name || ""; });
         uploadFiles({ businessType: businessType, filePaths: paths, fileNames: names })
@@ -131,8 +139,9 @@ function uploadFiles(options) {
  * @returns {Promise<string>} OSS 完整 URL
  */
 function _uploadSingle(token, filePath, fileName) {
-  var ext = _getExtension(fileName || filePath);
-  var key = token.dir + _generateFileName() + ext;
+  // 保留原始文件名，前缀加时间戳避免重名
+  var originalName = _sanitizeFileName(fileName || _extractFileName(filePath));
+  var key = token.dir + Date.now() + "_" + originalName;
   var host = token.host || ("https://" + token.bucket + "." + token.endpoint.replace(/^https?:\/\//, ""));
 
   return new Promise(function (resolve, reject) {
@@ -162,25 +171,24 @@ function _uploadSingle(token, filePath, fileName) {
 }
 
 /**
- * 生成唯一文件名
+ * 从文件路径提取文件名
  */
-function _generateFileName() {
-  var ts = Date.now().toString(36);
-  var rand = Math.random().toString(36).slice(2, 8);
-  return ts + "_" + rand;
+function _extractFileName(path) {
+  if (!path) return "file";
+  var seg = path.split("/").pop() || path.split("\\").pop() || "file";
+  return seg.split("?")[0] || "file";
 }
 
 /**
- * 从文件路径或文件名中提取扩展名
+ * 清理文件名中不安全的字符（保留中文、字母、数字、点、下划线、横线）
  */
-function _getExtension(path) {
-  if (!path) return ".jpg";
-  var dot = path.lastIndexOf(".");
-  if (dot < 0) return ".jpg";
-  var ext = path.slice(dot).toLowerCase();
-  // 只保留合理的扩展名
-  if (ext.length > 10) return ".jpg";
-  return ext;
+function _sanitizeFileName(name) {
+  if (!name) return "file";
+  // 去掉路径分隔符和特殊字符，保留常见字符
+  var clean = name.replace(/[\/\\:*?"<>|#%&{}$!@`]/g, "_");
+  // 如果清理后为空或只有下划线
+  if (!clean || /^_+$/.test(clean)) return "file";
+  return clean;
 }
 
 module.exports = {

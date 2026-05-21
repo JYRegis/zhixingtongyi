@@ -19,9 +19,9 @@ const ROLE_DISPLAY_NAME = {
 
 /** 首页身份卡片：主标题用「我是 xxx」句式 */
 const ROLE_HOME_CARDS = [
-  { value: ROLE.STUDENT, iam: "我是乡村学员", hint: "进入学习陪伴、匹配与课堂", accent: "#1677ff", icon: "学" },
-  { value: ROLE.TEACHER, iam: "我是支教志愿者", hint: "管理结对申请、沟通和志愿时长", accent: "#1677ff", icon: "教" },
-  { value: ROLE.ADMIN_SCHOOL, iam: "我是学校老师", hint: "等待平台分配管理权限", accent: "#1677ff", icon: "校" }
+  { value: ROLE.STUDENT, iam: "我是乡村学员", hint: "进入学习陪伴、匹配与课堂", accent: "#1677ff", iconSrc: "/images/icons/graduation.svg" },
+  { value: ROLE.TEACHER, iam: "我是支教志愿者", hint: "管理结对申请、沟通和志愿时长", accent: "#1677ff", iconSrc: "/images/icons/award.svg" },
+  { value: ROLE.ADMIN_SCHOOL, iam: "我是学校老师", hint: "等待平台分配管理权限", accent: "#1677ff", iconSrc: "/images/icons/school.svg" }
 ];
 
 module.exports = {
