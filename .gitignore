@@ -23,6 +23,9 @@ Thumbs.db
 .claude/
 CLAUDE.md
 
+### kiro
+.kiro/
+
 ### Docker volumes (local bind mounts, if any)
 **/.mysql/
 **/.redis/
