@@ -228,6 +228,15 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
         }
         if (needUpdate) {
             userMapper.updateById(user);
+            // 头像变更时清除推荐缓存，确保匹配列表显示最新头像
+            if (request.getAvatar() != null && !request.getAvatar().isBlank()) {
+                try {
+                    var keys = redisTemplate.keys("match:recommendations:student:*");
+                    if (keys != null && !keys.isEmpty()) {
+                        redisTemplate.delete(keys);
+                    }
+                } catch (Exception ignore) {}
+            }
         }
     }
 

@@ -68,7 +68,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
             }
         }
         String type = request.getMessageType().toUpperCase();
-        if (!"TEXT".equals(type) && !"IMAGE".equals(type) && !"VOICE".equals(type)) {
+        if (!"TEXT".equals(type) && !"IMAGE".equals(type) && !"VOICE".equals(type) && !"FILE".equals(type)) {
             throw new BusinessException("不支持的消息类型");
         }
         ChatMessage message = new ChatMessage();

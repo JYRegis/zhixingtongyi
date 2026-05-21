@@ -39,22 +39,32 @@ public class MeetingReminderScheduler {
                             .le(Meeting::getStartTime, soon)
             );
             for (Meeting meeting : meetings) {
-                NotificationEvent event = new NotificationEvent();
-                event.setType(NotificationType.MEETING_REMINDER.getCode());
-                event.setTitle("会议即将开始");
-                event.setContent("您参与的会议「" + meeting.getTopic() + "」将在" +
-                        meeting.getStartTime().toLocalTime() + "开始");
+                String content = "\u60a8\u53c2\u4e0e\u7684\u4f1a\u8bae\u300c" + meeting.getTopic() + "\u300d\u5c06\u5728" +
+                        meeting.getStartTime().toLocalTime() + "\u5f00\u59cb";
+                String paramsJson;
                 try {
                     Map<String, Object> params = new HashMap<>();
                     params.put("meetingId", meeting.getId());
-                    event.setParamsJson(objectMapper.writeValueAsString(params));
+                    paramsJson = objectMapper.writeValueAsString(params);
                 } catch (Exception e) {
-                    event.setParamsJson("{}");
+                    paramsJson = "{}";
                 }
-                notificationAsyncPublisher.publish(event);
+                // 给学生和志愿者各发一条提醒
+                Long studentId = meeting.getStudentId();
+                Long teacherId = meeting.getTeacherId();
+                for (Long uid : new Long[]{studentId, teacherId}) {
+                    if (uid == null) continue;
+                    NotificationEvent event = new NotificationEvent();
+                    event.setUserId(uid);
+                    event.setType(NotificationType.MEETING_REMINDER.getCode());
+                    event.setTitle("\u4f1a\u8bae\u5373\u5c06\u5f00\u59cb");
+                    event.setContent(content);
+                    event.setParamsJson(paramsJson);
+                    notificationAsyncPublisher.publish(event);
+                }
             }
         } catch (Exception e) {
-            log.warn("会议提醒扫描异常: {}", e.getMessage());
+            log.warn("\u4f1a\u8bae\u63d0\u9192\u626b\u63cf\u5f02\u5e38: {}", e.getMessage());
         }
     }
 }
