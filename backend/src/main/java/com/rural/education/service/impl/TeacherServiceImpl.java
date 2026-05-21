@@ -116,6 +116,8 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
                         .eq(TeacherProfile::getUserId, userId)
                         .set(TeacherProfile::getContinuousMatch, Boolean.TRUE.equals(enabled) ? 1 : 0)
         );
+        // 清除所有学员的推荐缓存，下次请求会重新计算
+        evictRecommendationCache();
     }
 
     private String toJson(Object obj) {
