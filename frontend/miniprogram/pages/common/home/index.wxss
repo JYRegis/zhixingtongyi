@@ -1,0 +1,333 @@
+.home-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 14% 2%, rgba(22, 119, 255, 0.12), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #f5f7fa 30%, #f5f7fa 100%);
+}
+
+.home-content {
+  min-height: 100vh;
+  padding: 72rpx 28rpx 52rpx;
+  box-sizing: border-box;
+}
+
+.home-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28rpx;
+}
+
+.home-top-title {
+  font-size: 42rpx;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #333333;
+  letter-spacing: 2rpx;
+}
+
+.home-top-desc {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.home-top-avatar {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06);
+  color: #1677ff;
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.home-hero-card {
+  position: relative;
+  min-height: 218rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding: 32rpx;
+  border-radius: 32rpx;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  box-shadow: 0 18rpx 44rpx rgba(22, 119, 255, 0.24);
+  box-sizing: border-box;
+}
+
+.home-hero-card::after {
+  content: "";
+  position: absolute;
+  right: -60rpx;
+  top: -56rpx;
+  width: 240rpx;
+  height: 240rpx;
+  border-radius: 80rpx;
+  background: rgba(255, 255, 255, 0.18);
+  transform: rotate(18deg);
+}
+
+.home-hero-text {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+}
+
+.home-hero-kicker {
+  font-size: 20rpx;
+  letter-spacing: 2rpx;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.home-title {
+  margin-top: 10rpx;
+  font-size: 42rpx;
+  line-height: 1.25;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.home-subtitle {
+  margin-top: 14rpx;
+  max-width: 420rpx;
+  font-size: 24rpx;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.home-hero-illustration {
+  position: relative;
+  z-index: 1;
+  width: 150rpx;
+  height: 150rpx;
+  flex-shrink: 0;
+}
+
+.home-illust-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.home-illust-circle--big {
+  width: 132rpx;
+  height: 132rpx;
+  right: 0;
+  bottom: 0;
+}
+
+.home-illust-circle--small {
+  width: 58rpx;
+  height: 58rpx;
+  left: 0;
+  top: 0;
+}
+
+.home-illust-book {
+  position: absolute;
+  right: 22rpx;
+  bottom: 18rpx;
+  width: 96rpx;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 30rpx;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 52rpx;
+  box-shadow: 0 10rpx 24rpx rgba(140, 72, 0, 0.16);
+}
+
+.home-quick-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 28rpx -10rpx 0;
+}
+
+.home-quick-card {
+  width: 25%;
+  padding: 0 10rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.home-quick-icon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6f4ff;
+  color: #1677ff;
+  font-size: 40rpx;
+  box-shadow: 0 8rpx 24rpx rgba(22, 119, 255, 0.12);
+}
+
+.home-quick-icon--green {
+  background: #eafaf2;
+}
+
+.home-quick-icon--blue {
+  background: #e6f0ff;
+}
+
+.home-quick-icon--purple {
+  background: #f3e8ff;
+}
+
+.home-quick-title {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  line-height: 1.25;
+  color: #333333;
+  font-weight: 700;
+  text-align: center;
+}
+
+.home-panel {
+  margin-top: 34rpx;
+  padding: 28rpx;
+  border-radius: 32rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(240, 240, 240, 0.92);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06);
+}
+
+.home-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.home-panel-title {
+  font-size: 34rpx;
+  line-height: 1.3;
+  font-weight: 800;
+  color: #333333;
+}
+
+.home-panel-desc {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  line-height: 1.55;
+  color: #999999;
+}
+
+.home-panel-badge {
+  flex-shrink: 0;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  background: #e6f0ff;
+  color: #0066ff;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.home-btn {
+  margin-top: 28rpx;
+  height: 92rpx;
+  line-height: 92rpx;
+  border-radius: 999rpx;
+  font-size: 32rpx;
+  font-weight: 800;
+  border: none;
+}
+
+.home-btn::after {
+  border: none;
+}
+
+.home-btn-primary {
+  color: #ffffff;
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  box-shadow: 0 14rpx 30rpx rgba(22, 119, 255, 0.26);
+}
+
+.home-login-note {
+  margin-top: 16rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: #999999;
+  text-align: center;
+}
+
+.home-or {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin: 24rpx 0 20rpx;
+}
+
+.home-or-line {
+  flex: 1;
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+}
+
+.home-or-text {
+  font-size: 24rpx;
+  color: #94a3b8;
+  flex-shrink: 0;
+  padding: 0 8rpx;
+}
+
+.home-input-wrap {
+  margin-top: 56rpx;
+  background: #fafbfc;
+  border-radius: 18rpx;
+  overflow: hidden;
+  border: 1.5rpx solid #e2e8f0;
+}
+
+.home-input-wrap:focus-within {
+  border-color: #1677ff;
+  background: #ffffff;
+  box-shadow: 0 0 0 4rpx rgba(22, 119, 255, 0.1);
+}
+
+.home-input {
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  color: #1e293b;
+  background: transparent;
+  border: none;
+}
+
+.home-input::placeholder {
+  color: #94a3b8;
+}
+
+.home-dev-tip {
+  margin: 16rpx auto 0;
+  display: inline-block;
+  font-size: 22rpx;
+  color: #c2410c;
+  background: #e6f4ff;
+  border: 1rpx solid #fdba74;
+  border-radius: 999rpx;
+  padding: 6rpx 18rpx;
+  text-align: center;
+}
+
+.home-btn-secondary {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0dc276 0%, #059669 100%);
+  box-shadow: 0 12rpx 28rpx rgba(5, 150, 105, 0.22);
+}
+
+.home-btn[disabled] {
+  opacity: 0.6;
+}

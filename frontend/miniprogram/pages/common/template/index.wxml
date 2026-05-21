@@ -1,0 +1,15 @@
+<view class="container {{_roleThemeClass}}">
+  <view class="card">
+    <view class="title">{{pageTitle}}</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="card" style="margin-top: 20rpx;">
+    <view class="desc">加载中...</view>
+  </view>
+
+  <view wx:elif="{{empty}}" class="card" style="margin-top: 20rpx;">
+    <view class="desc">暂无数据</view>
+  </view>
+
+  <view wx:else class="card" style="margin-top: 20rpx"></view>
+</view>

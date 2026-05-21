@@ -1,0 +1,36 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="container ob-pend-page">
+    <!-- 待审核 -->
+    <view wx:if="{{status === 'pending'}}">
+      <view class="card ob-pend-card">
+        <view class="ob-pend-ico" aria-hidden="true">审</view>
+        <view class="title">您的账号正在审核中</view>
+        <view class="ob-pend-hint" wx:if="{{roleName}}">当前身份：{{roleName}}</view>
+        <view class="ob-pend-hint">请耐心等待管理员审核，通过后即可使用全部功能。</view>
+      </view>
+      <view class="ob-pend-actions">
+        <button class="btn-primary" bindtap="onReLaunchHome">返回首页</button>
+      </view>
+    </view>
+
+    <!-- 已驳回 -->
+    <view wx:elif="{{status === 'rejected'}}">
+      <view class="card ob-pend-card">
+        <view class="ob-pend-ico ob-pend-ico--rejected" aria-hidden="true">驳</view>
+        <view class="title">您的申请已被驳回</view>
+        <view class="ob-pend-hint" wx:if="{{roleName}}">当前身份：{{roleName}}</view>
+      </view>
+      <view class="card ob-pend-reason-card" wx:if="{{rejectReason}}">
+        <view class="ob-pend-reason-label">驳回原因</view>
+        <view class="ob-pend-reason-text">{{rejectReason}}</view>
+      </view>
+      <view class="card ob-pend-reason-card" wx:else>
+        <view class="ob-pend-reason-label">驳回原因</view>
+        <view class="ob-pend-reason-text">未提供具体原因，请联系管理员了解详情。</view>
+      </view>
+      <view class="ob-pend-actions">
+        <button class="btn-primary" bindtap="onReApply">修改资料并重新提交</button>
+      </view>
+    </view>
+  </view>
+</view>

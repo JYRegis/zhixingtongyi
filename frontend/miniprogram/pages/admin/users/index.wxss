@@ -1,0 +1,1 @@
+.page-shell{padding-bottom:40rpx}.card{padding:28rpx;margin-bottom:18rpx;border-radius:24rpx;background:#fff}.list-row{display:flex;justify-content:space-between;align-items:center;padding:18rpx 0;border-bottom:1px solid #f1f2f4}.list-row:last-child{border-bottom:none}.actions{margin-top:18rpx}.btn-secondary{width:100%}

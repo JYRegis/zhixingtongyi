@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "解绑申请",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "custom-tab-bar": "/custom-tab-bar/index"
+  }
+}

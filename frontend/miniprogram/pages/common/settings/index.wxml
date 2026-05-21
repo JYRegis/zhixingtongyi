@@ -1,0 +1,52 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="settings-page">
+    <view class="page-hero settings-main-hero">
+      <view class="page-hero-title">{{heroTitle}}</view>
+    </view>
+
+    <view class="settings-hero card">
+      <image wx:if="{{avatarUrl}}" class="settings-avatar settings-avatar--img" src="{{avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="settings-avatar">{{avatarChar}}</view>
+      <view class="settings-nickname">{{nickname}}</view>
+      <view wx:if="{{loggedIn}}" class="settings-role">{{roleName}}</view>
+      <view wx:else class="settings-role muted">未登录</view>
+    </view>
+
+    <view class="section-header">
+      <view class="section-title">账号与资料</view>
+    </view>
+    <view class="settings-list card">
+      <view wx:if="{{!loggedIn}}" class="settings-row settings-row-btn" bindtap="onGoLogin">
+        <image class="settings-row-icon" src="/images/icons/user-circle.svg" mode="aspectFit" />
+        <view class="settings-row-main">
+          <text class="settings-row-title">用户登录</text>
+          <text class="settings-row-extra">去登录 →</text>
+        </view>
+      </view>
+      <block wx:else>
+        <view class="settings-row settings-row-btn" bindtap="onGoAccountProfile">
+          <image class="settings-row-icon" src="/images/icons/user-circle.svg" mode="aspectFit" />
+          <view class="settings-row-main">
+            <text class="settings-row-title">资料与账号</text>
+            <text class="settings-row-extra">头像、昵称、手机、资料表 →</text>
+          </view>
+        </view>
+        <view class="settings-row settings-row-btn" bindtap="onGoNotifications">
+          <image class="settings-row-icon" src="/images/icons/bell.svg" mode="aspectFit" />
+          <view class="settings-row-main">
+            <text class="settings-row-title">消息通知</text>
+            <text class="settings-row-extra">系统通知列表 →</text>
+          </view>
+          <view wx:if="{{unreadCount > 0}}" class="settings-row-badge">{{unreadCount > 99 ? '99+' : unreadCount}}</view>
+        </view>
+      </block>
+    </view>
+
+    <view wx:if="{{loggedIn}}" class="section-header">
+      <view class="section-title">退出</view>
+    </view>
+    <view wx:if="{{loggedIn}}" class="settings-list card">
+      <button class="settings-logout-btn" bindtap="onLogout">退出登录</button>
+    </view>
+  </view>
+</view>

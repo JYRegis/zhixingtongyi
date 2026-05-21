@@ -1,0 +1,158 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="container apply-page">
+    <view class="page-hero">
+      <view class="page-hero-title">{{headerTitle}}</view>
+    </view>
+
+    <view class="card" wx:if="{{onboardingStatus === 'approved'}}">
+      <view class="section-title">审核已通过</view>
+      <button class="btn-primary" bindtap="onBackWorkbench">回到工作台</button>
+    </view>
+
+    <view class="card" wx:elif="{{onboardingStatus === 'pending'}}">
+      <view class="section-title">审核中</view>
+      <button class="btn-primary" bindtap="onBackWorkbench">回到工作台</button>
+    </view>
+
+    <block wx:elif="{{onboardingStatus === 'rejected'}}">
+      <view class="card">
+        <view class="section-title">未通过</view>
+        <view class="surface-note" wx:if="{{rejectNote}}">备注：{{rejectNote}}</view>
+      </view>
+    </block>
+
+    <view class="card" wx:if="{{showForm}}">
+      <view class="field" wx:if="{{role === 'student' || role === 'teacher' || role === 'admin_level_2'}}">
+        <text class="field-label">真实姓名 <text class="field-req">*</text></text>
+        <input
+          class="field-input"
+          value="{{name}}"
+          data-k="name"
+          bindinput="onText"
+          placeholder="与证件或工牌一致"
+          placeholder-class="form-placeholder-std"
+        />
+      </view>
+      <view class="field" wx:if="{{role === 'student'}}">
+        <text class="field-label">学号 <text class="field-req">*</text></text>
+        <input
+          class="field-input"
+          value="{{studentNo}}"
+          data-k="studentNo"
+          bindinput="onText"
+          placeholder="请填写学号"
+          placeholder-class="form-placeholder-std"
+        />
+      </view>
+      <view class="field" wx:if="{{role === 'teacher' || role === 'admin_level_2'}}">
+        <text class="field-label">学工号/工号 <text class="field-req">*</text></text>
+        <input
+          class="field-input"
+          value="{{workNo}}"
+          data-k="workNo"
+          bindinput="onText"
+          placeholder="请填写学工号或工号"
+          placeholder-class="form-placeholder-std"
+        />
+      </view>
+
+      <view class="field field--control" wx:if="{{showSchool}}">
+        <text class="field-label">学校 <text class="field-req">*</text></text>
+        <picker
+          mode="selector"
+          range="{{schoolList}}"
+          range-key="name"
+          value="{{schoolPickerValue}}"
+          bindchange="onPickSchool"
+        >
+          <view
+            class="field-input apply-picker-line {{!hasSchool ? 'form-placeholder-std' : ''}}"
+          >{{hasSchool ? schoolName : '请选择学校'}}</view>
+        </picker>
+      </view>
+
+      <view class="field field--control" wx:if="{{role === 'student'}}">
+        <text class="field-label">年级 <text class="field-req">*</text></text>
+        <picker
+          mode="selector"
+          range="{{gradeList}}"
+          range-key="name"
+          value="{{gradePickerValue}}"
+          bindchange="onPickGrade"
+        >
+          <view
+            class="field-input apply-picker-line {{!grade ? 'form-placeholder-std' : ''}}"
+          >{{grade || '请选择年级'}}</view>
+        </picker>
+      </view>
+
+      <view class="field" wx:if="{{role === 'student'}}">
+        <text class="field-label">可在线 / 希望上课时间 <text class="field-req">*</text></text>
+        <view class="field-chips field-chips--wrap field-chips--time" >
+          <view
+            class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
+            wx:for="{{weekChips}}"
+            wx:key="id"
+            data-id="{{item.id}}"
+            bindtap="onToggleWeek"
+            >{{item.name}}</view>
+        </view>
+        <view class="field-chips field-chips--wrap field-chips--time">
+          <view
+            class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
+            wx:for="{{slotChips}}"
+            wx:key="id"
+            data-id="{{item.id}}"
+            bindtap="onToggleSlot"
+            >{{item.name}}</view>
+        </view>
+      </view>
+
+      <view class="field" wx:if="{{role === 'teacher' || role === 'admin_level_2'}}">
+        <text class="field-label">{{timeBlockTitle}} <text class="field-req">*</text></text>
+        <view class="field-chips field-chips--wrap field-chips--time" >
+          <view
+            class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
+            wx:for="{{weekChips}}"
+            wx:key="id"
+            data-id="{{item.id}}"
+            bindtap="onToggleWeek"
+            >{{item.name}}</view>
+        </view>
+        <view class="field-chips field-chips--wrap field-chips--time">
+          <view
+            class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
+            wx:for="{{slotChips}}"
+            wx:key="id"
+            data-id="{{item.id}}"
+            bindtap="onToggleSlot"
+            >{{item.name}}</view>
+        </view>
+        <view class="surface-note" style="font-size: 24rpx; color: #667085; margin-top: 8rpx;" wx:if="{{role === 'admin_level_2'}}">
+          与志愿者不同：此时间表示您希望被平台/学校联系的大致时段（审核通过后，平台将再为您确认支教/受援身份与具体管辖校）。
+        </view>
+      </view>
+
+      <view class="field" wx:if="{{role === 'admin_level_2'}}">
+        <text class="field-label">管辖/身份补充说明</text>
+        <textarea
+          class="field-textarea"
+          value="{{l2Note}}"
+          data-k="l2Note"
+          bindinput="onText"
+          placeholder="可填写任教学科、职务、希望管辖范围等，便于平台分配"
+          placeholder-class="form-placeholder-std"
+        />
+      </view>
+      <view class="field" wx:if="{{role === 'admin_level_1'}}">
+        <text class="field-label">所属机构 / 说明</text>
+        <input class="field-input" value="{{orgNote}}" data-k="orgNote" bindinput="onText" />
+      </view>
+      <view class="field">
+        <text class="field-label">补充说明</text>
+        <textarea class="field-textarea" value="{{applyNote}}" data-k="applyNote" bindinput="onText" />
+      </view>
+      <button class="btn-primary" bindtap="onSubmit">提交，等待审核</button>
+    </view>
+  </view>
+</view>

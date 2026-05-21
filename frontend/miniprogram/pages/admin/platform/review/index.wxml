@@ -1,0 +1,67 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="container platform-page">
+    <view class="page-hero">
+      <view class="page-hero-title">{{sectionTitle}}</view>
+    </view>
+
+    <view class="card" wx:if="{{schoolFilterList.length > 1}}" style="margin-top: 24rpx; margin-bottom: 24rpx; padding: 20rpx 28rpx;">
+      <picker range="{{schoolFilterList}}" range-key="name" value="{{schoolFilterIndex}}" bindchange="onSchoolFilterChange">
+        <view class="list-row" style="margin:0; padding:0;">
+          <text>按学校筛选</text>
+          <text>{{schoolFilterList[schoolFilterIndex].name || '全部'}} ▾</text>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:if="{{!pendingList.length}}" class="card platform-empty-card">
+      <image class="platform-empty-icon" src="/images/icons/user-check.svg" mode="aspectFit" />
+      <view class="empty-title">暂无待审</view>
+      <view class="empty-desc">新的申请会显示在这里</view>
+    </view>
+    <block wx:for="{{pendingList}}" wx:key="id">
+      <view class="card platform-review-card">
+        <view class="platform-review-head" data-id="{{item.id}}" bindtap="onViewOnboarding">
+          <image class="platform-review-icon" src="/images/icons/user-check.svg" mode="aspectFit" />
+          <view class="platform-review-main">
+            <view class="platform-review-title">{{item.name || item.typeLabel || item.roleName}}</view>
+            <view class="platform-review-desc" wx:if="{{item.schoolName && item.schoolName !== '—'}}">{{item.schoolName}}</view>
+          </view>
+          <text class="list-row-cta">查看详情 ›</text>
+        </view>
+        <view class="actions" style="margin-top: 40rpx;">
+          <button class="btn-primary" data-id="{{item.id}}" catchtap="onReviewApprove">通过</button>
+          <button class="btn-secondary" data-id="{{item.id}}" catchtap="onReviewReject">驳回</button>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>
+
+<view class="l2-approve-pop" wx:if="{{showL2Modal}}" catchtouchmove="noop">
+  <view class="l2-approve-pop__mask" bindtap="onL2ModalMaskTap" />
+  <view class="l2-approve-pop__panel" catchtap="noop">
+    <view class="l2-approve-pop__title">通过并分配管理范围</view>
+    <view class="field" style="margin-top: 24rpx">
+      <text class="field-label">二级类型</text>
+      <picker range="{{scopeOptions}}" range-key="label" value="{{l2ScopeIndex}}" bindchange="onL2ScopeIndexChange">
+        <view class="field-input">{{scopeOptions[l2ScopeIndex] ? scopeOptions[l2ScopeIndex].label : ''}}</view>
+      </picker>
+    </view>
+    <view class="field" wx:if="{{scopeOptions[l2ScopeIndex] && scopeOptions[l2ScopeIndex].value === 'volunteer_side'}}">
+      <text class="field-label">支教点学校</text>
+      <picker range="{{supportSchools}}" range-key="name" value="{{l2SupportIndex}}" bindchange="onL2SupportIndexChange">
+        <view class="field-input">{{supportSchools[l2SupportIndex] ? supportSchools[l2SupportIndex].name : ''}}</view>
+      </picker>
+    </view>
+    <view class="field" wx:if="{{scopeOptions[l2ScopeIndex] && scopeOptions[l2ScopeIndex].value === 'recipient_side'}}">
+      <text class="field-label">受援校</text>
+      <picker range="{{recipientSchools}}" range-key="name" value="{{l2RecipientIndex}}" bindchange="onL2RecipientIndexChange">
+        <view class="field-input">{{recipientSchools[l2RecipientIndex] ? recipientSchools[l2RecipientIndex].name : ''}}</view>
+      </picker>
+    </view>
+    <view class="actions" style="margin-top: 28rpx; flex-wrap: nowrap">
+      <button class="btn-secondary" type="default" style="flex: 1" bindtap="onL2ModalClose">取消</button>
+      <button class="btn-primary" style="flex: 1" bindtap="onL2ModalConfirm">通过并分配</button>
+    </view>
+  </view>
+</view>

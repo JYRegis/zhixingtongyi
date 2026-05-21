@@ -1,0 +1,28 @@
+<view class="page-shell">
+  <view class="container">
+    <view class="page-hero">
+      <view class="page-hero-title">用户管理</view>
+    </view>
+    <view class="card" style="margin-bottom: 24rpx;">
+      <view class="section-title">筛选</view>
+      <picker range="{{roleOptions}}" range-key="label" value="{{roleIndex}}" bindchange="onRoleChange">
+        <view class="list-row"><text>角色</text><text>{{roleOptions[roleIndex] ? roleOptions[roleIndex].label : '全部'}}</text></view>
+      </picker>
+      <view class="list-row">
+        <text>搜索</text>
+        <input placeholder="用户名/手机号" value="{{keyword}}" bindinput="onKeyword" />
+      </view>
+      <button class="primary-btn" bindtap="onSearch">查询</button>
+    </view>
+    <view wx:if="{{!list.length}}" class="card empty-state">暂无用户</view>
+    <block wx:for="{{list}}" wx:key="id">
+      <view class="card" style="margin-bottom: 18rpx;">
+        <view class="list-row"><text>{{item.username || item.realName || '用户'}}</text><text>{{item.roleName}}</text></view>
+        <view class="list-row"><text>手机号</text><text>{{item.phone || '—'}}</text></view>
+        <view class="actions">
+          <button class="btn-secondary" data-id="{{item.id}}" bindtap="onView">详情</button>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

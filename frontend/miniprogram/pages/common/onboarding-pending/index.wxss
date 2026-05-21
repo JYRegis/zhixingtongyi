@@ -1,0 +1,60 @@
+.ob-pend-page {
+  padding-top: 64rpx;
+  padding-bottom: 80rpx;
+  box-sizing: border-box;
+}
+
+.ob-pend-card {
+  text-align: center;
+  padding: 52rpx 32rpx;
+}
+
+.ob-pend-ico {
+  width: 96rpx;
+  height: 96rpx;
+  margin: 0 auto 24rpx;
+  border-radius: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
+  color: var(--ui-primary);
+  font-size: 40rpx;
+  font-weight: 800;
+}
+
+.ob-pend-ico--rejected {
+  background: linear-gradient(135deg, #fef3f2 0%, #fee4e2 100%);
+  color: #b42318;
+}
+
+.ob-pend-hint {
+  margin-top: 20rpx;
+  font-size: 26rpx;
+  color: #999999;
+  text-align: center;
+}
+
+.ob-pend-reason-card {
+  margin-top: 20rpx;
+  padding: 28rpx 32rpx;
+}
+
+.ob-pend-reason-label {
+  font-size: 26rpx;
+  color: #667085;
+  margin-bottom: 12rpx;
+}
+
+.ob-pend-reason-text {
+  font-size: 30rpx;
+  color: #b42318;
+  line-height: 1.6;
+}
+
+.ob-pend-actions {
+  margin-top: 40rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}

@@ -1,0 +1,25 @@
+<view class="welcome-page">
+  <view class="welcome-status-bar" style="height: {{statusBarHeight}}px;"></view>
+
+  <view class="welcome-decor">
+    <view class="welcome-decor-circle welcome-decor-circle--lg"></view>
+    <view class="welcome-decor-circle welcome-decor-circle--md"></view>
+    <view class="welcome-decor-circle welcome-decor-circle--sm"></view>
+  </view>
+
+  <view class="welcome-hero">
+    <view class="welcome-logo">
+      <text class="welcome-logo-text">驿</text>
+    </view>
+    <view class="welcome-title">知行同驿</view>
+    <view class="welcome-subtitle">云端连接，温暖陪伴</view>
+  </view>
+
+  <view class="welcome-footer">
+    <view class="welcome-footer-card">
+      <button class="welcome-btn" bindtap="onEnter" loading="{{submitting}}" disabled="{{submitting}}">
+        进入小程序
+      </button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,15 @@
+<view class="page-shell">
+  <view class="container">
+    <view class="page-hero">
+      <view class="page-hero-title">学校管理</view>
+    </view>
+    <view class="card">
+      <input placeholder="学校名称" data-k="name" value="{{name}}" bindinput="onInput" />
+      <input placeholder="地区编码" data-k="regionCode" value="{{regionCode}}" bindinput="onInput" style="margin-top:16rpx;" />
+      <input placeholder="地址" data-k="address" value="{{address}}" bindinput="onInput" style="margin-top:16rpx;" />
+      <input placeholder="联系人" data-k="contactPerson" value="{{contactPerson}}" bindinput="onInput" style="margin-top:16rpx;" />
+      <input placeholder="联系电话" data-k="contactPhone" value="{{contactPhone}}" bindinput="onInput" style="margin-top:16rpx;" />
+      <button class="primary-btn" bindtap="onSubmit">创建学校</button>
+    </view>
+  </view>
+</view>

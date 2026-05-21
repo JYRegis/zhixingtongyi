@@ -1,0 +1,69 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <!-- L2 管理员视图 -->
+  <view class="container" wx:if="{{isL2Recipient}}">
+    <view class="page-hero">
+      <view class="page-hero-title">解绑待办</view>
+    </view>
+
+    <view class="section-header">
+      <view class="section-title">解绑申请列表</view>
+    </view>
+    <view class="unbind-pairlist" wx:if="{{l2RequestList.length}}">
+      <view
+        class="unbind-pair card"
+        wx:for="{{l2RequestList}}"
+        wx:key="id"
+        data-pairid="{{item.id}}"
+        data-student="{{item.studentName}}"
+        data-teacher="{{item.partnerName}}"
+        bindtap="onGoDetailL2"
+      >
+        <view class="unbind-pair-main">
+          <view class="unbind-pair-line">{{item.studentName}} — {{item.partnerName}}</view>
+          <view class="unbind-pair-sub" wx:if="{{item._createdAtText}}">{{item._createdAtText}}</view>
+        </view>
+        <view class="unbind-pair-meta">
+          <text class="unbind-pair-chev">详情 ›</text>
+          <text class="badge {{item._myConfirmed ? 'badge-success' : 'badge-warning'}}">{{item._myConfirmed ? '已确认，等待对方' : '待处理'}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="card" wx:else>
+      <view class="section-desc" style="text-align: center; color: #98a2b3; padding: 20rpx 0;">暂无解绑申请</view>
+    </view>
+  </view>
+
+  <!-- 学员/志愿者视图 -->
+  <view class="container" wx:else>
+    <view class="page-hero">
+      <view class="page-hero-title">我的结对</view>
+    </view>
+
+    <view class="section-header">
+      <view class="section-title">结对列表</view>
+    </view>
+    <view class="unbind-pairlist" wx:if="{{pairList.length}}">
+      <view
+        class="unbind-pair card"
+        wx:for="{{pairList}}"
+        wx:key="pairId"
+        data-pairid="{{item.pairId}}"
+        data-name="{{item.lineName}}"
+        data-status="{{item.status}}"
+        bindtap="onGoDetail"
+      >
+        <view class="unbind-pair-main">
+          <view class="unbind-pair-line">{{item.lineName}}</view>
+        </view>
+        <view class="unbind-pair-meta">
+          <text class="unbind-pair-chev">查看 ›</text>
+          <text class="badge {{item.status === '结对中' ? 'badge-success' : item.status === '已解绑' ? 'badge-muted' : item.status === '已拒绝' ? 'badge-danger' : item._myConfirmed ? 'badge-success' : 'badge-warning'}}">{{item.status}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="card" wx:else>
+      <view class="section-desc" style="text-align: center; color: #98a2b3; padding: 20rpx 0;">暂无结对</view>
+    </view>
+  </view>
+  <custom-tab-bar id="custom-tab-bar" />
+</view>

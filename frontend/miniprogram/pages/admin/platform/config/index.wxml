@@ -1,0 +1,43 @@
+<view class="page-shell">
+  <view class="container">
+    <view class="page-hero">
+      <view class="page-hero-title">系统与算法配置</view>
+    </view>
+
+    <view class="card" style="margin-bottom: 24rpx;">
+      <view class="section-title">系统配置</view>
+      <picker range="{{configs}}" range-key="key" bindchange="onPickConfig">
+        <view class="list-row">
+          <text>选择配置项</text>
+          <text>{{editKey || '请选择'}}</text>
+        </view>
+      </picker>
+      <view class="list-row">
+        <text>配置值</text>
+        <input value="{{editValue}}" bindinput="onEditValue" placeholder="输入配置值" />
+      </view>
+      <button class="primary-btn" bindtap="onSaveConfig" style="margin-top:20rpx;">保存配置</button>
+    </view>
+
+    <view class="card" style="margin-bottom: 24rpx;">
+      <view class="section-title">匹配权重</view>
+      <picker range="{{weights}}" range-key="name" bindchange="onPickWeight">
+        <view class="list-row">
+          <text>选择权重项</text>
+          <text>{{editWeightId || '请选择'}}</text>
+        </view>
+      </picker>
+      <view class="list-row">
+        <text>权重值</text>
+        <input value="{{editWeight}}" bindinput="onEditWeight" placeholder="输入权重值" />
+      </view>
+      <view class="list-row">
+        <text>启用</text>
+        <switch checked="{{editWeightEnabled}}" bindchange="onEditWeightEnabled" />
+      </view>
+      <button class="primary-btn" bindtap="onSaveWeight" style="margin-top:20rpx;">保存权重</button>
+      <button class="primary-btn" bindtap="onRecalc" style="margin-top:12rpx;background:#fff;color:#111;border:1px solid #ddd;">重新计算</button>
+      <button class="primary-btn" bindtap="onRefresh" style="margin-top:12rpx;background:#fff;color:#111;border:1px solid #ddd;">刷新配置</button>
+    </view>
+  </view>
+</view>

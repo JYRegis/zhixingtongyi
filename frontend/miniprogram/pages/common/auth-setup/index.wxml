@@ -1,0 +1,29 @@
+<view class="setup-page">
+  <view class="setup-top">
+    <view class="setup-title">完善资料</view>
+    <view class="setup-tip">设置头像和昵称，方便他人识别</view>
+  </view>
+
+  <view class="setup-card">
+    <button class="setup-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image wx:if="{{avatarUrl}}" class="setup-avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="setup-avatar-empty">点击选择头像</view>
+    </button>
+    <view class="setup-input-wrap">
+      <input
+        class="setup-input"
+        type="nickname"
+        maxlength="20"
+        placeholder="请输入昵称"
+        value="{{nickname}}"
+        bindinput="onNicknameInput"
+      />
+    </view>
+    <view class="setup-hint">昵称会显示在结对、聊天等场景中，可随时在「资料与账号」里修改。</view>
+
+    <button class="setup-submit-btn" bindtap="onSubmit" disabled="{{submitting}}">
+      <text>{{submitting ? '保存中…' : '保存并继续'}}</text>
+    </button>
+    <view class="setup-skip" bindtap="onSkip">暂不设置，先去选择角色</view>
+  </view>
+</view>

@@ -1,0 +1,15 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="container">
+    <view class="page-hero">
+      <view class="page-hero-title">平台风险</view>
+    </view>
+    <view wx:if="{{loading}}" class="card empty-state">加载中...</view>
+    <view wx:elif="{{!exceptionPairs.length}}" class="card empty-state">暂无风险项</view>
+    <block wx:for="{{exceptionPairs}}" wx:key="index">
+      <view class="card" style="margin-bottom:18rpx;">
+        <view class="list-row"><text>{{item.reason}}</text><text>{{item.risk}}</text></view>
+      </view>
+    </block>
+    <button class="primary-btn" bindtap="onForceUnbind">提示进入解绑流程</button>
+  </view>
+</view>

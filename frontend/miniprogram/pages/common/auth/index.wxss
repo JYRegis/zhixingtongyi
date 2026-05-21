@@ -1,0 +1,213 @@
+/* 整体页面 - 渐变更柔和，背景更精致 */
+.auth-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.14), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #f5f7fa 34%, #f5f7fa 100%);
+
+  padding: 60rpx 32rpx 80rpx;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* 顶部区域 - 间距更舒展 */
+.auth-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 48rpx;
+  text-align: center;
+}
+
+/* 头像按钮 - 更精致的阴影与边框 */
+.auth-avatar-btn {
+  width: 136rpx !important;
+  height: 136rpx !important;
+  min-width: 136rpx !important;
+  padding: 0 !important;
+  margin: 0 0 24rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #ffffff;
+  border: 4rpx solid #e6f4ff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12rpx 32rpx rgba(22, 119, 255, 0.16);
+
+  transition: all 0.2s ease;
+}
+.auth-avatar-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 6rpx 16rpx rgba(22, 119, 255, 0.12);
+
+}
+.auth-avatar-btn::after {
+  border: none;
+}
+
+/* 头像图片 */
+.auth-avatar-img {
+  width: 136rpx;
+  height: 136rpx;
+  border-radius: 50%;
+  display: block;
+  object-fit: cover;
+}
+
+/* 空头像提示 */
+.auth-avatar-empty {
+  font-size: 26rpx;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* 标题 - 更醒目 */
+.auth-top-title {
+  font-size: 46rpx;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 1rpx;
+}
+
+/* 副标题提示 */
+.auth-top-tip {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* 表单卡片 - 更大气的圆角和阴影 */
+.auth-group {
+  background: #ffffff;
+  border-radius: 32rpx;
+  padding: 40rpx 32rpx;
+  box-shadow: 0 16rpx 40rpx rgba(16, 24, 40, 0.08);
+  border: 1rpx solid rgba(255,255,255,0.8);
+}
+
+/* 输入框外框 - 更细腻 */
+.auth-input-wrap {
+  margin-top: 56rpx;
+  background: #fafbfc;
+  border-radius: 18rpx;
+  overflow: hidden;
+  border: 1.5rpx solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+.auth-input-wrap:focus-within {
+  border-color: #1677ff;
+  background: #ffffff;
+  box-shadow: 0 0 0 4rpx rgba(22, 119, 255, 0.1);
+}
+
+/* 输入框内容 */
+.auth-input {
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  color: #1e293b;
+  background: transparent;
+  border: none;
+}
+.auth-input::placeholder {
+  color: #94a3b8;
+}
+
+/* 微信快捷登录按钮 - 渐变更通透 */
+.auth-wx-phone-btn {
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 24rpx 0;
+  height: 92rpx;
+  line-height: 92rpx;
+  border-radius: 18rpx;
+  background: linear-gradient(135deg, #0dc276 0%, #059669 100%);
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 12rpx 28rpx rgba(5, 150, 105, 0.22);
+  transition: all 0.2s ease;
+}
+.auth-wx-phone-btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 6rpx 16rpx rgba(5, 150, 105, 0.18);
+}
+.auth-wx-phone-btn::after {
+  border: none;
+}
+
+.auth-wx-phone-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
+
+/* 分割线 - 更精致 */
+.auth-or {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin: 16rpx 0 24rpx;
+}
+.auth-or-line {
+  flex: 1;
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+}
+.auth-or-text {
+  font-size: 24rpx;
+  color: #94a3b8;
+  flex-shrink: 0;
+  padding: 0 8rpx;
+}
+
+/* 提交按钮 - 主色更高级 */
+.auth-submit-btn {
+  margin-top: 16rpx;
+  width: 100%;
+  height: 92rpx;
+  line-height: 92rpx;
+  border-radius: 18rpx;
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 12rpx 28rpx rgba(22, 119, 255, 0.24);
+  transition: all 0.2s ease;
+}
+.auth-submit-btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 6rpx 16rpx rgba(22, 119, 255, 0.18);
+}
+.auth-submit-btn::after {
+  border: none;
+}
+
+/* 登录提示文字 */
+.auth-login-tip {
+  margin: 16rpx 0 20rpx;
+  font-size: 24rpx;
+  color: #64748b;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* 开发提示标签 */
+.auth-dev-tip {
+  margin: 16rpx auto 12rpx;
+  display: inline-block;
+  font-size: 22rpx;
+  color: #c2410c;
+  background: #e6f4ff;
+  border: 1rpx solid #fdba74;
+  border-radius: 999rpx;
+  padding: 8rpx 18rpx;
+  text-align: center;
+}

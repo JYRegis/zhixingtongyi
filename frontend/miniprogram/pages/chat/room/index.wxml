@@ -1,0 +1,104 @@
+<view class="chat-page {{_roleThemeClass}} {{l1ViewOnly ? 'chat-page--observer' : ''}}">
+  <scroll-view
+    scroll-y
+    class="chat-body"
+    scroll-into-view="{{scrollInto}}"
+    scroll-with-animation
+  >
+    <view wx:if="{{!messages.length}}" class="chat-empty">
+      <view class="chat-empty-icon">💬</view>
+      <view class="chat-empty-title">还没有聊天记录</view>
+      <view class="chat-empty-desc">{{l1ViewOnly ? '暂无内容' : '发一条消息开始沟通吧'}}</view>
+    </view>
+    <block wx:if="{{!l1ViewOnly}}">
+      <block wx:for="{{messages}}" wx:key="id">
+        <view id="msg-{{item.id}}" class="msg {{item.isSelf ? 'msg--self' : 'msg--other'}}">
+          <view class="msg-name">{{item.from}} · {{item.time}}</view>
+          <view class="msg-content {{item.isSelf ? 'msg-content--self' : 'msg-content--other'}}">
+            <view class="msg-avatar">
+              <image wx:if="{{item.isSelf && myAvatarUrl}}" class="msg-avatar-img" src="{{myAvatarUrl}}" mode="aspectFill" />
+              <view wx:elif="{{item.isSelf}}" class="msg-avatar-text">{{myAvatarChar}}</view>
+              <image wx:elif="{{item.avatarUrl}}" class="msg-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
+              <view wx:else class="msg-avatar-text msg-avatar-text--other">{{item.avatarChar}}</view>
+            </view>
+            <view class="msg-bubble {{item.isSelf ? 'msg-bubble--self' : 'msg-bubble--other'}} {{item.isImage ? 'msg-bubble--image' : ''}}">
+              <image
+                wx:if="{{item.isImage}}"
+                class="msg-image"
+                src="{{item.text}}"
+                mode="widthFix"
+                bindtap="onPreviewImage"
+                data-url="{{item.text}}"
+              />
+              <view wx:elif="{{item.isFile}}" class="msg-file" bindtap="onOpenFile" data-url="{{item.text}}">
+                <view class="msg-file-icon">📄</view>
+                <view class="msg-file-name">{{item.fileName}}</view>
+              </view>
+              <text wx:else>{{item.text}}</text>
+            </view>
+          </view>
+        </view>
+      </block>
+    </block>
+    <block wx:else>
+      <block wx:for="{{messages}}" wx:key="id">
+        <view
+          id="msg-{{item.id}}"
+          class="msg {{item.l1IsStudent ? 'msg--l1stu' : 'msg--l1vol'}}"
+        >
+          <view class="msg-name msg-name--l1">
+            <text class="msg-l1-pill">{{item.partyLabel}}</text>
+            <text> {{item.from}} · {{item.time}}</text>
+          </view>
+          <view class="msg-content {{item.l1IsStudent ? 'msg-content--l1left' : 'msg-content--l1right'}}">
+            <view class="msg-avatar">
+              <image wx:if="{{item.avatarUrl}}" class="msg-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
+              <view wx:else
+                class="msg-avatar-text {{item.l1IsStudent ? 'msg-avatar-text--stu' : 'msg-avatar-text--vol'}}"
+              >{{item.avatarChar}}</view>
+            </view>
+            <view class="msg-bubble {{item.l1IsStudent ? 'msg-bubble--l1stu' : 'msg-bubble--l1vol'}} {{item.isImage ? 'msg-bubble--image' : ''}}">
+              <image
+                wx:if="{{item.isImage}}"
+                class="msg-image"
+                src="{{item.text}}"
+                mode="widthFix"
+                bindtap="onPreviewImage"
+                data-url="{{item.text}}"
+              />
+              <view wx:elif="{{item.isFile}}" class="msg-file" bindtap="onOpenFile" data-url="{{item.text}}">
+                <view class="msg-file-icon">📄</view>
+                <view class="msg-file-name">{{item.fileName}}</view>
+              </view>
+              <text wx:else>{{item.text}}</text>
+            </view>
+          </view>
+        </view>
+      </block>
+    </block>
+    <view class="chat-body-bottom-pad"></view>
+  </scroll-view>
+
+  <view class="chat-bar" wx:if="{{!l1ViewOnly}}">
+    <view class="chat-bar-inner">
+      <input
+        class="chat-bar-input"
+        type="text"
+        placeholder="输入消息..."
+        value="{{message}}"
+        confirm-type="send"
+        bindfocus="onInputFocus"
+        bindblur="onInputBlur"
+        bindinput="onInput"
+        bindconfirm="onSend"
+      />
+      <view class="chat-bar-icon" bindtap="onMockImage">
+        <view class="icon-image"></view>
+      </view>
+      <view wx:if="{{canSend}}" class="chat-bar-send" bindtap="onSend">发送</view>
+      <view wx:else class="chat-bar-icon" bindtap="onMoreAction">
+        <view class="icon-plus"></view>
+      </view>
+    </view>
+  </view>
+</view>

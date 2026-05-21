@@ -1,0 +1,128 @@
+.welcome-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, #1677ff 0%, #4096ff 55%, #69b1ff 100%);
+  overflow: hidden;
+}
+
+.welcome-status-bar {
+  width: 100%;
+  background: transparent;
+}
+
+/* 背景装饰圆 */
+.welcome-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.welcome-decor-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.welcome-decor-circle--lg {
+  width: 460rpx;
+  height: 460rpx;
+  top: -160rpx;
+  right: -160rpx;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.welcome-decor-circle--md {
+  width: 260rpx;
+  height: 260rpx;
+  top: 240rpx;
+  left: -120rpx;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.welcome-decor-circle--sm {
+  width: 140rpx;
+  height: 140rpx;
+  top: 540rpx;
+  right: 40rpx;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* Hero */
+.welcome-hero {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  padding: 120rpx 56rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.welcome-logo {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 48rpx;
+  background: rgba(255, 255, 255, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 18rpx 44rpx rgba(22, 119, 255, 0.28);
+  margin-bottom: 40rpx;
+}
+
+.welcome-logo-text {
+  font-size: 84rpx;
+  font-weight: 800;
+  color: #1677ff;
+  letter-spacing: 2rpx;
+}
+
+.welcome-title {
+  font-size: 72rpx;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 6rpx;
+}
+
+.welcome-subtitle {
+  margin-top: 22rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 2rpx;
+}
+
+/* 底部按钮 */
+.welcome-footer {
+  position: relative;
+  z-index: 1;
+  padding: 32rpx 28rpx calc(64rpx + env(safe-area-inset-bottom));
+}
+
+.welcome-footer-card {
+  padding: 0;
+}
+
+.welcome-btn {
+  height: 100rpx;
+  line-height: 100rpx;
+  border-radius: 999rpx;
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #1677ff;
+  background: #ffffff;
+  box-shadow: 0 14rpx 30rpx rgba(0, 0, 0, 0.18);
+  border: none;
+}
+
+.welcome-btn::after {
+  border: none;
+}
+
+.welcome-btn[disabled] {
+  opacity: 0.7;
+}

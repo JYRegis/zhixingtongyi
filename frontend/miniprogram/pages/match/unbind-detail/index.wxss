@@ -1,0 +1,11 @@
+.ud-page {
+  padding: 32rpx;
+  padding-bottom: 48rpx;
+}
+
+.ud-actions {
+  margin-top: 40rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}

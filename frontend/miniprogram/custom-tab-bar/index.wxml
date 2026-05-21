@@ -1,0 +1,47 @@
+<!-- 顶部横幅：新通知到达时弹出 -->
+<view
+  wx:if="{{bannerVisible}}"
+  class="notif-banner notif-banner--in"
+  bindtap="onBannerTap"
+  catchtouchmove
+>
+  <view class="notif-banner-icon">🔔</view>
+  <view class="notif-banner-body">
+    <view class="notif-banner-title">{{bannerTitle}}</view>
+    <view class="notif-banner-content" wx:if="{{bannerContent}}">{{bannerContent}}</view>
+  </view>
+  <view class="notif-banner-close" catchtap="onBannerClose">×</view>
+</view>
+
+<view class="tab-bar {{themeClass}}">
+  <view class="tab-bar-glass"></view>
+  <view class="tab-bar-inner">
+  <view
+    wx:for="{{list}}"
+    wx:key="pagePath"
+    class="tab-bar-item {{selected === index ? 'tab-bar-item--active' : ''}}"
+    data-path="{{item.pagePath}}"
+    data-relaunch="{{item.useReLaunch ? 1 : 0}}"
+    bindtap="onSwitchTab"
+  >
+    <view class="tab-bar-item-bubble">
+    <image
+      class="tab-bar-icon"
+      src="{{selected === index ? item.selectedIconPath : item.iconPath}}"
+      mode="aspectFit"
+    />
+    <view class="tab-bar-text">{{item.text}}</view>
+    <!-- 聊天 tab 显示聊天未读数 -->
+    <view
+      wx:if="{{item.pagePath === '/pages/chat/list/index' && chatUnreadCount > 0}}"
+      class="tab-bar-badge"
+    >{{chatUnreadCount > 99 ? '99+' : chatUnreadCount}}</view>
+    <!-- 设置 tab 显示通知未读数 -->
+    <view
+      wx:elif="{{item.pagePath === '/pages/common/settings/index' && unreadCount > 0}}"
+      class="tab-bar-badge"
+    >{{unreadCount > 99 ? '99+' : unreadCount}}</view>
+    </view>
+  </view>
+  </view>
+</view>

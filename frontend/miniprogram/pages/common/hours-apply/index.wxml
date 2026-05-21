@@ -1,0 +1,79 @@
+<view class="page-shell">
+  <view class="container">
+    <view class="page-hero">
+      <view class="page-hero-title">志愿时长申请</view>
+    </view>
+
+    <!-- 页面级筛选：选择结对学员 -->
+    <view class="card" style="margin-top: 34rpx; margin-bottom: 24rpx;">
+      <picker mode="selector" range="{{pairList}}" range-key="label" bindchange="onPairChange">
+        <view class="list-row">
+          <text>结对学员</text>
+          <text>{{pairList[pairIndex] ? pairList[pairIndex].label : '请选择结对'}}</text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 填写服务记录 -->
+    <view class="card" style="margin-bottom: 24rpx;">
+      <view class="section-title">填写服务记录</view>
+      <view class="list-row">
+        <text>时长(小时)</text>
+        <input placeholder="例如 2" value="{{hoursInput}}" bindinput="onHoursInput" />
+      </view>
+      <view class="list-row">
+        <text>日期</text>
+        <picker mode="date" value="{{dateInput}}" start="2020-01-01" end="2040-12-31" bindchange="onDateChange">
+          <view class="hours-date-picker">{{dateInput || '选择日期'}}</view>
+        </picker>
+      </view>
+      <view class="list-row">
+        <text>说明</text>
+        <input placeholder="请填写服务内容" value="{{serviceDesc}}" bindinput="onServiceDescInput" />
+      </view>
+
+      <!-- 凭证图片上传 -->
+      <view class="evidence-section">
+        <view class="evidence-label">服务凭证（选填，最多6张）</view>
+        <view class="evidence-grid">
+          <view
+            wx:for="{{evidenceImages}}"
+            wx:key="*this"
+            class="evidence-item"
+          >
+            <image
+              class="evidence-img"
+              src="{{item}}"
+              mode="aspectFill"
+              bindtap="onPreviewEvidence"
+              data-url="{{item}}"
+            />
+            <view class="evidence-remove" catchtap="onRemoveEvidence" data-index="{{index}}">×</view>
+          </view>
+          <view
+            wx:if="{{evidenceImages.length < 6}}"
+            class="evidence-item evidence-add"
+            bindtap="onAddEvidence"
+          >
+            <view class="evidence-add-icon">+</view>
+            <view class="evidence-add-text">上传</view>
+          </view>
+        </view>
+      </view>
+
+      <button class="primary-btn" bindtap="onSubmit" style="margin-top: 20rpx;">提交申请</button>
+    </view>
+
+    <!-- 我的申请（按选中结对过滤） -->
+    <view class="card">
+      <view class="section-title">我的申请</view>
+      <view wx:if="{{myList.length}}">
+        <view class="list-row" wx:for="{{myList}}" wx:key="id">
+          <text>{{item.week}} · {{item.hours}}h</text>
+          <text>{{item.statusLabel}}</text>
+        </view>
+      </view>
+      <view wx:else class="empty-state">暂无记录</view>
+    </view>
+  </view>
+</view>

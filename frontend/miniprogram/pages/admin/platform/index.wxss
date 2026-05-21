@@ -1,0 +1,168 @@
+/* 底部内嵌与 Tab 同款的自定义条，避免内容被挡 */
+.platform-page {
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+.platform-entry-card {
+  margin-top: 20rpx;
+  padding: 0;
+  overflow: hidden;
+}
+
+.platform-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 28rpx;
+  min-height: 118rpx;
+  box-sizing: border-box;
+}
+
+.platform-entry-icon {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 24rpx;
+  padding: 16rpx;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
+  flex-shrink: 0;
+}
+
+.platform-entry-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.platform-entry-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #333333;
+}
+
+.platform-entry-desc {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  line-height: 1.45;
+  color: #999999;
+}
+
+.platform-entry-badge {
+  min-width: 44rpx;
+  height: 44rpx;
+  line-height: 44rpx;
+  padding: 0 12rpx;
+  border-radius: 999rpx;
+  text-align: center;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #fff;
+  background: var(--ui-primary);
+  flex-shrink: 0;
+}
+
+.platform-entry-badge--warn {
+  background: #d97706;
+}
+
+.platform-entry-badge--danger {
+  background: #dc2626;
+}
+
+.platform-entry-arrow {
+  margin-left: auto;
+  font-size: 40rpx;
+  color: #999999;
+  font-weight: 300;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.platform-overview-card,
+.platform-risk-card {
+  margin-top: 20rpx;
+}
+
+.platform-kpi-list {
+  margin-top: 18rpx;
+}
+
+.platform-risk-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20rpx;
+}
+
+.platform-risk-note {
+  margin-top: 18rpx;
+}
+
+.platform-risk-btn {
+  margin-top: 20rpx;
+}
+
+.platform-review-card,
+.platform-empty-card {
+  margin-top: 20rpx;
+}
+
+.platform-review-card {
+  padding: 28rpx;
+}
+
+.platform-review-head {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  margin-bottom: 10rpx;
+}
+
+.platform-review-icon,
+.platform-empty-icon {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 24rpx;
+  padding: 16rpx;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
+  flex-shrink: 0;
+}
+
+.platform-review-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.platform-review-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #333333;
+}
+
+.platform-review-desc {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.platform-review-status {
+  min-height: 44rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  color: #0066ff;
+  background: #e6f0ff;
+  font-size: 22rpx;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.platform-empty-card {
+  padding: 44rpx 28rpx;
+  text-align: center;
+}
+
+.platform-empty-icon {
+  margin: 0 auto 18rpx;
+}

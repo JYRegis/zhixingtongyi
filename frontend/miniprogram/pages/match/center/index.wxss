@@ -1,0 +1,331 @@
+.match-page {
+  padding-bottom: 48rpx;
+}
+
+.match-overview-card,
+.match-proxy-card,
+.match-acting-bar,
+.match-filter-card,
+.match-teacher-card {
+  margin-top: 20rpx;
+}
+
+.match-overview-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.match-overview-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #333333;
+}
+
+.match-overview-desc {
+  margin-top: 10rpx;
+  font-size: 25rpx;
+  line-height: 1.65;
+  color: #999999;
+}
+
+.match-overview-note {
+  margin-top: 18rpx;
+}
+
+.match-proxy-list {
+  margin-top: 20rpx;
+}
+
+.match-proxy-row {
+  margin-top: 16rpx;
+  padding: 24rpx;
+  border-radius: 18rpx;
+  border: 1rpx solid #f0f0f0;
+  background: #ffffff;
+}
+
+.match-proxy-row:active {
+  background: #f0f9ff;
+  border-color: rgba(22, 119, 255, 0.28);
+}
+
+.match-proxy-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20rpx;
+}
+
+.match-proxy-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #333333;
+}
+
+.match-proxy-grade {
+  font-size: 26rpx;
+  color: #999999;
+}
+
+.match-proxy-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8rpx;
+}
+
+.match-proxy-foot {
+  margin-top: 16rpx;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.match-link-text {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--ui-primary);
+}
+
+.match-acting-bar {
+  border-left: 10rpx solid #d97706;
+}
+
+.match-acting-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12rpx;
+}
+
+.match-acting-label {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.match-acting-name {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #333333;
+}
+
+.match-change-btn {
+  margin-top: 20rpx;
+}
+
+.match-subject-card {
+  margin-top: 20rpx;
+}
+
+.match-list-count {
+  font-size: 26rpx;
+  color: #999999;
+  margin: 0 0 8rpx 0;
+  padding: 0 4rpx;
+}
+
+.match-subj-strong {
+  font-weight: 700;
+  color: var(--ui-primary);
+}
+
+.match-filter-row {
+  margin-top: 20rpx;
+  padding: 20rpx 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20rpx;
+  border-top: 1rpx solid #f0f0f0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.match-filter-label {
+  font-size: 26rpx;
+  color: #344054;
+}
+
+.match-filter-value {
+  min-width: 160rpx;
+  padding: 14rpx 20rpx;
+  text-align: center;
+  border-radius: 999rpx;
+  background: #e6f0ff;
+  color: #0066ff;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.match-teacher-card {
+  overflow: hidden;
+  padding: 28rpx;
+}
+
+.match-teacher-card--featured {
+  border-color: rgba(22, 119, 255, 0.28);
+  box-shadow: 0 12rpx 38rpx rgba(22, 119, 255, 0.13);
+}
+
+.match-teacher-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20rpx;
+}
+
+.match-teacher-main {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.match-teacher-avatar {
+  width: 78rpx;
+  height: 78rpx;
+  border-radius: 26rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
+  color: var(--ui-primary);
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.match-teacher-avatar-img {
+  width: 78rpx;
+  height: 78rpx;
+  border-radius: 26rpx;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.match-teacher-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.match-teacher-name {
+  font-size: 34rpx;
+  font-weight: 800;
+  color: #333333;
+}
+
+.match-teacher-subject {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.match-score-wrap {
+  min-width: 104rpx;
+  text-align: center;
+  padding: 14rpx 12rpx;
+  border-radius: 24rpx;
+  background: #e6f0ff;
+  flex-shrink: 0;
+}
+
+.match-score-value {
+  font-size: 38rpx;
+  font-weight: 800;
+  color: #0066ff;
+  line-height: 1;
+}
+
+.match-score-label {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #999999;
+}
+
+.match-chip-row {
+  margin-top: 18rpx;
+}
+
+.match-teacher-summary {
+  margin-top: 18rpx;
+  font-size: 26rpx;
+  line-height: 1.65;
+  color: #666666;
+}
+
+.match-teacher-meta {
+  margin-top: 20rpx;
+}
+
+.match-apply-btn {
+  margin-top: 20rpx;
+}
+
+
+/* 志愿者匹配页：工作台风格的跳转卡片 */
+.match-volunteer-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+.match-volunteer-menu .workbench-menu-card {
+  position: relative;
+  overflow: hidden;
+  padding: 28rpx;
+  transition: transform 0.12s ease;
+}
+.match-volunteer-menu .workbench-menu-card:active {
+  transform: scale(0.985);
+}
+
+.match-volunteer-menu .workbench-menu-top {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.match-volunteer-menu .workbench-menu-icon {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 26rpx;
+  padding: 16rpx;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
+  flex-shrink: 0;
+}
+
+.match-volunteer-menu .workbench-menu-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.match-volunteer-menu .workbench-menu-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #1f2937;
+  line-height: 1.3;
+}
+
+.match-volunteer-menu .workbench-menu-desc {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.match-volunteer-menu .workbench-menu-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16rpx;
+}
+
+.match-volunteer-menu .workbench-menu-arrow {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: var(--ui-primary);
+}

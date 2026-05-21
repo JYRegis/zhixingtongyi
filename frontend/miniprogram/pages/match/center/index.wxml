@@ -1,0 +1,87 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="container match-page">
+    <view class="page-hero">
+      <view class="page-hero-title">{{heroTitle}}</view>
+    </view>
+
+    <view wx:if="{{(canPairTodo || canUnbind) && role !== 'teacher'}}" class="card match-filter-card">
+      <view class="section-title">操作</view>
+      <view class="actions">
+        <button wx:if="{{canPairTodo}}" class="btn-secondary" bindtap="toRequests">结对待办</button>
+        <button wx:if="{{canUnbind}}" class="btn-secondary" bindtap="toUnbind">解绑申请</button>
+      </view>
+    </view>
+
+    <!-- 志愿者：用工作台风格的两张跳转卡片代替推荐列表 -->
+    <view wx:if="{{role === 'teacher'}}" class="match-volunteer-menu">
+      <view class="card workbench-menu-card card-tier" bindtap="toRequests">
+        <view class="workbench-menu-top">
+          <image class="workbench-menu-icon" src="/images/icons/inbox.svg" mode="aspectFit" />
+          <view class="workbench-menu-left">
+            <view class="workbench-menu-title">结对待办</view>
+            <view class="workbench-menu-desc">查看并处理学员发来的结对申请</view>
+          </view>
+        </view>
+        <view class="workbench-menu-foot">
+          <view class="workbench-menu-arrow">进入 ›</view>
+        </view>
+      </view>
+
+      <view class="card workbench-menu-card card-tier" bindtap="toUnbind">
+        <view class="workbench-menu-top">
+          <image class="workbench-menu-icon" src="/images/icons/unlink.svg" mode="aspectFit" />
+          <view class="workbench-menu-left">
+            <view class="workbench-menu-title">解绑申请</view>
+            <view class="workbench-menu-desc">查看当前结对，发起或确认解绑流程</view>
+          </view>
+        </view>
+        <view class="workbench-menu-foot">
+          <view class="workbench-menu-arrow">进入 ›</view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{showSubjectFilter}}" class="card match-subject-card">
+      <view class="section-title">学科筛选</view>
+      <picker mode="selector" range="{{subjectOptions}}" value="{{subjectIndex}}" bindchange="onSubjectChange">
+        <view class="match-filter-row">
+          <text class="match-filter-label">选择学科</text>
+          <text class="match-filter-value">{{subjectLineText}}</text>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:if="{{role !== 'teacher'}}" class="section-header">
+      <view class="section-title">推荐</view>
+    </view>
+
+    <view class="match-list-count" wx:if="{{showSubjectFilter}}">当前显示 {{selectedCountText}}</view>
+
+    <block wx:for="{{renderList}}" wx:key="id">
+      <view class="card match-teacher-card {{item.highlight ? 'match-teacher-card--featured' : ''}}">
+        <view class="match-teacher-top">
+          <view class="match-teacher-main">
+            <image wx:if="{{item.avatar}}" class="match-teacher-avatar match-teacher-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+            <view wx:else class="match-teacher-avatar">{{item.avatarText}}</view>
+            <view class="match-teacher-info">
+              <view class="match-teacher-name">{{item.teacher}}</view>
+              <view class="match-teacher-subject">学科：<text class="match-subj-strong">{{item.subject}}</text> · {{item.style}}</view>
+            </view>
+          </view>
+          <view class="match-score-wrap">
+            <view class="match-score-value">{{item.score}}</view>
+            <view class="match-score-label">匹配分</view>
+          </view>
+        </view>
+        <view class="chip-row match-chip-row">
+          <view class="chip">{{item.scoreTag}}</view>
+          <view class="chip">可授课：{{item.timeDisplay}}</view>
+        </view>
+        <view class="match-teacher-summary">{{item.summary}}</view>
+        <view class="match-teacher-meta">
+          <button class="btn-primary match-apply-btn" data-id="{{item.id}}" bindtap="onApply">申请结对</button>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

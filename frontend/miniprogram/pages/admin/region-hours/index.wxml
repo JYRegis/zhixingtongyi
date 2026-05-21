@@ -1,0 +1,26 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="container region-page">
+    <view class="page-hero">
+      <view class="page-hero-title">认定义务时长</view>
+    </view>
+    <view wx:if="{{!list.length}}" class="card region-empty-card">
+      <view class="empty-title">暂无待审</view>
+      <view class="empty-desc">新的时长记录会显示在这里</view>
+    </view>
+    <block wx:for="{{list}}" wx:key="id">
+      <view class="card platform-review-card">
+        <view class="platform-review-head" data-id="{{item.id}}" bindtap="onViewHours">
+          <view class="platform-review-main">
+            <view class="platform-review-title">{{item.hours}} 小时</view>
+            <view class="platform-review-desc">{{item.studentName}} / {{item.volunteerName}}</view>
+          </view>
+          <text class="list-row-cta">查看详情 ›</text>
+        </view>
+        <view class="actions" style="margin-top: 40rpx;">
+          <button class="btn-primary" data-id="{{item.id}}" bindtap="onApproveHours">通过</button>
+          <button class="btn-secondary" data-id="{{item.id}}" bindtap="onRejectHours">驳回</button>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

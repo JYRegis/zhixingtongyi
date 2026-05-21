@@ -1,0 +1,13 @@
+.page-shell{padding-bottom:40rpx}
+.card{padding:28rpx;border-radius:24rpx;background:#fff}
+.list-row{display:flex;justify-content:space-between;align-items:center;padding:16rpx 0;border-bottom:1px solid #f1f2f4}
+.list-row:last-child{border-bottom:none}
+.primary-btn{
+  display:block;
+  width:100%;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+.primary-btn::after{border:none}
+.notif-switch-row switch{transform:scale(0.8)}

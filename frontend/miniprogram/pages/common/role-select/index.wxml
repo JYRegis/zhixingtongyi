@@ -1,0 +1,24 @@
+<view class="role-page">
+  <view class="role-hero">
+    <view class="role-kicker">CHOOSE IDENTITY</view>
+    <view class="role-title">请选择你的角色</view>
+    <view class="role-subtitle">同一账号可登录，角色用于进入对应功能</view>
+  </view>
+
+  <view class="role-cards">
+    <view
+      wx:for="{{cards}}"
+      wx:key="value"
+      class="role-card"
+      data-role="{{item.value}}"
+      bindtap="onChooseRole"
+    >
+      <view class="role-card-icon">{{item.icon}}</view>
+      <view class="role-card-main">
+        <view class="role-card-iam">{{item.iam}}</view>
+        <view class="role-card-hint">{{item.hint}}</view>
+      </view>
+      <view class="role-card-go">进入</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,49 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="container region-page">
+    <view class="page-hero">
+      <view class="page-hero-title">{{regionName}}</view>
+    </view>
+
+    <view wx:if="{{loading}}" class="card empty-state">加载中...</view>
+
+    <view class="card region-recipient-hub" wx:if="{{!loading}}">
+      <view class="section-title" style="margin-bottom: 16rpx">审核与管理</view>
+      <view class="region-recipient-btns">
+        <button wx:if="{{canStudentManage}}" class="region-jump-item" bindtap="toRegionStudents" plain="{{true}}" hover-class="list-row--hover" hover-stay-time="100">
+          <view class="region-jump-top">
+            <image class="region-jump-icon" src="/images/icons/user-check.svg" mode="aspectFit" />
+            <view class="region-jump-main">
+              <view class="region-jump-name">学生注册审核</view>
+              <view class="region-jump-meta" wx:if="{{studentRegCount > 0}}">待审 {{studentRegCount}} 条</view>
+              <view class="region-jump-meta" wx:else>暂无待审</view>
+            </view>
+            <view class="region-jump-cta">进入</view>
+          </view>
+        </button>
+        <button wx:if="{{canVolunteerRecordAudit}}" class="region-jump-item" bindtap="toRegionHours" plain="{{true}}" hover-class="list-row--hover" hover-stay-time="100">
+          <view class="region-jump-top">
+            <image class="region-jump-icon" src="/images/icons/clock.svg" mode="aspectFit" />
+            <view class="region-jump-main">
+              <view class="region-jump-name">认定义务时长</view>
+              <view class="region-jump-meta" wx:if="{{hoursCount > 0}}">待审 {{hoursCount}} 条</view>
+              <view class="region-jump-meta" wx:else>暂无待审</view>
+            </view>
+            <view class="region-jump-cta">进入</view>
+          </view>
+        </button>
+        <button wx:if="{{canTeacherAudit}}" class="region-jump-item" bindtap="toRegionTeachers" plain="{{true}}" hover-class="list-row--hover" hover-stay-time="100">
+          <view class="region-jump-top">
+            <image class="region-jump-icon" src="/images/icons/award.svg" mode="aspectFit" />
+            <view class="region-jump-main">
+              <view class="region-jump-name">志愿者注册审核</view>
+              <view class="region-jump-meta" wx:if="{{teacherRegCount > 0}}">待审 {{teacherRegCount}} 条</view>
+              <view class="region-jump-meta" wx:else>暂无待审</view>
+            </view>
+            <view class="region-jump-cta">进入</view>
+          </view>
+        </button>
+      </view>
+    </view>
+  </view>
+  <custom-tab-bar id="custom-tab-bar" />
+</view>

@@ -1,0 +1,37 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="container sub-detail-page">
+    <view wx:if="{{!denied && rows.length}}">
+      <view class="sub-detail-hero">
+        <view class="page-hero-title">{{pageTitle}}</view>
+      </view>
+      <view class="card sub-detail-card">
+        <block wx:for="{{rows}}" wx:key="label" wx:for-index="i">
+          <view class="sub-detail-row">
+            <text class="sub-detail-k">{{item.label}}</text>
+            <block wx:if="{{item.type === 'images'}}">
+              <view class="sub-detail-images">
+                <image
+                  wx:for="{{item.images}}"
+                  wx:for-item="img"
+                  wx:key="*this"
+                  class="sub-detail-evidence-img"
+                  src="{{img}}"
+                  mode="aspectFill"
+                  bindtap="onPreviewEvidence"
+                  data-url="{{img}}"
+                  data-urls="{{item.images}}"
+                />
+              </view>
+            </block>
+            <text wx:else class="sub-detail-v">{{item.value}}</text>
+          </view>
+        </block>
+      </view>
+    </view>
+    <view wx:elif="{{denied}}" class="card sub-detail-denied">
+      <view class="sub-detail-denied-icon">!</view>
+      <view class="empty-title">无权限</view>
+      <view class="empty-desc">当前账号无法查看该提交详情</view>
+    </view>
+  </view>
+</view>

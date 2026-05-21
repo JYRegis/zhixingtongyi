@@ -1,0 +1,167 @@
+.apply-page {
+  padding-bottom: 48rpx;
+}
+
+.apply-page .section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+  color: #0f172a;
+}
+
+.apply-page .section-desc {
+  font-size: 26rpx;
+  line-height: 1.5;
+  color: #64748b;
+  margin-bottom: 16rpx;
+}
+
+.apply-page .field {
+  margin-bottom: 20rpx;
+}
+
+.apply-page .field-sublabel {
+  display: block;
+  font-size: 22rpx;
+  color: #94a3b8;
+  margin: 0 0 12rpx;
+  line-height: 1.4;
+}
+
+.apply-page .apply-time-pair {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 16rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.apply-page .apply-time-pick {
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+
+/* 半宽两列时不用单行 88rpx 行高顶满 */
+.apply-page .apply-time-pick .field-input.apply-time-pick-inner {
+  height: auto;
+  min-height: 88rpx;
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  word-break: break-all;
+}
+
+/* 与全局 .field-input 解耦：单行控件统一高度（前几个学校/年级/时间/机构等） */
+.apply-page .field--control .field-input,
+.apply-page .field--control input.field-input,
+.apply-page .field--control .apply-picker-line {
+  margin-top: 0;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 88rpx;
+  height: 88rpx;
+  padding: 0 20rpx;
+  line-height: 88rpx;
+  background: #f8fafc;
+  border: 1rpx solid #e2e8f0;
+  border-radius: 12rpx;
+  color: #0f172a;
+  font-size: 28rpx;
+}
+
+/* picker 内为 view 块，用 flex 避免多字时与 input 仍不一致 */
+.apply-page .field--control > picker {
+  display: block;
+  width: 100%;
+  margin-top: 0;
+}
+
+.apply-page .field--control > picker .field-input {
+  height: auto;
+  min-height: 88rpx;
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+  padding: 0 20rpx;
+  word-break: break-all;
+}
+
+/* 盖过上一段对「正文色」的设定，与 form-placeholder-std 一致 */
+.apply-page .field--control .apply-picker-line.form-placeholder-std {
+  color: #94a3b8;
+}
+
+.apply-page .field-textarea {
+  min-height: 120rpx;
+  margin-top: 8rpx;
+  padding: 20rpx;
+  width: 100%;
+  box-sizing: border-box;
+  background: #f8fafc;
+  border-radius: 12rpx;
+  color: #0f172a;
+}
+
+.apply-page .actions {
+  margin-top: 24rpx;
+}
+
+.apply-page .surface-note {
+  margin: 20rpx 0;
+}
+
+.apply-page .field-req {
+  color: #b42318;
+  font-size: 24rpx;
+  margin-left: 4rpx;
+}
+
+.apply-page .field .field-input,
+.apply-page .field .apply-picker-line {
+  min-height: 88rpx;
+  background: #f8fafc;
+  border: 1rpx solid #e2e8f0;
+  border-radius: 12rpx;
+}
+
+.apply-page .field-chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 8rpx;
+}
+
+.apply-page .field-chips--wrap {
+  margin-bottom: 12rpx;
+}
+
+.apply-page .field-chip {
+  padding: 0 20rpx;
+  min-height: 64rpx;
+  line-height: 64rpx;
+  font-size: 26rpx;
+  color: #344054;
+  background: #f2f4f7;
+  border: 1rpx solid #eaecf0;
+  border-radius: 999rpx;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.apply-page .field-chip--sm {
+  min-height: 56rpx;
+  line-height: 56rpx;
+  font-size: 24rpx;
+  padding: 0 16rpx;
+}
+
+.apply-page .field-chip--on {
+  color: #0958d9;
+  background: #e6f4ff;
+  border-color: rgba(22, 119, 255, 0.28);
+  font-weight: 700;
+}

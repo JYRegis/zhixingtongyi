@@ -1,0 +1,89 @@
+{
+  "pages": [
+    "pages/common/welcome/index",
+    "pages/common/home/index",
+    "pages/common/auth/index",
+    "pages/common/auth-setup/index",
+    "pages/common/role-select/index",
+    "pages/common/invite-code/index",
+    "pages/common/onboarding-pending/index",
+    "pages/common/onboarding-apply/index",
+    "pages/common/workbench/index",
+    "pages/common/hours-apply/index",
+    "pages/common/settings/index",
+    "pages/common/review-submission-detail/index",
+    "pages/common/profile/index",
+    "pages/common/notifications/index",
+    "pages/common/template/index",
+    "pages/match/center/index",
+    "pages/match/requests/index",
+    "pages/match/unbind/index",
+    "pages/match/unbind-detail/index",
+    "pages/chat/list/index",
+    "pages/chat/room/index",
+    "pages/meeting/index",
+    "pages/meeting/create/index",
+    "pages/admin/region/index",
+    "pages/admin/region-students/index",
+    "pages/admin/region-teachers/index",
+    "pages/admin/region-hours/index",
+    "pages/admin/users/index",
+    "pages/admin/users/detail/index",
+    "pages/admin/secondary-admins/index",
+    "pages/admin/platform/index",
+    "pages/admin/platform/review/index",
+    "pages/admin/platform/hours/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "知行同驿",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f7fa"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#667085",
+    "selectedColor": "#1677ff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/common/workbench/index",
+        "text": "工作台",
+        "iconPath": "images/tabbar/workbench.png",
+        "selectedIconPath": "images/tabbar/workbench-active.png"
+      },
+      {
+        "pagePath": "pages/match/center/index",
+        "text": "匹配",
+        "iconPath": "images/tabbar/match.png",
+        "selectedIconPath": "images/tabbar/match-active.png"
+      },
+      {
+        "pagePath": "pages/chat/list/index",
+        "text": "聊天",
+        "iconPath": "images/tabbar/chat.png",
+        "selectedIconPath": "images/tabbar/chat-active.png"
+      },
+      {
+        "pagePath": "pages/meeting/index",
+        "text": "会议",
+        "iconPath": "images/tabbar/meeting.png",
+        "selectedIconPath": "images/tabbar/meeting-active.png"
+      },
+      {
+        "pagePath": "pages/common/settings/index",
+        "text": "设置",
+        "iconPath": "images/tabbar/settings.png",
+        "selectedIconPath": "images/tabbar/settings-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "useExtendedLib": {
+    "weui": true
+  }
+}

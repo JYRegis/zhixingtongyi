@@ -1,0 +1,62 @@
+<view class="page-shell create-page {{_roleThemeClass}}">
+  <view class="container">
+    <view class="page-hero create-hero">
+      <view class="page-hero-title">新建会议</view>
+    </view>
+
+    <view class="card create-tip-card" wx:if="{{!pairOptions.length && (role === 'student' || role === 'teacher')}}">
+      <view class="create-tip-icon">!</view>
+      <view class="section-desc create-warn">当前没有可选结对口。请先完成结对后再排会议。</view>
+    </view>
+
+    <view class="card create-form-card" wx:else>
+      <view class="field">
+        <text class="field-label">主题 <text class="field-req">*</text></text>
+        <input class="field-input" value="{{title}}" data-k="title" bindinput="onText" placeholder="如：数学第 3 次辅导" />
+      </view>
+      <view class="field field--control" wx:if="{{pairOptions.length}}">
+        <text class="field-label">关联结对 <text class="field-req" wx:if="{{pairRequired}}">*</text></text>
+        <picker mode="selector" range="{{pairOptions}}" range-key="name" value="{{pairIndex}}" bindchange="onPickPair">
+          <view class="field-input create-picker-line">{{pairLineDisplay}}</view>
+        </picker>
+      </view>
+      <view class="field" wx:elif="{{role === 'admin_level_1' || role === 'admin_level_2'}}">
+        <text class="field-label">结对 ID <text class="field-req">*</text></text>
+        <input class="field-input" type="number" value="{{manualPairId}}" data-k="manualPairId" bindinput="onText" placeholder="请输入后端 match_pair.id" />
+      </view>
+      <view class="field field--control">
+        <text class="field-label">日期 <text class="field-req">*</text></text>
+        <picker mode="date" value="{{dateStr}}" bindchange="onPickDate" start="2020-01-01" end="2040-12-31">
+          <view class="field-input create-picker-line">{{dateStr || '选择日期'}}</view>
+        </picker>
+      </view>
+      <view class="field field--control">
+        <text class="field-label">时间 <text class="field-req">*</text></text>
+        <picker mode="time" value="{{timeStr}}" start="00:00" end="23:59" bindchange="onPickTime">
+          <view class="field-input create-picker-line">{{timeStr || '选择时间'}}</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="field-label">时长（分钟）</text>
+        <input class="field-input" type="number" value="{{durationMin}}" data-k="durationMin" bindinput="onText" placeholder="默认60分钟" />
+      </view>
+      <view class="field">
+        <text class="field-label">会议链接 / 会议码</text>
+        <textarea
+          class="field-textarea"
+          value="{{roomLink}}"
+          data-k="roomLink"
+          bindinput="onText"
+          placeholder="选填，粘贴会议链接或会议码"
+        />
+      </view>
+      <view class="field">
+        <text class="field-label">会议密码</text>
+        <input class="field-input" value="{{meetingPassword}}" data-k="meetingPassword" bindinput="onText" placeholder="选填，如有密码请填写" />
+      </view>
+      <view class="actions" style="margin-top: 24rpx;">
+        <button class="btn-primary" bindtap="onSubmit" disabled="{{submitDisabled}}">保存</button>
+      </view>
+    </view>
+  </view>
+</view>

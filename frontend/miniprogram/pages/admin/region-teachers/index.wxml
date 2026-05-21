@@ -1,0 +1,28 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="container region-page">
+    <view class="page-hero">
+      <view class="page-hero-title">志愿者注册审核</view>
+    </view>
+    <view wx:if="{{!list.length}}" class="card region-empty-card">
+      <image class="region-empty-icon" src="/images/icons/award.svg" mode="aspectFit" />
+      <view class="empty-title">暂无待审</view>
+      <view class="empty-desc">新的志愿者申请会显示在这里</view>
+    </view>
+    <block wx:for="{{list}}" wx:key="id">
+      <view class="card region-student-card">
+        <view class="region-student-main" data-id="{{item.id}}" bindtap="onView">
+          <image class="region-student-avatar" src="/images/icons/award.svg" mode="aspectFit" />
+          <view>
+            <view class="region-student-name">{{item.displayName}}</view>
+            <view class="region-student-school">{{item.school}} · {{item.grade}}</view>
+          </view>
+          <text class="list-row-cta" style="margin-left:auto">查看详情 ›</text>
+        </view>
+        <view class="actions" style="margin-top: 40rpx;">
+          <button class="btn-primary" data-id="{{item.id}}" bindtap="onApprove">通过</button>
+          <button class="btn-secondary" data-id="{{item.id}}" bindtap="onReject">驳回</button>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

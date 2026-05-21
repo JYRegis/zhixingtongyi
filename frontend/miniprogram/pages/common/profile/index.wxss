@@ -1,0 +1,270 @@
+.profile-page {
+  padding-bottom: 48rpx;
+}
+
+/* 「登录信息」卡片：头像行采用 field 布局，与基本信息卡片一致 */
+.profile-field--avatar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.profile-field--avatar .field-label {
+  flex-shrink: 0;
+}
+
+.profile-account-avatar-wrap {
+  position: relative;
+  width: 96rpx;
+  height: 96rpx;
+  flex-shrink: 0;
+}
+
+.profile-account-avatar-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  opacity: 0;
+  line-height: 1;
+}
+
+.profile-account-avatar-btn::after {
+  border: none;
+}
+
+.profile-account-avatar-pic {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  display: block;
+  object-fit: cover;
+  border: 2rpx solid #f0f0f0;
+  box-sizing: border-box;
+  background: #fafbfc;
+}
+
+.profile-account-avatar-pic--placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fafbfc;
+  border: 2rpx dashed #cbd5e1;
+  color: #94a3b8;
+  line-height: 1;
+}
+
+.profile-account-avatar-placeholder-icon {
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.profile-account-avatar-placeholder-text {
+  margin-top: 4rpx;
+  font-size: 18rpx;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.profile-account-avatar-edit-badge {
+  position: absolute;
+  right: -6rpx;
+  bottom: -2rpx;
+  min-width: 52rpx;
+  padding: 0 10rpx;
+  height: 28rpx;
+  line-height: 28rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, var(--ui-primary) 0%, var(--ui-primary-mid) 100%);
+  color: #fff;
+  font-size: 18rpx;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.profile-section-card,
+.profile-submit-card {
+  margin-top: 16rpx;
+}
+
+.profile-field:first-child {
+  margin-top: 0;
+}
+
+.profile-field + .profile-field {
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+/**
+ * 资料页：全局 .field-input 对 input 同时设了 padding，在部分机型上单行文字会视觉上靠上。
+ * 这里继续收紧单行 input 的纵向 padding，并配合更高的圆角和表单提示文案统一视觉。
+ */
+.profile-field-input {
+  height: 92rpx;
+  line-height: 92rpx;
+  padding: 0 22rpx;
+  box-sizing: border-box;
+}
+
+.profile-field-textarea {
+  min-height: 196rpx;
+}
+
+.profile-field-hint {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #999999;
+}
+
+.time-pair-sublabel {
+  display: block;
+  font-size: 22rpx;
+  color: #999999;
+  margin: 0 0 10rpx;
+  line-height: 1.4;
+}
+
+.time-pair-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.time-pair-col {
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+
+.time-pair-inner {
+  height: auto !important;
+  min-height: 92rpx;
+  line-height: 1.4 !important;
+  display: flex;
+  align-items: center;
+  font-size: 28rpx;
+  word-break: break-all;
+}
+
+.profile-field-chips {
+  width: 100%;
+}
+
+.profile-chips-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 10rpx;
+}
+
+.profile-chips-row--tight {
+  margin-top: 8rpx;
+}
+
+.profile-chip {
+  padding: 0 20rpx;
+  min-height: 64rpx;
+  line-height: 64rpx;
+  font-size: 26rpx;
+  color: #344054;
+  background: #f2f4f7;
+  border: 1rpx solid #eaecf0;
+  border-radius: 999rpx;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.profile-chip--sm {
+  min-height: 56rpx;
+  line-height: 56rpx;
+  font-size: 24rpx;
+  padding: 0 16rpx;
+}
+
+.profile-chip--on {
+  color: #0958d9;
+  background: #e6f4ff;
+  border-color: rgba(22, 119, 255, 0.28);
+  font-weight: 700;
+}
+
+/* 未选学校/年级：与 input placeholder 同一 token（form-placeholder-std），需盖过 profile-field-input 行高样式 */
+.profile-page .field-input.profile-field-input.form-placeholder-std {
+  color: #999999;
+}
+
+.profile-submit-title {
+  margin-bottom: 10rpx;
+}
+
+.profile-submit-btn {
+  margin-top: 0;
+}
+
+/* 时间选择控件样式 - 最终增强 */
+.profile-page .form-row--time-chips {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-page .form-time-chips-wrap {
+  margin-top: 4rpx;
+  padding: 22rpx;
+  border-radius: 28rpx;
+  background: #f8fafc;
+  border: 1rpx solid #f0f0f0;
+}
+
+.profile-page .form-time-chips-title {
+  font-size: 24rpx;
+  color: #999999;
+  font-weight: 700;
+  margin-bottom: 10rpx;
+}
+
+.profile-page .form-time-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.profile-page .form-time-chip {
+  padding: 12rpx 22rpx;
+  border: 1rpx solid #f0f0f0;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  color: #666666;
+  background-color: #ffffff;
+  min-width: 96rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 14rpx rgba(0, 0, 0, 0.03);
+}
+
+.profile-page .form-time-chip--on {
+  border-color: rgba(22, 119, 255, 0.28) !important;
+  color: #0958d9 !important;
+  background-color: #e6f4ff !important;
+  font-weight: 800;
+}

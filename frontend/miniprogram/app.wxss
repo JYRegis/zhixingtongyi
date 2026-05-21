@@ -1,0 +1,462 @@
+@import "./styles/role-theme.wxss";
+
+page {
+  background: #f5f7fa;
+  color: #333333;
+  font-size: 28rpx;
+  min-height: 100%;
+}
+
+.container {
+  padding: 32rpx 28rpx 140rpx;
+  box-sizing: border-box;
+}
+
+.page-shell {
+  min-height: 100vh;
+  /* 为自定义 tabBar (min-height:112rpx + safe-area) 预留底部空间，避免内容被遮挡 */
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(22, 119, 255, 0.1), transparent 28%),
+    radial-gradient(circle at 92% 10%, rgba(22, 119, 255, 0.08), transparent 24%),
+    linear-gradient(180deg, #ffffff 0%, #f5f7fa 28%, #f5f7fa 100%);
+}
+
+/* 没有自定义 tabBar 的页面（如登录/欢迎/详情等）可加该类去掉底部空隙 */
+.page-shell--no-tabbar {
+  padding-bottom: 0;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 32rpx;
+  padding: 24rpx;
+  border: 1rpx solid rgba(240, 240, 240, 0.92);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: 700;
+  margin-bottom: 12rpx;
+  color: #333333;
+  line-height: 1.35;
+}
+
+.desc {
+  color: #999999;
+  line-height: 1.7;
+}
+
+.page-hero {
+  position: relative;
+  min-height: 184rpx;
+  padding: 36rpx 34rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(135deg, var(--ui-hero-start) 0%, var(--ui-hero-end) 100%);
+  box-shadow: 0 18rpx 44rpx rgba(var(--ui-hero-shadow), 0.24);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.page-hero::after {
+  content: "";
+  position: absolute;
+  right: -52rpx;
+  top: -44rpx;
+  width: 220rpx;
+  height: 220rpx;
+  border-radius: 70rpx;
+  background: rgba(255, 255, 255, 0.16);
+  transform: rotate(18deg);
+}
+
+.page-hero::before {
+  content: "";
+  position: absolute;
+  right: 34rpx;
+  bottom: 28rpx;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.page-hero-eyebrow {
+  position: relative;
+  z-index: 1;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 2rpx;
+}
+
+.page-hero-title {
+  position: relative;
+  z-index: 1;
+  margin-top: 8rpx;
+  font-size: 42rpx;
+  line-height: 1.25;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.page-hero-desc {
+  position: relative;
+  z-index: 1;
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.page-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.hero-badge {
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1rpx solid rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+  font-size: 22rpx;
+  line-height: 1.2;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 34rpx 0 18rpx;
+}
+
+.section-title {
+  position: relative;
+  padding-left: 18rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+  margin: 0;
+  color: #333333;
+}
+
+.section-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8rpx;
+  width: 6rpx;
+  height: 28rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(180deg, var(--ui-hero-start), var(--ui-hero-end));
+}
+
+.section-desc {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #999999;
+}
+
+.stat-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 20rpx -8rpx 0;
+}
+
+.stat-grid-item {
+  width: 33.3333%;
+  padding: 0 8rpx;
+  box-sizing: border-box;
+}
+
+.stat-card {
+  min-height: 148rpx;
+  border-radius: 28rpx;
+  padding: 20rpx;
+  background: #ffffff;
+  border: 1rpx solid #f0f0f0;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+.stat-label {
+  font-size: 22rpx;
+  color: #999999;
+}
+
+.stat-value {
+  margin-top: 12rpx;
+  font-size: 38rpx;
+  line-height: 1.15;
+  font-weight: 700;
+  color: #333333;
+}
+
+.stat-note {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: #999999;
+}
+
+.list-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+/* 待审列表内「申请资料」等可点行 */
+.list-row--tappable {
+  cursor: pointer;
+}
+
+.list-row--hover {
+  opacity: 0.88;
+}
+
+.list-row-cta {
+  color: var(--ui-link);
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.chip {
+  background: #e6f0ff;
+  color: #0066ff;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  margin-left: 8rpx;
+}
+
+.badge-warning {
+  color: #b54708;
+  background: #fffaeb;
+}
+
+.badge-success {
+  color: #067647;
+  background: #ecfdf3;
+}
+
+.badge-danger {
+  color: #b42318;
+  background: #fef3f2;
+}
+
+.field {
+  margin-top: 18rpx;
+}
+
+.field-label {
+  display: block;
+  font-size: 25rpx;
+  color: #666666;
+  margin-bottom: 12rpx;
+  font-weight: 600;
+}
+
+.field-input,
+.field-textarea {
+  width: 100%;
+  border: 1rpx solid #f0f0f0;
+  background: #f8fafc;
+  border-radius: 24rpx;
+  padding: 18rpx 20rpx;
+  box-sizing: border-box;
+  color: #333333;
+}
+
+.field-textarea {
+  min-height: 180rpx;
+}
+
+/**
+ * 与「请选择学校/年级」等关合态提示统一，用于
+ * - input/textarea 的 `placeholder-class`
+ * - 页面上可点的伪输入（picker 内 view）的未选态
+ */
+.form-placeholder-std {
+  color: #999999;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.actions button {
+  flex: 1;
+  min-width: 0;
+}
+
+.btn-primary,
+.btn-secondary {
+  margin-top: 0;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 28rpx;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--ui-primary) 0%, var(--ui-primary-mid) 100%);
+  color: #ffffff;
+  box-shadow: 0 14rpx 28rpx rgba(var(--ui-hero-shadow), 0.22);
+}
+
+.btn-secondary {
+  color: var(--ui-btn-secondary-fg);
+  background: var(--ui-btn-secondary-bg);
+  border: 1rpx solid var(--ui-btn-secondary-border);
+}
+
+.btn-primary[disabled],
+.btn-secondary[disabled] {
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40rpx 28rpx;
+}
+
+.empty-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #333333;
+}
+
+.empty-desc {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: #999999;
+}
+
+.surface-note {
+  margin-top: 20rpx;
+  padding: 20rpx 22rpx;
+  border-radius: 18rpx;
+  background: var(--ui-surface-note-bg);
+  color: var(--ui-surface-note-text);
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.muted {
+  color: #999999;
+}
+
+button {
+  background: initial;
+  padding: 0;
+}
+
+button:focus {
+  outline: 0;
+}
+
+button::after {
+  border: none;
+}
+
+/**
+ * 示范期主路径：分层背景与卡片阶梯（与 role-theme 的 CSS 变量配合）
+ * 在页面根节点追加 class 即可，例如 `shell-mesh` / `card-tier`。
+ */
+.shell-mesh {
+  position: relative;
+  overflow: hidden;
+}
+
+.shell-mesh::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 120% 80% at 10% 0%, var(--ui-radial) 0%, transparent 50%),
+    radial-gradient(ellipse 100% 60% at 100% 20%, var(--ui-radial) 0%, transparent 45%),
+    linear-gradient(180deg, var(--ui-page-bg-1) 0%, var(--ui-page-bg-2) 40%, #fafafa 100%);
+  opacity: 1;
+}
+
+.shell-mesh > view,
+.shell-mesh > scroll-view,
+.shell-mesh > form {
+  position: relative;
+  z-index: 1;
+}
+
+.card-tier {
+  position: relative;
+  border-radius: 32rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(240, 240, 240, 0.95);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.ui-icon-box {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
+  color: var(--ui-primary);
+  font-size: 34rpx;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.ui-capsule {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: #e6f0ff;
+  color: #0066ff;
+  font-size: 22rpx;
+  font-weight: 700;
+  box-sizing: border-box;
+}

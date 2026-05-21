@@ -1,0 +1,158 @@
+<view class="page-shell {{_roleThemeClass}}">
+  <view class="container profile-page">
+    <view class="page-hero">
+      <view class="page-hero-title">{{heroTitle}}</view>
+    </view>
+
+    <view class="section-header">
+      <view class="section-title">登录信息</view>
+    </view>
+    <view class="card profile-section-card">
+      <view class="field profile-field profile-field--avatar">
+        <text class="field-label">头像</text>
+        <view class="profile-account-avatar-wrap">
+          <image
+            wx:if="{{accAvatarUrl}}"
+            class="profile-account-avatar-pic"
+            src="{{accAvatarUrl}}"
+            mode="aspectFill"
+          />
+          <view wx:else class="profile-account-avatar-pic profile-account-avatar-pic--placeholder">
+            <view class="profile-account-avatar-placeholder-icon">+</view>
+            <view class="profile-account-avatar-placeholder-text">头像</view>
+          </view>
+          <view class="profile-account-avatar-edit-badge">编辑</view>
+          <button
+            class="profile-account-avatar-btn"
+            open-type="chooseAvatar"
+            bindchooseavatar="onAccChooseAvatar"
+          ></button>
+        </view>
+      </view>
+      <view class="field profile-field">
+        <text class="field-label">昵称</text>
+        <input
+          class="field-input profile-field-input"
+          placeholder="请输入昵称"
+          value="{{accNickname}}"
+          data-field="_nickname"
+          bindinput="onNicknameInlineInput"
+          bindblur="onNicknameInlineBlur"
+        />
+      </view>
+      <view class="field profile-field" bindtap="onEditPhone">
+        <text class="field-label">手机</text>
+        <view class="field-input profile-field-input profile-picker-line">{{accPhoneDisplay}}</view>
+      </view>
+    </view>
+
+    <block wx:for="{{sections}}" wx:key="key">
+      <view class="section-header">
+        <view class="section-title">{{item.title}}</view>
+      </view>
+      <view class="card profile-section-card">
+        <block wx:for="{{item.fields}}" wx:key="key" wx:for-item="field">
+          <view class="field profile-field">
+            <text wx:if="{{field.type !== 'time_chips'}}" class="field-label">{{field.label}}</text>
+            <picker
+              wx:if="{{field.type === 'picker_school'}}"
+              mode="selector"
+              range="{{field.range}}"
+              range-key="name"
+              value="{{field.pickerValue}}"
+              bindchange="onPickSchool"
+            >
+              <view
+                class="field-input profile-field-input profile-picker-line {{!field.hasValue ? 'form-placeholder-std' : ''}}"
+              >{{field.hasValue ? (field.lineText || '已选学校') : '请选择学校'}}</view>
+            </picker>
+            <picker
+              wx:elif="{{field.type === 'picker_grade'}}"
+              mode="selector"
+              range="{{field.range}}"
+              range-key="name"
+              value="{{field.pickerValue}}"
+              bindchange="onPickGrade"
+            >
+              <view
+                class="field-input profile-field-input profile-picker-line {{!field.hasValue ? 'form-placeholder-std' : ''}}"
+              >{{field.hasValue ? (field.lineText || '') : '请选择年级'}}</view>
+            </picker>
+            <!-- 时间选择 -->
+            <view wx:if="{{field.type === 'time_chips'}}" class="form-row form-row--time-chips">
+              <view class="field-label form-label">{{field.label}}</view>
+              <view class="form-time-chips-wrap">
+                <view class="form-time-chips-title">星期</view>
+                <view class="form-time-chips-row">
+                  <view 
+                    wx:for="{{field.weekChips}}" 
+                    wx:key="id" 
+                    class="form-time-chip {{item.on ? 'form-time-chip--on' : ''}}"
+                    bindtap="onToggleProfileTime"
+                    data-tfield="{{field.tfield}}"
+                    data-tkind="week"
+                    data-id="{{item.id}}"
+                  >{{item.name}}</view>
+                </view>
+                <view class="form-time-chips-title">时段</view>
+                <view class="form-time-chips-row">
+                  <view 
+                    wx:for="{{field.slotChips}}" 
+                    wx:key="id" 
+                    class="form-time-chip {{item.on ? 'form-time-chip--on' : ''}}"
+                    bindtap="onToggleProfileTime"
+                    data-tfield="{{field.tfield}}"
+                    data-tkind="slot"
+                    data-id="{{item.id}}"
+                  >{{item.name}}</view>
+                </view>
+              </view>
+            </view>
+            <view
+              wx:elif="{{field.type === 'readonly_text'}}"
+              class="field-input profile-field-input"
+              style="background:#f5f5f5; color:#666;"
+            >{{field.lineText}}</view>
+            <input
+              wx:elif="{{field.type === 'input'}}"
+              class="field-input profile-field-input"
+              placeholder="{{field.placeholder}}"
+              placeholder-class="form-placeholder-std"
+              value="{{field.value}}"
+              data-field="{{field.key}}"
+              bindinput="onInput"
+            />
+            <textarea
+              wx:elif="{{field.type === 'textarea'}}"
+              class="field-textarea profile-field-textarea"
+              placeholder="{{field.placeholder}}"
+              placeholder-class="form-placeholder-std"
+              value="{{field.value}}"
+              data-field="{{field.key}}"
+              bindinput="onInput"
+            />
+            <view class="profile-field-hint" wx:if="{{field.hint}}">{{field.hint}}</view>
+          </view>
+        </block>
+      </view>
+    </block>
+
+    <view class="section-header" wx:if="{{showTeacherContinuousMatch}}">
+      <view class="section-title">匹配偏好</view>
+    </view>
+    <view class="card profile-section-card" wx:if="{{showTeacherContinuousMatch}}">
+      <view class="field profile-field" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap">
+        <text class="field-label" style="flex: 1; min-width: 200rpx">持续匹配（连续结对意愿）</text>
+        <switch
+          checked="{{continuousMatchEnabled}}"
+          disabled="{{continuousMatchLoading}}"
+          bindchange="onContinuousMatchChange"
+        />
+      </view>
+    </view>
+
+    <view class="card profile-submit-card">
+      <button class="btn-primary profile-submit-btn" bindtap="onSubmit">保存</button>
+    </view>
+  </view>
+</view>

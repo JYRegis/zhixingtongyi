@@ -1,0 +1,22 @@
+<view class="page-shell">
+  <view class="container">
+    <view class="page-hero">
+      <view class="page-hero-title">通知</view>
+    </view>
+    <view class="card" wx:if="{{useApi}}" style="margin-bottom: 24rpx;">
+      <view class="list-row notif-switch-row">
+        <text>只看未读</text>
+        <switch checked="{{unreadOnly}}" bindchange="onUnreadToggle" color="#1677ff" />
+      </view>
+      <button class="primary-btn" bindtap="onMarkAllRead" style="margin-top:12rpx;">全部标记已读</button>
+    </view>
+    <view wx:if="{{loading}}" class="card empty-state">加载中...</view>
+    <view wx:elif="{{!list.length}}" class="card empty-state">暂无通知</view>
+    <block wx:for="{{list}}" wx:key="id">
+      <view class="card" style="margin-bottom: 18rpx;" data-id="{{item.id}}" bindtap="onRowTap">
+        <view class="list-row"><text>{{item.titleText}}</text><text>{{item.isRead ? '已读' : '未读'}}</text></view>
+        <view class="list-row"><text>{{item.contentText}}</text><text>{{item.timeText}}</text></view>
+      </view>
+    </block>
+  </view>
+</view>
