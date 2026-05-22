@@ -24,9 +24,11 @@
 
     <select id="selectRecords" resultType="com.rural.education.vo.VolunteerRecordVO">
         SELECT <include refid="recordColumns"/>,
-               t.real_name AS teacherName,
-               s.real_name AS studentName
+               tu.real_name AS teacherName,
+               su.real_name AS studentName
         FROM volunteer_record vr
+        LEFT JOIN user tu ON vr.teacher_id = tu.id
+        LEFT JOIN user su ON vr.student_id = su.id
         LEFT JOIN teacher_profile t ON vr.teacher_id = t.user_id
         LEFT JOIN student_profile s ON vr.student_id = s.user_id
         <where>
@@ -48,9 +50,11 @@
 
     <select id="selectPendingBySchool" resultType="com.rural.education.vo.VolunteerRecordVO">
         SELECT <include refid="recordColumns"/>,
-               t.real_name AS teacherName,
-               s.real_name AS studentName
+               tu.real_name AS teacherName,
+               su.real_name AS studentName
         FROM volunteer_record vr
+        LEFT JOIN user tu ON vr.teacher_id = tu.id
+        LEFT JOIN user su ON vr.student_id = su.id
         LEFT JOIN teacher_profile t ON vr.teacher_id = t.user_id
         LEFT JOIN student_profile s ON vr.student_id = s.user_id
         <where>
@@ -64,9 +68,11 @@
 
     <select id="selectRecordById" resultType="com.rural.education.vo.VolunteerRecordVO">
         SELECT <include refid="recordColumns"/>,
-               t.real_name AS teacherName,
-               s.real_name AS studentName
+               tu.real_name AS teacherName,
+               su.real_name AS studentName
         FROM volunteer_record vr
+        LEFT JOIN user tu ON vr.teacher_id = tu.id
+        LEFT JOIN user su ON vr.student_id = su.id
         LEFT JOIN teacher_profile t ON vr.teacher_id = t.user_id
         LEFT JOIN student_profile s ON vr.student_id = s.user_id
         WHERE vr.id = #{recordId}

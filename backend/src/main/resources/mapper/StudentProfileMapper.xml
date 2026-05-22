@@ -7,10 +7,12 @@
     <sql id="studentProfileColumns">
         sp.id,
         sp.user_id AS userId,
-        sp.real_name AS realName,
+        u.real_name AS realName,
         sp.school_id AS schoolId,
         sp.grade,
+        sp.subjects_needed AS subjectsNeededRaw,
         sp.subjects_needed AS subjectsNeeded,
+        sp.free_time AS freeTimeRaw,
         sp.free_time AS freeTime,
         sp.personality_desc AS personalityDesc,
         sp.profile_status AS profileStatus,
@@ -32,6 +34,18 @@
         LEFT JOIN school sc ON sp.school_id = sc.id
         WHERE sp.bind_admin_id = #{adminId}
         ORDER BY sp.update_time DESC
+    </select>
+
+    <select id="selectByUserId" parameterType="long" resultType="com.rural.education.vo.StudentVO">
+        SELECT
+        <include refid="studentProfileColumns"/>,
+        u.username,
+        u.phone,
+        sc.name AS schoolName
+        FROM student_profile sp
+        JOIN user u ON sp.user_id = u.id
+        LEFT JOIN school sc ON sp.school_id = sc.id
+        WHERE sp.user_id = #{userId}
     </select>
 
 </mapper>

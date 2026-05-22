@@ -6,7 +6,7 @@
 
     <select id="selectRecommendations" resultType="com.rural.education.vo.TeacherVO">
         SELECT tp.user_id AS teacherId,
-               tp.real_name AS realName,
+               u.real_name AS realName,
                u.avatar AS avatar,
                tp.school_id AS schoolId,
                sc.name AS schoolName,

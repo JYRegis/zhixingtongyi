@@ -9,4 +9,6 @@ import java.util.List;
 
 public interface StudentProfileMapper extends BaseMapper<StudentProfile> {
     List<StudentVO> selectManagedStudents(@Param("adminId") Long adminId);
+
+    StudentVO selectByUserId(@Param("userId") Long userId);
 }

@@ -8,6 +8,10 @@ import java.time.LocalDateTime;
 @Data
 @TableName("chat_participant")
 public class ChatParticipant {
+
+    public static final Integer DEFAULT_MEMBER = 1;
+    public static final Integer NON_DEFAULT_MEMBER = 0;
+
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long matchPairId;

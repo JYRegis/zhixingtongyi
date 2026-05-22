@@ -9,8 +9,10 @@ import com.rural.education.enums.AuditStatus;
 import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.StudentProfileMapper;
+import com.rural.education.model.mapper.UserMapper;
 import com.rural.education.dto.request.student.StudentProfileRequest;
 import com.rural.education.model.entity.StudentProfile;
+import com.rural.education.model.entity.User;
 import com.rural.education.vo.StudentVO;
 import com.rural.education.service.StudentService;
 import com.rural.education.service.UserAccessService;
@@ -25,6 +27,7 @@ import java.util.List;
 public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, StudentProfile> implements StudentService {
     private final UserAccessService userAccessService;
     private final StudentProfileMapper studentProfileMapper;
+    private final UserMapper userMapper;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -39,7 +42,6 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
                     null,
                     new LambdaUpdateWrapper<StudentProfile>()
                             .eq(StudentProfile::getUserId, userId)
-                            .set(StudentProfile::getRealName, request.getRealName())
                             .set(StudentProfile::getSchoolId, request.getSchoolId())
                             .set(StudentProfile::getGrade, request.getGrade())
                             .set(StudentProfile::getSubjectsNeeded, toJson(request.getSubjectsNeeded()))
@@ -53,7 +55,6 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
             }
             StudentProfile profile = new StudentProfile();
             profile.setUserId(userId);
-            profile.setRealName(request.getRealName());
             profile.setSchoolId(request.getSchoolId());
             profile.setGrade(request.getGrade());
             profile.setSubjectsNeeded(toJson(request.getSubjectsNeeded()));
@@ -63,6 +64,12 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
             profile.setBindAdminId(request.getBindAdminId());
             profile.setAuditStatus(AuditStatus.PENDING.getCode());
             studentProfileMapper.insert(profile);
+        }
+        if (request.getRealName() != null && !request.getRealName().isBlank()) {
+            userMapper.update(null,
+                    new LambdaUpdateWrapper<User>()
+                            .eq(User::getId, userId)
+                            .set(User::getRealName, request.getRealName()));
         }
     }
 
@@ -80,13 +87,18 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
                 null,
                 new LambdaUpdateWrapper<StudentProfile>()
                         .eq(StudentProfile::getUserId, userId)
-                        .set(StudentProfile::getRealName, request.getRealName())
                         .set(StudentProfile::getSchoolId, request.getSchoolId())
                         .set(StudentProfile::getGrade, request.getGrade())
                         .set(StudentProfile::getSubjectsNeeded, toJson(request.getSubjectsNeeded()))
                         .set(StudentProfile::getFreeTime, toJson(request.getFreeTime()))
                         .set(StudentProfile::getPersonalityDesc, request.getPersonalityDesc())
         );
+        if (request.getRealName() != null && !request.getRealName().isBlank()) {
+            userMapper.update(null,
+                    new LambdaUpdateWrapper<User>()
+                            .eq(User::getId, userId)
+                            .set(User::getRealName, request.getRealName()));
+        }
     }
 
     @Override
@@ -113,26 +125,12 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
     @Override
     public StudentVO getProfile(Long userId) {
         userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
-        StudentProfile row = studentProfileMapper.selectOne(
-                new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
-        );
-        if (row == null) {
+        StudentVO vo = studentProfileMapper.selectByUserId(userId);
+        if (vo == null) {
             return null;
         }
-        StudentVO vo = new StudentVO();
-        vo.setId(row.getId());
-        vo.setUserId(row.getUserId());
-        vo.setRealName(row.getRealName());
-        vo.setSchoolId(row.getSchoolId());
-        vo.setGrade(row.getGrade());
-        vo.setPersonalityDesc(row.getPersonalityDesc());
-        vo.setProfileStatus(row.getProfileStatus());
-        vo.setBindAdminId(row.getBindAdminId());
-        vo.setAuditStatus(row.getAuditStatus());
-        vo.setAuditTime(row.getAuditTime());
-        vo.setAuditNotes(row.getAuditNotes());
-        vo.setSubjectsNeeded(parseJsonList(row.getSubjectsNeeded()));
-        vo.setFreeTime(parseJsonMapList(row.getFreeTime()));
+        vo.setSubjectsNeeded(parseJsonList(vo.getSubjectsNeeded()));
+        vo.setFreeTime(parseJsonMapList(vo.getFreeTime()));
         return vo;
     }
 

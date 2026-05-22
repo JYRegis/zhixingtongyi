@@ -11,7 +11,11 @@ import com.rural.education.model.mapper.UserMapper;
 import com.rural.education.model.entity.AdminProfile;
 import com.rural.education.model.entity.User;
 import com.rural.education.service.UserAccessService;
+import com.rural.education.utils.CurrentUserContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,7 +37,54 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
     }
 
     @Override
+    public Integer getCurrentRole() {
+        Integer role = CurrentUserContext.getRole();
+        if (role != null) {
+            return role;
+        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getAuthorities() != null) {
+            for (GrantedAuthority ga : auth.getAuthorities()) {
+                String authority = ga.getAuthority();
+                if (authority != null && authority.startsWith("ROLE_")) {
+                    try {
+                        return Integer.parseInt(authority.substring(5));
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void requireRole(int role) {
+        Integer currentRole = getCurrentRole();
+        if (currentRole == null || currentRole != role) {
+            throw new BusinessException("无权限操作");
+        }
+    }
+
+    @Override
+    public void requireAnyRole(int... roles) {
+        Integer currentRole = getCurrentRole();
+        if (currentRole == null) {
+            throw new BusinessException("无权限操作");
+        }
+        for (int role : roles) {
+            if (currentRole == role) {
+                return;
+            }
+        }
+        throw new BusinessException("无权限操作");
+    }
+
+    @Override
     public void requireRole(Long userId, int role) {
+        Integer currentRole = getCurrentRole();
+        if (currentRole != null && currentRole == role) {
+            return;
+        }
         User user = requireUser(userId);
         if (user.getRole() == null || user.getRole() != role) {
             throw new BusinessException("无权限操作");
@@ -42,6 +93,15 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
 
     @Override
     public void requireAnyRole(Long userId, int... roles) {
+        Integer currentRole = getCurrentRole();
+        if (currentRole != null) {
+            for (int role : roles) {
+                if (currentRole == role) {
+                    return;
+                }
+            }
+            throw new BusinessException("无权限操作");
+        }
         User user = requireUser(userId);
         if (user.getRole() == null) {
             throw new BusinessException("无权限操作");
@@ -61,6 +121,10 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
 
     @Override
     public void requireL2WithPermission(Long userId, String permission) {
+        Integer currentRole = getCurrentRole();
+        if (currentRole != null && currentRole == UserRole.L1_ADMIN.getCode()) {
+            return;
+        }
         User user = requireUser(userId);
         if (user.getRole() != null && user.getRole() == UserRole.L1_ADMIN.getCode()) {
             return;

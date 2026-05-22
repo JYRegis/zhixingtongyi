@@ -8,6 +8,10 @@ import java.time.LocalDateTime;
 @Data
 @TableName("match_pair")
 public class MatchPair {
+
+    public static final Integer CONFIRMED = 1;
+    public static final Integer UNCONFIRMED = 0;
+
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long studentId;

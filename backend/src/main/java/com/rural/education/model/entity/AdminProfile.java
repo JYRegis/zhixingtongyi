@@ -11,7 +11,6 @@ public class AdminProfile {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long userId;
-    private String realName;
     private Long schoolId;
     private String regionCode;
     private String permissions;

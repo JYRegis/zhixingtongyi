@@ -14,7 +14,6 @@ import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.*;
 import com.rural.education.dto.request.admin.*;
 import com.rural.education.model.entity.*;
-import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.vo.*;
 import com.rural.education.service.AdminService;
 import com.rural.education.service.UserAccessService;
@@ -119,14 +118,17 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
                             .set(AdminProfile::getPermissions, permissions)
             );
         } else {
-            String displayName = existing.getUsername() != null ? existing.getUsername() : "二级管理员";
             AdminProfile newAdmin = new AdminProfile();
             newAdmin.setUserId(finalUserId);
-            newAdmin.setRealName(displayName);
             newAdmin.setSchoolId(request.getSchoolId());
             newAdmin.setRegionCode(request.getRegionCode());
             newAdmin.setPermissions(permissions);
             adminProfileMapper.insert(newAdmin);
+            String displayName = existing.getUsername() != null ? existing.getUsername() : "二级管理员";
+            userMapper.update(null,
+                    new LambdaUpdateWrapper<User>()
+                            .eq(User::getId, userId)
+                            .set(User::getRealName, displayName));
         }
     }
 
@@ -190,10 +192,10 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
             user.setPassword(UUID.randomUUID().toString());
             user.setRole(UserRole.STUDENT.getCode());
             user.setStatus(UserStatus.ENABLED.getCode());
+            user.setRealName(student.getRealName());
             userMapper.insert(user);
             StudentProfile sp = new StudentProfile();
             sp.setUserId(user.getId());
-            sp.setRealName(student.getRealName());
             sp.setSchoolId(student.getSchoolId() == null ? schoolId : student.getSchoolId());
             sp.setGrade(student.getGrade());
             sp.setSubjectsNeeded(toJson(student.getSubjectsNeeded()));
@@ -244,7 +246,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
                 wrapper.eq(StudentProfile::getSchoolId, admin.getSchoolId());
             }
         } else if (schoolId != null) {
-            // L1 按学校筛选
             wrapper.eq(StudentProfile::getSchoolId, schoolId);
         }
         Page<StudentProfile> p = studentProfileMapper.selectPage(new Page<>(current, pageSize), wrapper);
@@ -273,7 +274,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         LambdaQueryWrapper<TeacherProfile> wrapper = new LambdaQueryWrapper<TeacherProfile>()
                 .eq(TeacherProfile::getCertificationStatus, AuditStatus.PENDING.getCode())
                 .orderByDesc(TeacherProfile::getUpdateTime);
-        // L2 管理员只能审核自己学校的志愿者
         Long filterSchoolId = schoolId;
         User operator = userMapper.selectById(operatorId);
         if (operator != null && Integer.valueOf(UserRole.L2_ADMIN.getCode()).equals(operator.getRole())) {
@@ -316,9 +316,10 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         if (admin == null) {
             throw new BusinessException("管理员资料不存在");
         }
+        User u = userMapper.selectById(operatorId);
         AdminProfileVO vo = new AdminProfileVO();
         vo.setUserId(admin.getUserId());
-        vo.setRealName(admin.getRealName());
+        vo.setRealName(u != null ? u.getRealName() : null);
         vo.setSchoolId(admin.getSchoolId());
         vo.setRegionCode(admin.getRegionCode());
         if (admin.getSchoolId() != null) {
@@ -345,10 +346,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         LambdaUpdateWrapper<AdminProfile> wrapper = new LambdaUpdateWrapper<AdminProfile>()
                 .eq(AdminProfile::getUserId, operatorId);
         boolean hasUpdate = false;
-        if (request.getRealName() != null && !request.getRealName().isBlank()) {
-            wrapper.set(AdminProfile::getRealName, request.getRealName().trim());
-            hasUpdate = true;
-        }
         if (request.getRegionCode() != null) {
             wrapper.set(AdminProfile::getRegionCode, request.getRegionCode().trim());
             hasUpdate = true;
@@ -356,13 +353,18 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
         if (hasUpdate) {
             adminProfileMapper.update(null, wrapper);
         }
+        if (request.getRealName() != null && !request.getRealName().isBlank()) {
+            userMapper.update(null,
+                    new LambdaUpdateWrapper<User>()
+                            .eq(User::getId, operatorId)
+                            .set(User::getRealName, request.getRealName().trim()));
+        }
     }
 
     private StudentVO toStudentVO(StudentProfile row) {
         StudentVO vo = new StudentVO();
         vo.setId(row.getId());
         vo.setUserId(row.getUserId());
-        vo.setRealName(row.getRealName());
         vo.setSchoolId(row.getSchoolId());
         vo.setGrade(row.getGrade());
         vo.setPersonalityDesc(row.getPersonalityDesc());
@@ -378,9 +380,9 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
                 vo.setSchoolName(school.getName());
             }
         }
-        // 补充 user 表的 username 和 phone
         User user = userMapper.selectById(row.getUserId());
         if (user != null) {
+            vo.setRealName(user.getRealName());
             vo.setUsername(user.getUsername());
             vo.setPhone(user.getPhone());
         }
@@ -399,12 +401,11 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     private TeacherVO toTeacherVO(TeacherProfile row) {
         TeacherVO vo = new TeacherVO();
         vo.setUserId(row.getUserId());
-        vo.setRealName(row.getRealName());
-        // 获取用户头像
-        try {
-            User u = userMapper.selectById(row.getUserId());
-            if (u != null) vo.setAvatar(u.getAvatar());
-        } catch (Exception ignored) {}
+        User u = userMapper.selectById(row.getUserId());
+        if (u != null) {
+            vo.setRealName(u.getRealName());
+            vo.setAvatar(u.getAvatar());
+        }
         vo.setSchoolId(row.getSchoolId());
         if (row.getSchoolId() != null) {
             School school = schoolMapper.selectById(row.getSchoolId());
@@ -441,4 +442,3 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     }
 
 }
-

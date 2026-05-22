@@ -16,6 +16,11 @@ public class StudentVO {
     // Compatible with both profile(list/json) and managed-student(string/json)
     private Object subjectsNeeded;
     private Object freeTime;
+
+    // Raw JSON string fields for MyBatis mapping (DB VARCHAR → Java List)
+    private String subjectsNeededRaw;
+    private String freeTimeRaw;
+
     private String username;
     private String phone;
 

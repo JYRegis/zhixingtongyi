@@ -9,10 +9,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.dto.common.PageResponse;
 import com.rural.education.enums.MatchStatus;
 import com.rural.education.enums.NotificationType;
+import com.rural.education.enums.ProfileStatus;
 import com.rural.education.enums.UserRole;
 import com.rural.education.enums.UserStatus;
 import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.AlgorithmWeightConfigMapper;
+import org.springframework.dao.DuplicateKeyException;
 import com.rural.education.model.mapper.MatchPairMapper;
 import com.rural.education.model.mapper.StudentProfileMapper;
 import com.rural.education.model.mapper.TeacherProfileMapper;
@@ -24,7 +26,6 @@ import com.rural.education.dto.request.match.UnbindConfirmRequest;
 import com.rural.education.model.entity.AlgorithmWeightConfig;
 import com.rural.education.model.entity.MatchPair;
 import com.rural.education.model.entity.StudentProfile;
-import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.model.entity.User;
 import com.rural.education.vo.MatchPairVO;
 import com.rural.education.vo.TeacherVO;
@@ -148,7 +149,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         if (profile == null) {
             throw new BusinessException("请先完善并提交学生资料");
         }
-        if (!Integer.valueOf(1).equals(profile.getProfileStatus()) ||
+        if (!Integer.valueOf(ProfileStatus.READY.getCode()).equals(profile.getProfileStatus()) ||
                 profile.getGrade() == null ||
                 profile.getSubjectsNeeded() == null ||
                 profile.getFreeTime() == null) {
@@ -168,7 +169,25 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         pair.setTeacherId(request.getTeacherId());
         pair.setMatchStatus(MatchStatus.APPLIED.getCode());
         pair.setApplyTime(LocalDateTime.now());
-        matchPairMapper.insert(pair);
+        try {
+            matchPairMapper.insert(pair);
+        } catch (DuplicateKeyException e) {
+            MatchPair existing = matchPairMapper.selectOne(
+                    new LambdaQueryWrapper<MatchPair>()
+                            .eq(MatchPair::getStudentId, userId)
+                            .eq(MatchPair::getTeacherId, request.getTeacherId())
+                            .orderByDesc(MatchPair::getId)
+                            .last("LIMIT 1")
+            );
+            if (existing != null && existing.getMatchStatus() != null
+                    && existing.getMatchStatus().intValue() == MatchStatus.APPLIED.getCode()) {
+                throw new BusinessException("已存在待处理的申请，请勿重复操作");
+            } else if (existing != null && existing.getMatchStatus() != null
+                    && existing.getMatchStatus().intValue() == MatchStatus.ACCEPTED.getCode()) {
+                throw new BusinessException("已存在生效中的结对关系");
+            }
+            throw new BusinessException("已存在相关的结对记录");
+        }
         NotificationEvent event = new NotificationEvent();
         event.setUserId(request.getTeacherId());
         event.setType(NotificationType.MATCH_APPLY.getCode());
@@ -181,7 +200,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         } catch (Exception e) {
             throw new BusinessException("参数序列化失败");
         }
-        notificationAsyncPublisher.publish(event);
+        notificationAsyncPublisher.publishAfterCommit(event);
         evictRecommendationCache(userId);
     }
 
@@ -208,13 +227,17 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         }
         Long studentId = pair.getStudentId();
         if ("accept".equalsIgnoreCase(request.getAction())) {
-            matchPairMapper.update(
+            int updated = matchPairMapper.update(
                     null,
                     new LambdaUpdateWrapper<MatchPair>()
                             .eq(MatchPair::getId, applicationId)
+                            .eq(MatchPair::getMatchStatus, MatchStatus.APPLIED.getCode())
                             .set(MatchPair::getMatchStatus, MatchStatus.ACCEPTED.getCode())
                             .set(MatchPair::getAcceptTime, LocalDateTime.now())
             );
+            if (updated == 0) {
+                throw new BusinessException("该申请已被处理");
+            }
             initChatParticipants(applicationId, pair.getStudentId(), pair.getTeacherId());
 
             NotificationEvent event = new NotificationEvent();
@@ -229,15 +252,19 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             } catch (Exception e) {
                 throw new BusinessException("参数序列化失败");
             }
-            notificationAsyncPublisher.publish(event);
+            notificationAsyncPublisher.publishAfterCommit(event);
         } else {
-            matchPairMapper.update(
+            int updated = matchPairMapper.update(
                     null,
                     new LambdaUpdateWrapper<MatchPair>()
                             .eq(MatchPair::getId, applicationId)
+                            .eq(MatchPair::getMatchStatus, MatchStatus.APPLIED.getCode())
                             .set(MatchPair::getMatchStatus, MatchStatus.REJECTED.getCode())
                             .set(MatchPair::getRejectReason, request.getReason())
             );
+            if (updated == 0) {
+                throw new BusinessException("该申请已被处理");
+            }
             NotificationEvent event = new NotificationEvent();
             event.setUserId(studentId);
             event.setType(NotificationType.MATCH_REJECT.getCode());
@@ -250,7 +277,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             } catch (Exception e) {
                 throw new BusinessException("参数序列化失败");
             }
-            notificationAsyncPublisher.publish(event);
+            notificationAsyncPublisher.publishAfterCommit(event);
         }
         evictRecommendationCache(studentId);
     }
@@ -290,10 +317,10 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                     vo.setUnbindRequestTime(pair.getUnbindRequestTime());
                     vo.setUnbindAcceptTime(pair.getUnbindAcceptTime());
                     vo.setUnbindRejectReason(pair.getUnbindRejectReason());
-                    fillPairNames(vo);
                     return vo;
                 })
                 .toList();
+        fillPairNamesBatch(vos);
         PageResponse<MatchPairVO> response = new PageResponse<>();
         response.setRecords(vos);
         response.setCurrent(current);
@@ -337,25 +364,25 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
 
         // Auto-confirm the initiator
         if (userId.equals(studentId)) {
-            wrapper.set(MatchPair::getStudentUnbindConfirm, 1)
+            wrapper.set(MatchPair::getStudentUnbindConfirm, MatchPair.CONFIRMED)
                    .set(MatchPair::getStudentUnbindConfirmTime, LocalDateTime.now())
-                   .set(MatchPair::getTeacherUnbindConfirm, 0)
+                   .set(MatchPair::getTeacherUnbindConfirm, MatchPair.UNCONFIRMED)
                    .set(MatchPair::getTeacherUnbindConfirmTime, null)
-                   .set(MatchPair::getAdminUnbindConfirm, 0)
+                   .set(MatchPair::getAdminUnbindConfirm, MatchPair.UNCONFIRMED)
                    .set(MatchPair::getAdminUnbindConfirmTime, null);
         } else if (userId.equals(teacherId)) {
-            wrapper.set(MatchPair::getStudentUnbindConfirm, 0)
+            wrapper.set(MatchPair::getStudentUnbindConfirm, MatchPair.UNCONFIRMED)
                    .set(MatchPair::getStudentUnbindConfirmTime, null)
-                   .set(MatchPair::getTeacherUnbindConfirm, 1)
+                   .set(MatchPair::getTeacherUnbindConfirm, MatchPair.CONFIRMED)
                    .set(MatchPair::getTeacherUnbindConfirmTime, LocalDateTime.now())
-                   .set(MatchPair::getAdminUnbindConfirm, 0)
+                   .set(MatchPair::getAdminUnbindConfirm, MatchPair.UNCONFIRMED)
                    .set(MatchPair::getAdminUnbindConfirmTime, null);
         } else {
-            wrapper.set(MatchPair::getStudentUnbindConfirm, 0)
+            wrapper.set(MatchPair::getStudentUnbindConfirm, MatchPair.UNCONFIRMED)
                    .set(MatchPair::getStudentUnbindConfirmTime, null)
-                   .set(MatchPair::getTeacherUnbindConfirm, 0)
+                   .set(MatchPair::getTeacherUnbindConfirm, MatchPair.UNCONFIRMED)
                    .set(MatchPair::getTeacherUnbindConfirmTime, null)
-                   .set(MatchPair::getAdminUnbindConfirm, 1)
+                   .set(MatchPair::getAdminUnbindConfirm, MatchPair.CONFIRMED)
                    .set(MatchPair::getAdminUnbindConfirmTime, LocalDateTime.now());
         }
 
@@ -374,15 +401,15 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         }
         if (!userId.equals(studentId)) {
             unbindEvent.setUserId(studentId);
-            notificationAsyncPublisher.publish(unbindEvent);
+            notificationAsyncPublisher.publishAfterCommit(unbindEvent);
         }
         if (!userId.equals(teacherId)) {
             unbindEvent.setUserId(teacherId);
-            notificationAsyncPublisher.publish(unbindEvent);
+            notificationAsyncPublisher.publishAfterCommit(unbindEvent);
         }
         if (adminId != null && !userId.equals(adminId)) {
             unbindEvent.setUserId(adminId);
-            notificationAsyncPublisher.publish(unbindEvent);
+            notificationAsyncPublisher.publishAfterCommit(unbindEvent);
         }
     }
 
@@ -429,30 +456,30 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             Long unbindRequester = pair.getUnbindRequestBy();
             if (unbindRequester != null && !unbindRequester.equals(userId)) {
                 rejectEvent.setUserId(unbindRequester);
-                notificationAsyncPublisher.publish(rejectEvent);
+                notificationAsyncPublisher.publishAfterCommit(rejectEvent);
             }
             for (Long uid : new Long[]{studentId, teacherId, adminId}) {
                 if (uid != null && !uid.equals(userId) && !uid.equals(unbindRequester)) {
                     rejectEvent.setUserId(uid);
-                    notificationAsyncPublisher.publish(rejectEvent);
+                    notificationAsyncPublisher.publishAfterCommit(rejectEvent);
                 }
             }
             return;
         }
         if ("STUDENT".equalsIgnoreCase(request.getRole())) {
             matchPairMapper.update(null, new LambdaUpdateWrapper<MatchPair>().eq(MatchPair::getId, pairId)
-                    .set(MatchPair::getStudentUnbindConfirm, 1).set(MatchPair::getStudentUnbindConfirmTime, LocalDateTime.now()));
+                    .set(MatchPair::getStudentUnbindConfirm, MatchPair.CONFIRMED).set(MatchPair::getStudentUnbindConfirmTime, LocalDateTime.now()));
         } else if ("TEACHER".equalsIgnoreCase(request.getRole())) {
             matchPairMapper.update(null, new LambdaUpdateWrapper<MatchPair>().eq(MatchPair::getId, pairId)
-                    .set(MatchPair::getTeacherUnbindConfirm, 1).set(MatchPair::getTeacherUnbindConfirmTime, LocalDateTime.now()));
+                    .set(MatchPair::getTeacherUnbindConfirm, MatchPair.CONFIRMED).set(MatchPair::getTeacherUnbindConfirmTime, LocalDateTime.now()));
         } else {
             matchPairMapper.update(null, new LambdaUpdateWrapper<MatchPair>().eq(MatchPair::getId, pairId)
-                    .set(MatchPair::getAdminUnbindConfirm, 1).set(MatchPair::getAdminUnbindConfirmTime, LocalDateTime.now()));
+                    .set(MatchPair::getAdminUnbindConfirm, MatchPair.CONFIRMED).set(MatchPair::getAdminUnbindConfirmTime, LocalDateTime.now()));
         }
         MatchPair now = matchPairMapper.selectById(pairId);
-        boolean done = Integer.valueOf(1).equals(now.getStudentUnbindConfirm())
-                && Integer.valueOf(1).equals(now.getTeacherUnbindConfirm())
-                && Integer.valueOf(1).equals(now.getAdminUnbindConfirm());
+        boolean done = MatchPair.CONFIRMED.equals(now.getStudentUnbindConfirm())
+                && MatchPair.CONFIRMED.equals(now.getTeacherUnbindConfirm())
+                && MatchPair.CONFIRMED.equals(now.getAdminUnbindConfirm());
         if (done) {
             matchPairMapper.update(null, new LambdaUpdateWrapper<MatchPair>().eq(MatchPair::getId, pairId)
                     .set(MatchPair::getMatchStatus, MatchStatus.UNBOUND.getCode()).set(MatchPair::getUnbindAcceptTime, LocalDateTime.now()));
@@ -471,7 +498,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             for (Long uid : new Long[]{studentId, teacherId, adminId}) {
                 if (uid != null) {
                     doneEvent.setUserId(uid);
-                    notificationAsyncPublisher.publish(doneEvent);
+                    notificationAsyncPublisher.publishAfterCommit(doneEvent);
                 }
             }
         }
@@ -566,7 +593,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         teacher.setMatchPairId(pairId);
         teacher.setUserId(teacherId);
         teacher.setParticipantRole(com.rural.education.enums.UserRole.TEACHER.getCode());
-        teacher.setIsDefaultMember(1);
+        teacher.setIsDefaultMember(com.rural.education.model.entity.ChatParticipant.DEFAULT_MEMBER);
         teacher.setJoinedTime(java.time.LocalDateTime.now());
         chatParticipantMapper.insert(teacher);
 
@@ -574,7 +601,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         student.setMatchPairId(pairId);
         student.setUserId(studentId);
         student.setParticipantRole(com.rural.education.enums.UserRole.STUDENT.getCode());
-        student.setIsDefaultMember(1);
+        student.setIsDefaultMember(com.rural.education.model.entity.ChatParticipant.DEFAULT_MEMBER);
         student.setJoinedTime(java.time.LocalDateTime.now());
         chatParticipantMapper.insert(student);
 
@@ -587,7 +614,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             admin.setMatchPairId(pairId);
             admin.setUserId(studentProfile.getBindAdminId());
             admin.setParticipantRole(com.rural.education.enums.UserRole.L2_ADMIN.getCode());
-            admin.setIsDefaultMember(1);
+            admin.setIsDefaultMember(com.rural.education.model.entity.ChatParticipant.DEFAULT_MEMBER);
             admin.setJoinedTime(java.time.LocalDateTime.now());
             chatParticipantMapper.insert(admin);
         }
@@ -615,7 +642,6 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         }
     }
 
-    @SuppressWarnings("unchecked")
     private List<String> parseJsonListFromObj(Object obj) {
         if (obj == null) return List.of();
         if (obj instanceof List<?> list) {
@@ -703,32 +729,61 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             return;
         }
         if (vo.getStudentId() != null && (vo.getStudentName() == null || vo.getStudentName().isBlank())) {
-            StudentProfile sp = studentProfileMapper.selectOne(
-                    new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, vo.getStudentId())
-            );
-            if (sp != null) {
-                vo.setStudentName(sp.getRealName());
+            User studentUser = userMapper.selectById(vo.getStudentId());
+            if (studentUser != null) {
+                vo.setStudentName(studentUser.getRealName());
+                if (vo.getStudentAvatar() == null) {
+                    vo.setStudentAvatar(studentUser.getAvatar());
+                }
             }
         }
         if (vo.getTeacherId() != null && (vo.getTeacherName() == null || vo.getTeacherName().isBlank())) {
-            TeacherProfile tp = teacherProfileMapper.selectOne(
-                    new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, vo.getTeacherId())
-            );
-            if (tp != null) {
-                vo.setTeacherName(tp.getRealName());
-            }
-        }
-        // 填充头像：从 user 表取 avatar
-        if (vo.getStudentId() != null && vo.getStudentAvatar() == null) {
-            User studentUser = userMapper.selectById(vo.getStudentId());
-            if (studentUser != null && studentUser.getAvatar() != null) {
-                vo.setStudentAvatar(studentUser.getAvatar());
-            }
-        }
-        if (vo.getTeacherId() != null && vo.getTeacherAvatar() == null) {
             User teacherUser = userMapper.selectById(vo.getTeacherId());
-            if (teacherUser != null && teacherUser.getAvatar() != null) {
-                vo.setTeacherAvatar(teacherUser.getAvatar());
+            if (teacherUser != null) {
+                vo.setTeacherName(teacherUser.getRealName());
+                if (vo.getTeacherAvatar() == null) {
+                    vo.setTeacherAvatar(teacherUser.getAvatar());
+                }
+            }
+        }
+    }
+
+    private void fillPairNamesBatch(List<MatchPairVO> vos) {
+        if (vos == null || vos.isEmpty()) {
+            return;
+        }
+        Set<Long> userIds = new HashSet<>();
+        for (MatchPairVO vo : vos) {
+            if (vo.getStudentId() != null && (vo.getStudentName() == null || vo.getStudentName().isBlank())) {
+                userIds.add(vo.getStudentId());
+            }
+            if (vo.getTeacherId() != null && (vo.getTeacherName() == null || vo.getTeacherName().isBlank())) {
+                userIds.add(vo.getTeacherId());
+            }
+        }
+        if (userIds.isEmpty()) {
+            return;
+        }
+        Map<Long, User> userMap = new HashMap<>();
+        userMapper.selectBatchIds(userIds).forEach(u -> userMap.put(u.getId(), u));
+        for (MatchPairVO vo : vos) {
+            if (vo.getStudentId() != null && (vo.getStudentName() == null || vo.getStudentName().isBlank())) {
+                User su = userMap.get(vo.getStudentId());
+                if (su != null) {
+                    vo.setStudentName(su.getRealName());
+                    if (vo.getStudentAvatar() == null) {
+                        vo.setStudentAvatar(su.getAvatar());
+                    }
+                }
+            }
+            if (vo.getTeacherId() != null && (vo.getTeacherName() == null || vo.getTeacherName().isBlank())) {
+                User tu = userMap.get(vo.getTeacherId());
+                if (tu != null) {
+                    vo.setTeacherName(tu.getRealName());
+                    if (vo.getTeacherAvatar() == null) {
+                        vo.setTeacherAvatar(tu.getAvatar());
+                    }
+                }
             }
         }
     }
@@ -740,7 +795,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                 .eq(MatchPair::getMatchStatus, MatchStatus.UNBIND_CONFIRMING.getCode())
                 .eq(MatchPair::getUnbindAdminId, userId)
                 .orderByDesc(MatchPair::getUnbindRequestTime);
-        return matchPairMapper.selectList(wrapper).stream().map(pair -> {
+        List<MatchPairVO> vos = matchPairMapper.selectList(wrapper).stream().map(pair -> {
             MatchPairVO vo = new MatchPairVO();
             vo.setId(pair.getId());
             vo.setPairId(pair.getId());
@@ -752,9 +807,10 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             vo.setTeacherUnbindConfirm(pair.getTeacherUnbindConfirm());
             vo.setAdminUnbindConfirm(pair.getAdminUnbindConfirm());
             vo.setUnbindRejectReason(pair.getUnbindRejectReason());
-            fillPairNames(vo);
             return vo;
         }).toList();
+        fillPairNamesBatch(vos);
+        return vos;
     }
 }
 

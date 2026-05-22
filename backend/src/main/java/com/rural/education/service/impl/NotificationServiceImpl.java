@@ -84,7 +84,7 @@ public class NotificationServiceImpl extends ServiceImpl<MessageNotificationMapp
         } catch (Exception e) {
             throw new BusinessException("templateData 序列化失败");
         }
-        notificationAsyncPublisher.publish(event);
+        notificationAsyncPublisher.publishAfterCommit(event);
     }
 
     private Integer typeFromCode(String code) {

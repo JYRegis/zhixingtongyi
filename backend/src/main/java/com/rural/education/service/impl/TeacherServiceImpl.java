@@ -9,6 +9,7 @@ import com.rural.education.enums.AuditStatus;
 import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.TeacherProfileMapper;
+import com.rural.education.model.mapper.UserMapper;
 import com.rural.education.dto.request.teacher.TeacherProfileRequest;
 import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.model.entity.User;
@@ -29,6 +30,7 @@ import java.util.List;
 public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, TeacherProfile> implements TeacherService {
     private final UserAccessService userAccessService;
     private final TeacherProfileMapper teacherProfileMapper;
+    private final UserMapper userMapper;
     private final ObjectMapper objectMapper;
     private final StringRedisTemplate redisTemplate;
 
@@ -44,7 +46,6 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
         }
         TeacherProfile profile = new TeacherProfile();
         profile.setUserId(userId);
-        profile.setRealName(request.getRealName());
         profile.setSchoolId(request.getSchoolId());
         profile.setGrade(request.getGrade());
         profile.setFreeTime(toJson(request.getFreeTime()));
@@ -54,6 +55,12 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
         profile.setCertificationStatus(AuditStatus.PENDING.getCode());
         profile.setContinuousMatch(1);
         teacherProfileMapper.insert(profile);
+        if (request.getRealName() != null && !request.getRealName().isBlank()) {
+            userMapper.update(null,
+                    new LambdaUpdateWrapper<User>()
+                            .eq(User::getId, userId)
+                            .set(User::getRealName, request.getRealName()));
+        }
         evictRecommendationCache();
     }
 
@@ -65,7 +72,6 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
                 null,
                 new LambdaUpdateWrapper<TeacherProfile>()
                         .eq(TeacherProfile::getUserId, userId)
-                        .set(TeacherProfile::getRealName, request.getRealName())
                         .set(TeacherProfile::getSchoolId, request.getSchoolId())
                         .set(TeacherProfile::getGrade, request.getGrade())
                         .set(TeacherProfile::getFreeTime, toJson(request.getFreeTime()))
@@ -74,6 +80,12 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
                         .set(TeacherProfile::getPersonalityDesc, request.getPersonalityDesc())
                         .set(TeacherProfile::getCertificationStatus, AuditStatus.PENDING.getCode())
         );
+        if (request.getRealName() != null && !request.getRealName().isBlank()) {
+            userMapper.update(null,
+                    new LambdaUpdateWrapper<User>()
+                            .eq(User::getId, userId)
+                            .set(User::getRealName, request.getRealName()));
+        }
         evictRecommendationCache();
     }
 
@@ -86,13 +98,11 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
         if (row == null) {
             return null;
         }
+        User u = userMapper.selectById(userId);
         TeacherVO vo = new TeacherVO();
         vo.setUserId(row.getUserId());
-        vo.setRealName(row.getRealName());
-        try {
-            User u = userAccessService.requireUser(row.getUserId());
-            if (u != null) vo.setAvatar(u.getAvatar());
-        } catch (Exception ignored) {}
+        vo.setRealName(u != null ? u.getRealName() : null);
+        if (u != null) vo.setAvatar(u.getAvatar());
         vo.setSchoolId(row.getSchoolId());
         vo.setGrade(row.getGrade());
         vo.setPersonalSkills(row.getPersonalSkills());
@@ -116,7 +126,6 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
                         .eq(TeacherProfile::getUserId, userId)
                         .set(TeacherProfile::getContinuousMatch, Boolean.TRUE.equals(enabled) ? 1 : 0)
         );
-        // 清除所有学员的推荐缓存，下次请求会重新计算
         evictRecommendationCache();
     }
 
@@ -152,7 +161,6 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
 
     private void evictRecommendationCache() {
         try {
-            // 使用 SCAN 替代 KEYS，避免阻塞 Redis
             var keys = new java.util.HashSet<String>();
             try (var cursor = redisTemplate.scan(
                     org.springframework.data.redis.core.ScanOptions.scanOptions()
@@ -169,4 +177,3 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
         }
     }
 }
-

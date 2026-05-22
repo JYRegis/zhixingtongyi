@@ -7,9 +7,9 @@
     <select id="selectPendingApplications" parameterType="long" resultType="com.rural.education.vo.MatchPairVO">
         SELECT mp.id,
                mp.student_id AS studentId,
-               sp.real_name AS studentName,
+               su.real_name AS studentName,
                mp.teacher_id AS teacherId,
-               tp.real_name AS teacherName,
+               tu.real_name AS teacherName,
                mp.apply_time AS applyTime,
                mp.match_status AS matchStatus,
                sp.free_time AS studentFreeTime,
@@ -17,6 +17,8 @@
         FROM match_pair mp
         LEFT JOIN student_profile sp ON sp.user_id = mp.student_id
         LEFT JOIN teacher_profile tp ON tp.user_id = mp.teacher_id
+        LEFT JOIN user su ON su.id = mp.student_id
+        LEFT JOIN user tu ON tu.id = mp.teacher_id
         WHERE mp.teacher_id = #{teacherId}
           AND mp.match_status = 0
         ORDER BY mp.apply_time DESC

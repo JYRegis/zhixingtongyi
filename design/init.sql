@@ -27,6 +27,7 @@ CREATE TABLE `user` (
   `role` tinyint DEFAULT NULL COMMENT '角色：0-一级管理员，1-二级管理员，2-教师（志愿者），3-学员；NULL=新用户未选择身份',
   `phone` varchar(20) DEFAULT NULL COMMENT '手机号',
   `wechat_openid` varchar(128) DEFAULT NULL COMMENT '微信OpenID',
+  `real_name` varchar(64) DEFAULT NULL COMMENT '真实姓名',
   `avatar` varchar(512) DEFAULT NULL COMMENT '头像URL',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '状态：0-禁用，1-启用',
   `deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
@@ -65,7 +66,6 @@ DROP TABLE IF EXISTS `admin_profile`;
 CREATE TABLE `admin_profile` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `user_id` bigint NOT NULL COMMENT '关联用户ID',
-  `real_name` varchar(64) NOT NULL COMMENT '真实姓名',
   `school_id` bigint DEFAULT NULL COMMENT '管理的学校ID（二级管理员必填）',
   `region_code` varchar(32) DEFAULT NULL COMMENT '管理区域编码（可多级）',
   `permissions` json DEFAULT NULL COMMENT '权限配置（JSON数组）',
@@ -87,7 +87,6 @@ DROP TABLE IF EXISTS `teacher_profile`;
 CREATE TABLE `teacher_profile` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `user_id` bigint NOT NULL COMMENT '关联用户ID',
-  `real_name` varchar(64) NOT NULL COMMENT '真实姓名',
   `school_id` bigint DEFAULT NULL COMMENT '所在学校ID（关联school表）',
   `grade` varchar(32) DEFAULT NULL COMMENT '年级（大学生/高中生）',
   `free_time` json NOT NULL COMMENT '空闲时间段（JSON数组）',
@@ -117,7 +116,6 @@ DROP TABLE IF EXISTS `student_profile`;
 CREATE TABLE `student_profile` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
   `user_id` bigint NOT NULL COMMENT '关联用户ID',
-  `real_name` varchar(64) NOT NULL COMMENT '真实姓名',
   `school_id` bigint NOT NULL COMMENT '所在学校ID',
   `grade` varchar(32) NOT NULL COMMENT '年级（如：初三）',
   `emergency_weight` int DEFAULT NULL COMMENT '需求紧急程度权重（系统计算）',
@@ -221,7 +219,6 @@ CREATE TABLE `meeting` (
   `meeting_password` varchar(64) DEFAULT NULL COMMENT '会议密码（可选）',
   `created_by` bigint NOT NULL COMMENT '创建人（管理员用户ID）',
   `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态：0-未开始，1-进行中，2-已结束，3-已取消',
-  `record_url` varchar(512) DEFAULT NULL COMMENT '录制文件URL',
   `deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -318,6 +315,7 @@ CREATE TABLE `volunteer_record` (
   `student_confirm_time` datetime DEFAULT NULL COMMENT '学生确认时间',
   `admin_audit_time` datetime DEFAULT NULL COMMENT '管理员审核时间',
   `auditor_id` bigint DEFAULT NULL COMMENT '审核的二级管理员ID',
+  `deleted` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `version` int NOT NULL DEFAULT 0 COMMENT '乐观锁版本号',

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rural.education.dto.request.chat.SendMessageRequest;
+import com.rural.education.enums.AuditStatus;
 import com.rural.education.enums.MessageType;
 import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BusinessException;
@@ -15,9 +16,8 @@ import com.rural.education.model.entity.User;
 import com.rural.education.enums.MatchStatus;
 import com.rural.education.model.entity.School;
 import com.rural.education.model.entity.StudentProfile;
-import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.model.mapper.SchoolMapper;
-import com.rural.education.model.mapper.TeacherProfileMapper;
+import com.rural.education.model.mapper.UserMapper;
 import com.rural.education.vo.ChatConversationVO;
 import com.rural.education.vo.ChatParticipantVO;
 import com.rural.education.model.mapper.AdminProfileMapper;
@@ -33,7 +33,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +45,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
     private final StudentProfileMapper studentProfileMapper;
     private final AdminProfileMapper adminProfileMapper;
     private final UserAccessService userAccessService;
-    private final TeacherProfileMapper teacherProfileMapper;
+    private final UserMapper userMapper;
     private final SchoolMapper schoolMapper;
 
     @Override
@@ -86,7 +87,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
         vo.setMessageType(message.getMessageType());
         vo.setContent(message.getContent());
         vo.setSendTime(message.getSendTime());
-        vo.setSenderName(resolveSenderName(userId));
+        vo.setSenderName(resolveName(userId));
         return vo;
     }
 
@@ -113,7 +114,13 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
             wrapper.lt(ChatMessage::getId, lastMessageId);
         }
         Page<ChatMessage> page = new Page<>(1, size);
-        return chatMessageMapper.selectPage(page, wrapper).getRecords().stream()
+        List<ChatMessage> messages = chatMessageMapper.selectPage(page, wrapper).getRecords();
+        Set<Long> senderIds = messages.stream().map(ChatMessage::getSenderId).collect(Collectors.toSet());
+        Map<Long, User> userMap = new HashMap<>();
+        if (!senderIds.isEmpty()) {
+            userMapper.selectBatchIds(senderIds).forEach(u -> userMap.put(u.getId(), u));
+        }
+        return messages.stream()
                 .map(m -> {
                     ChatMessageVO vo = new ChatMessageVO();
                     vo.setId(m.getId());
@@ -123,7 +130,8 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                     vo.setContent(m.getContent());
                     vo.setSendTime(m.getSendTime());
                     vo.setReadTime(m.getReadTime());
-                    vo.setSenderName(resolveSenderName(m.getSenderId()));
+                    User sender = userMap.get(m.getSenderId());
+                    vo.setSenderName(sender != null ? sender.getRealName() : null);
                     return vo;
                 })
                 .toList();
@@ -192,7 +200,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
         participant.setMatchPairId(pairId);
         participant.setUserId(targetUserId);
         participant.setParticipantRole(UserRole.L2_ADMIN.getCode());
-        participant.setIsDefaultMember(0);
+        participant.setIsDefaultMember(ChatParticipant.NON_DEFAULT_MEMBER);
         participant.setJoinedTime(LocalDateTime.now());
         chatParticipantMapper.insert(participant);
     }
@@ -210,7 +218,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
         if (participant == null) {
             throw new BusinessException("该参与者不在会话中");
         }
-        if (Integer.valueOf(1).equals(participant.getIsDefaultMember())) {
+        if (ChatParticipant.DEFAULT_MEMBER.equals(participant.getIsDefaultMember())) {
             throw new BusinessException("默认成员不能退出会话");
         }
         participant.setLeftTime(LocalDateTime.now());
@@ -242,6 +250,11 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                         .eq(ChatParticipant::getMatchPairId, pairId)
                         .isNull(ChatParticipant::getLeftTime)
         );
+        Set<Long> userIds = list.stream().map(ChatParticipant::getUserId).collect(Collectors.toSet());
+        Map<Long, User> userMap = new HashMap<>();
+        if (!userIds.isEmpty()) {
+            userMapper.selectBatchIds(userIds).forEach(u -> userMap.put(u.getId(), u));
+        }
         return list.stream().map(p -> {
             ChatParticipantVO vo = new ChatParticipantVO();
             vo.setId(p.getId());
@@ -251,14 +264,9 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
             vo.setIsDefaultMember(p.getIsDefaultMember());
             vo.setJoinedTime(p.getJoinedTime());
             vo.setLeftTime(p.getLeftTime());
-            vo.setRealName(resolveParticipantName(p.getUserId()));
-            // 获取用户头像
-            try {
-                User pUser = userAccessService.requireUser(p.getUserId());
-                vo.setAvatar(pUser.getAvatar());
-            } catch (Exception e) {
-                vo.setAvatar(null);
-            }
+            User pUser = userMap.get(p.getUserId());
+            vo.setRealName(pUser != null ? pUser.getRealName() : null);
+            vo.setAvatar(pUser != null ? pUser.getAvatar() : null);
             return vo;
         }).toList();
     }
@@ -280,18 +288,27 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
             if (admin == null || admin.getSchoolId() == null) {
                 return List.of();
             }
-            // L2 只能看到自己代管的学生的结对会话
             List<Long> studentIds = studentProfileMapper.selectList(
                     new LambdaQueryWrapper<StudentProfile>()
                             .eq(StudentProfile::getBindAdminId, userId)
-                            .eq(StudentProfile::getAuditStatus, 1)
+                            .eq(StudentProfile::getAuditStatus, AuditStatus.APPROVED.getCode())
             ).stream().map(StudentProfile::getUserId).toList();
             if (studentIds.isEmpty()) {
                 return List.of();
             }
             wrapper.in(MatchPair::getStudentId, studentIds);
         }
-        return matchPairMapper.selectList(wrapper).stream().map(pair -> {
+        List<MatchPair> pairs = matchPairMapper.selectList(wrapper);
+        Set<Long> userIds = new HashSet<>();
+        for (MatchPair pair : pairs) {
+            if (pair.getStudentId() != null) userIds.add(pair.getStudentId());
+            if (pair.getTeacherId() != null) userIds.add(pair.getTeacherId());
+        }
+        Map<Long, User> userMap = new HashMap<>();
+        if (!userIds.isEmpty()) {
+            userMapper.selectBatchIds(userIds).forEach(u -> userMap.put(u.getId(), u));
+        }
+        return pairs.stream().map(pair -> {
             ChatConversationVO vo = new ChatConversationVO();
             vo.setMatchPairId(pair.getId());
             vo.setStudentId(pair.getStudentId());
@@ -300,7 +317,6 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                     new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, pair.getStudentId())
             );
             if (sp != null) {
-                vo.setStudentName(sp.getRealName());
                 vo.setSchoolId(sp.getSchoolId());
                 if (sp.getSchoolId() != null) {
                     School school = schoolMapper.selectById(sp.getSchoolId());
@@ -309,22 +325,16 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                     }
                 }
             }
-            // 学员头像
-            try {
-                User studentUser = userAccessService.requireUser(pair.getStudentId());
+            User studentUser = userMap.get(pair.getStudentId());
+            if (studentUser != null) {
+                vo.setStudentName(studentUser.getRealName());
                 vo.setStudentAvatar(studentUser.getAvatar());
-            } catch (Exception e) { /* ignore */ }
-            TeacherProfile tp = teacherProfileMapper.selectOne(
-                    new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, pair.getTeacherId())
-            );
-            if (tp != null) {
-                vo.setTeacherName(tp.getRealName());
             }
-            // 志愿者头像
-            try {
-                User teacherUser = userAccessService.requireUser(pair.getTeacherId());
+            User teacherUser = userMap.get(pair.getTeacherId());
+            if (teacherUser != null) {
+                vo.setTeacherName(teacherUser.getRealName());
                 vo.setTeacherAvatar(teacherUser.getAvatar());
-            } catch (Exception e) { /* ignore */ }
+            }
             ChatMessage last = chatMessageMapper.selectOne(
                     new LambdaQueryWrapper<ChatMessage>()
                             .eq(ChatMessage::getMatchPairId, pair.getId())
@@ -346,35 +356,8 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
         }).toList();
     }
 
-    private String resolveSenderName(Long senderId) {
-        StudentProfile sp = studentProfileMapper.selectOne(
-                new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, senderId));
-        if (sp != null && sp.getRealName() != null) return sp.getRealName();
-
-        TeacherProfile tp = teacherProfileMapper.selectOne(
-                new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, senderId));
-        if (tp != null && tp.getRealName() != null) return tp.getRealName();
-
-        AdminProfile ap = adminProfileMapper.selectOne(
-                new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, senderId));
-        if (ap != null && ap.getRealName() != null) return ap.getRealName();
-
-        return null;
-    }
-
-    private String resolveParticipantName(Long userId) {
-        StudentProfile sp = studentProfileMapper.selectOne(
-                new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId));
-        if (sp != null && sp.getRealName() != null) return sp.getRealName();
-
-        TeacherProfile tp = teacherProfileMapper.selectOne(
-                new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, userId));
-        if (tp != null && tp.getRealName() != null) return tp.getRealName();
-
-        AdminProfile ap = adminProfileMapper.selectOne(
-                new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, userId));
-        if (ap != null && ap.getRealName() != null) return ap.getRealName();
-
-        return null;
+    private String resolveName(Long userId) {
+        User u = userMapper.selectById(userId);
+        return u != null ? u.getRealName() : null;
     }
 }

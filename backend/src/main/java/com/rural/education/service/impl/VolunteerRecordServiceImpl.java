@@ -16,7 +16,6 @@ import com.rural.education.exception.BusinessException;
 import com.rural.education.model.entity.AdminProfile;
 import com.rural.education.model.entity.MatchPair;
 import com.rural.education.model.entity.StudentProfile;
-import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.model.entity.User;
 import com.rural.education.model.entity.VolunteerRecord;
 import com.rural.education.model.mapper.AdminProfileMapper;
@@ -94,7 +93,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             adminEvent.setTitle("志愿时长待审核");
             adminEvent.setContent("志愿者提交了新的服务时长记录，请审核");
             adminEvent.setParamsJson(jsonParam("recordId", record.getId()));
-            notificationAsyncPublisher.publish(adminEvent);
+            notificationAsyncPublisher.publishAfterCommit(adminEvent);
         }
     }
 
@@ -126,7 +125,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             event.setTitle("服务记录待审核");
             event.setContent("学员已确认服务记录，等待管理员审核");
             event.setParamsJson(jsonParam("recordId", recordId));
-            notificationAsyncPublisher.publish(event);
+            notificationAsyncPublisher.publishAfterCommit(event);
         } else if ("reject".equalsIgnoreCase(request.getAction())) {
             if (request.getRejectReason() == null || request.getRejectReason().isBlank()) {
                 throw new BusinessException("rejectReason 必填");
@@ -142,7 +141,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             event.setTitle("服务记录被拒绝");
             event.setContent("学员拒绝了服务记录，原因: " + request.getRejectReason());
             event.setParamsJson(jsonParam("recordId", recordId));
-            notificationAsyncPublisher.publish(event);
+            notificationAsyncPublisher.publishAfterCommit(event);
         } else {
             throw new BusinessException("action 只能为 accept 或 reject");
         }
@@ -222,7 +221,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             event.setTitle("服务记录审核通过");
             event.setContent("管理员已审核通过你的服务时长记录，时长已累计");
             event.setParamsJson(jsonParam("recordId", recordId));
-            notificationAsyncPublisher.publish(event);
+            notificationAsyncPublisher.publishAfterCommit(event);
         } else if ("reject".equalsIgnoreCase(request.getAction())) {
             if (request.getRejectReason() == null || request.getRejectReason().isBlank()) {
                 throw new BusinessException("rejectReason 必填");
@@ -242,7 +241,7 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             event.setTitle("服务记录审核拒绝");
             event.setContent("管理员拒绝了服务记录，原因: " + request.getRejectReason());
             event.setParamsJson(jsonParam("recordId", recordId));
-            notificationAsyncPublisher.publish(event);
+            notificationAsyncPublisher.publishAfterCommit(event);
         } else {
             throw new BusinessException("action 只能为 approve 或 reject");
         }

@@ -19,6 +19,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
+
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Slf4j
 @Component
@@ -52,12 +55,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 3. 解析 Token；匿名放行路径上若带过期/错误 Token，不得拦截登录与学校列表
                 try {
                     Long userId = jwtUtil.getUserIdFromToken(jwt);
+                    Integer role = jwtUtil.getRoleFromToken(jwt);
                     if (userId != null) {
                         CurrentUserContext.setUserId(userId);
+                        CurrentUserContext.setRole(role);
                     }
                     if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                        List<SimpleGrantedAuthority> authorities = role != null
+                                ? List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                                : Collections.emptyList();
                         UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+                                new UsernamePasswordAuthenticationToken(userId, null, authorities);
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }

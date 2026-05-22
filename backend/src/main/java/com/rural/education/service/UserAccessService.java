@@ -13,4 +13,10 @@ public interface UserAccessService extends IService<User> {
     void requireL1Admin(Long userId);
 
     void requireL2WithPermission(Long userId, String permission);
+
+    void requireRole(int role);
+
+    void requireAnyRole(int... roles);
+
+    Integer getCurrentRole();
 }
