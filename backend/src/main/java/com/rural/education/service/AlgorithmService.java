@@ -12,5 +12,4 @@ public interface AlgorithmService extends IService<AlgorithmWeightConfig> {
 
     void updateWeight(Long userId, Long configId, UpdateWeightRequest request);
 
-    void recalculateWeights(Long userId);
 }

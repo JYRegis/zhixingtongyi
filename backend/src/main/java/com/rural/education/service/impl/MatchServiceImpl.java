@@ -68,7 +68,6 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             try {
                 return objectMapper.readValue(cached, new TypeReference<List<TeacherVO>>() {});
             } catch (Exception ignore) {
-                // ignore and fallback to compute
             }
         }
 
@@ -83,18 +82,13 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                 new LambdaQueryWrapper<AlgorithmWeightConfig>().eq(AlgorithmWeightConfig::getEnabled, 1)
         );
         double subjectWeight = getWeight(weights, "subject_match", 0.40);
-        double timeWeight = getWeight(weights, "time_match", 0.30);
-        double emergencyWeight = getWeight(weights, "emergency_weight", 0.20);
-        double personalityWeight = getWeight(weights, "personality_match", 0.10);
+        double timeWeight = getWeight(weights, "time_match", 0.60);
 
         List<String> studentSubjects = parseJsonList(student.getSubjectsNeeded());
-        List<Map<String, Object>> studentFreeTime = parseFreeTime(student.getFreeTime());
-        double emergencyScore = (student.getEmergencyWeight() != null ? student.getEmergencyWeight() : 50) / 100.0;
+        Set<String> studentTimeSlots = extractTimeSlots(parseFreeTime(student.getFreeTime()));
 
         List<TeacherVO> list = teacherProfileMapper.selectRecommendations();
         for (TeacherVO t : list) {
-            // Parse raw DB JSON strings into typed List fields
-            // (MyBatis cannot auto-convert VARCHAR to List, so fields are null; raw fields have the values)
             if (t.getSkilledSubjects() == null && t.getSkilledSubjectsRaw() != null) {
                 try {
                     t.setSkilledSubjects(objectMapper.readValue(t.getSkilledSubjectsRaw(),
@@ -108,17 +102,14 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             }
 
             List<String> teacherSubjects = parseJsonListFromObj(t.getSkilledSubjects());
-            List<Map<String, Object>> teacherFreeTime = parseFreeTimeFromObj(t.getFreeTime());
+            Set<String> teacherTimeSlots = extractTimeSlots(parseFreeTimeFromObj(t.getFreeTime()));
 
-            double subjectScore = studentSubjects.isEmpty() ? 0.5
+            double subjectScore = studentSubjects.isEmpty() ? 0.0
                     : computeOverlapRatio(studentSubjects, teacherSubjects);
-            double timeScore = (studentFreeTime.isEmpty() || teacherFreeTime.isEmpty()) ? 0.5
-                    : computeTimeOverlap(studentFreeTime, teacherFreeTime);
-            double personalityScore = (student.getPersonalityDesc() != null && !student.getPersonalityDesc().isBlank()
-                    && t.getPersonalityDesc() != null && !t.getPersonalityDesc().isBlank()) ? 1.0 : 0.5;
+            double timeScore = studentTimeSlots.isEmpty() ? 0.0
+                    : computeSetOverlap(studentTimeSlots, teacherTimeSlots);
 
-            t.setMatchScore(subjectWeight * subjectScore + timeWeight * timeScore
-                    + emergencyWeight * emergencyScore + personalityWeight * personalityScore);
+            t.setMatchScore((subjectWeight * subjectScore + timeWeight * timeScore) * 100);
         }
 
         list.sort((a, b) -> Double.compare(b.getMatchScore(), a.getMatchScore()));
@@ -127,7 +118,6 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             redisTemplate.opsForValue().set(cacheKey, objectMapper.writeValueAsString(list),
                     RECOMMENDATION_CACHE_TTL_MINUTES, TimeUnit.MINUTES);
         } catch (Exception ignore) {
-            // ignore cache failure
         }
         return list;
     }
@@ -684,26 +674,27 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         return (double) intersection.size() / Math.max(studentSet.size(), 1);
     }
 
-    private double computeTimeOverlap(List<Map<String, Object>> studentSlots, List<Map<String, Object>> teacherSlots) {
-        if (studentSlots.isEmpty() || teacherSlots.isEmpty()) return 0.0;
-        int overlaps = 0;
-        for (Map<String, Object> ss : studentSlots) {
-            Integer sDay = toInt(ss.get("dayOfWeek"));
-            for (Map<String, Object> ts : teacherSlots) {
-                Integer tDay = toInt(ts.get("dayOfWeek"));
-                if (sDay != null && sDay.equals(tDay)) {
-                    String sStart = toString(ss.get("start"));
-                    String sEnd = toString(ss.get("end"));
-                    String tStart = toString(ts.get("start"));
-                    String tEnd = toString(ts.get("end"));
-                    if (sStart != null && sEnd != null && tStart != null && tEnd != null
-                            && sStart.compareTo(tEnd) < 0 && sEnd.compareTo(tStart) > 0) {
-                        overlaps++;
-                    }
-                }
+    private Set<String> extractTimeSlots(List<Map<String, Object>> slots) {
+        Set<String> result = new HashSet<>();
+        for (Map<String, Object> slot : slots) {
+            Integer day = toInt(slot.get("dayOfWeek"));
+            String start = toString(slot.get("start"));
+            if (day != null && start != null) {
+                String period;
+                if (start.compareTo("12:00") < 0) period = "上午";
+                else if (start.compareTo("18:00") < 0) period = "下午";
+                else period = "晚上";
+                result.add(day + "_" + period);
             }
         }
-        return (double) overlaps / Math.max(studentSlots.size(), 1);
+        return result;
+    }
+
+    private double computeSetOverlap(Set<String> studentSet, Set<String> teacherSet) {
+        if (teacherSet.isEmpty()) return 0.0;
+        Set<String> intersection = new HashSet<>(studentSet);
+        intersection.retainAll(teacherSet);
+        return (double) intersection.size() / Math.max(studentSet.size(), 1);
     }
 
     private Integer toInt(Object obj) {

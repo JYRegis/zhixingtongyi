@@ -573,10 +573,7 @@ PUT /algorithm/weights/{configId}
 }
 ```
 
-### 7.3 重新计算学生紧急权重
-```
-POST /algorithm/recalculate-weights
-```
+### 7.3 重新计算学生紧急权重（已废弃，匹配算法 v2 移除）
 
 ## 8. 数据统计模块（管理员）
 

@@ -21,8 +21,6 @@
         WHERE tp.certification_status = 1
           AND tp.continuous_match = 1
           AND tp.deleted = 0
-        ORDER BY tp.total_service_duration ASC
-        LIMIT 20
     </select>
 
     <update id="accumulateDuration">

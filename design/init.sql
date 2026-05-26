@@ -284,7 +284,7 @@ FOREIGN KEY (`match_pair_id`,`sender_id`) REFERENCES `chat_participant` (`match_
 DROP TABLE IF EXISTS `algorithm_weight_config`;
 CREATE TABLE `algorithm_weight_config` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `factor_name` varchar(64) NOT NULL COMMENT '因素名称（如：grade_urgency, subject_match等）',
+  `factor_name` varchar(64) NOT NULL COMMENT '因素名称（如：subject_match, time_match等）',
   `weight` decimal(5,2) NOT NULL COMMENT '权重值（0-1之间）',
   `description` varchar(256) DEFAULT NULL COMMENT '因素描述',
   `enabled` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否启用',
@@ -338,8 +338,6 @@ CREATE TABLE `volunteer_record` (
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- 插入默认的匹配算法权重配置数据
-INSERT INTO `algorithm_weight_config` (`factor_name`, `weight`, `description`) VALUES 
+INSERT INTO `algorithm_weight_config` (`factor_name`, `weight`, `description`) VALUES
 ('subject_match', 0.40, '科目匹配度权重'),
-('time_match', 0.30, '空闲时间匹配度权重'),
-('emergency_weight', 0.20, '年级与客观需求紧急程度权重'),
-('personality_match', 0.10, '性格描述文本相似度权重');
+('time_match', 0.60, '时间段匹配度权重（日×时段，共21种）');

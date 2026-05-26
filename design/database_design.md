@@ -101,7 +101,7 @@
 | real_name | varchar(64) | NOT NULL | 真实姓名 |
 | school_id | bigint | NOT NULL, FOREIGN KEY (school_id) REFERENCES school(id) | 所在学校ID |
 | grade | varchar(32) | NOT NULL | 年级（如：初三） |
-| emergency_weight | int | DEFAULT NULL | 需求紧急程度权重（系统计算） |
+| emergency_weight | int | DEFAULT NULL | [已废弃] 需求紧急程度权重，匹配算法 v2 不再使用 |
 | subjects_needed | json | | 需要辅导的科目（JSON数组） |
 | free_time | json | | 可上课时间段（JSON数组） |
 | profile_status | tinyint | NOT NULL DEFAULT 0 | 资料状态：0-草稿，1-可发起配对 |
@@ -244,7 +244,7 @@
 | 字段名 | 数据类型 | 约束 | 说明 |
 |--------|----------|------|------|
 | id | bigint | PRIMARY KEY, AUTO_INCREMENT | 主键 |
-| factor_name | varchar(64) | NOT NULL UNIQUE | 因素名称（如：grade_urgency, subject_match, time_match等） |
+| factor_name | varchar(64) | NOT NULL UNIQUE | 因素名称（如：subject_match, time_match等） |
 | weight | decimal(5,2) | NOT NULL | 权重值（0-1之间） |
 | description | varchar(256) | | 因素描述 |
 | enabled | tinyint(1) | NOT NULL DEFAULT 1 | 是否启用 |
