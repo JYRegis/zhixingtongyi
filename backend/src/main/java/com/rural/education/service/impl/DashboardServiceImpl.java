@@ -10,7 +10,6 @@ import com.rural.education.dto.response.admin.SubjectDistributionResponse;
 import com.rural.education.enums.AuditStatus;
 import com.rural.education.enums.MatchStatus;
 import com.rural.education.enums.MeetingStatus;
-import com.rural.education.enums.UserRole;
 import com.rural.education.enums.UserStatus;
 import com.rural.education.model.entity.MatchPair;
 import com.rural.education.model.entity.Meeting;
@@ -25,7 +24,6 @@ import com.rural.education.model.mapper.TeacherProfileMapper;
 import com.rural.education.model.mapper.UserMapper;
 import com.rural.education.model.mapper.VolunteerRecordMapper;
 import com.rural.education.service.DashboardService;
-import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -51,12 +49,11 @@ public class DashboardServiceImpl implements DashboardService {
     private final SchoolMapper schoolMapper;
     private final StudentProfileMapper studentProfileMapper;
     private final TeacherProfileMapper teacherProfileMapper;
-    private final UserAccessService userAccessService;
     private final ObjectMapper objectMapper;
 
     @Override
     public DashboardOverviewResponse getOverview(Long userId) {
-        userAccessService.requireAnyRole(userId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+
 
         Long totalUsers = userMapper.selectCount(
                 new LambdaQueryWrapper<User>().eq(User::getStatus, UserStatus.ENABLED.getCode()));
@@ -77,7 +74,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public MatchSuccessRateResponse getMatchSuccessRate(Long userId, String startDate, String endDate) {
-        userAccessService.requireAnyRole(userId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+
 
         LambdaQueryWrapper<MatchPair> totalWrapper = new LambdaQueryWrapper<MatchPair>()
                 .in(MatchPair::getMatchStatus,
@@ -119,13 +116,13 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public List<RegionDistributionResponse> getRegionDistribution(Long userId) {
-        userAccessService.requireAnyRole(userId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+
         return schoolMapper.selectRegionDistribution();
     }
 
     @Override
     public List<SubjectDistributionResponse> getSubjectDistribution(Long userId) {
-        userAccessService.requireAnyRole(userId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+
 
         List<TeacherProfile> teachers = teacherProfileMapper.selectList(
                 new LambdaQueryWrapper<TeacherProfile>()

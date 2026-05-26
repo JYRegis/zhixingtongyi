@@ -72,6 +72,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
                 userMapper.insert(user);
             }
 
+            @SuppressWarnings("null")
             String token = jwtUtil.generateToken(user.getId(), user.getRole());
 
             return buildLoginResponse(token, user, isNewUser);
@@ -83,6 +84,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
     }
 
     // ========== 新增：模拟登录实现 ==========
+    @SuppressWarnings("null")
     @Override
     public LoginResponse mockLogin(WxLoginRequest request) {
         // 1. 绕过微信API，直接使用一个固定的测试 OpenId
@@ -119,6 +121,7 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
     }
     // =====================================
 
+    @SuppressWarnings("null")
     @Override
     public LoginResponse phoneLogin(LoginRequest request) {
         String phone = request.getPhone();

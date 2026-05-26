@@ -31,7 +31,6 @@ import com.rural.education.vo.MatchPairVO;
 import com.rural.education.vo.TeacherVO;
 import com.rural.education.service.MatchService;
 import com.rural.education.service.NotificationAsyncPublisher;
-import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -51,7 +50,6 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> implements MatchService {
     private static final long RECOMMENDATION_CACHE_TTL_MINUTES = 5L;
-    private final UserAccessService userAccessService;
     private final MatchPairMapper matchPairMapper;
     private final TeacherProfileMapper teacherProfileMapper;
     private final StudentProfileMapper studentProfileMapper;
@@ -64,7 +62,6 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
 
     @Override
     public List<TeacherVO> recommendations(Long userId) {
-        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
         String cacheKey = "match:recommendations:student:" + userId;
         String cached = redisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
@@ -138,7 +135,6 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void apply(Long userId, MatchApplyRequest request) {
-        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
         User teacher = userMapper.selectById(request.getTeacherId());
         if (teacher == null || !Integer.valueOf(UserRole.TEACHER.getCode()).equals(teacher.getRole()) || !Integer.valueOf(UserStatus.ENABLED.getCode()).equals(teacher.getStatus())) {
             throw new BusinessException("目标志愿者不存在或不可用");
@@ -206,14 +202,12 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
 
     @Override
     public List<MatchPairVO> pendingApplications(Long userId) {
-        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
         return matchPairMapper.selectPendingApplications(userId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void process(Long userId, Long applicationId, ProcessMatchRequest request) {
-        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
         MatchPair pair = matchPairMapper.selectOne(
                 new LambdaQueryWrapper<MatchPair>()
                         .eq(MatchPair::getId, applicationId)
@@ -790,7 +784,6 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
 
     @Override
     public List<MatchPairVO> pendingUnbindRequests(Long userId) {
-        userAccessService.requireAnyRole(userId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         LambdaQueryWrapper<MatchPair> wrapper = new LambdaQueryWrapper<MatchPair>()
                 .eq(MatchPair::getMatchStatus, MatchStatus.UNBIND_CONFIRMING.getCode())
                 .eq(MatchPair::getUnbindAdminId, userId)

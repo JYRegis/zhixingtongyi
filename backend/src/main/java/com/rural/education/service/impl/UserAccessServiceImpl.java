@@ -11,10 +11,9 @@ import com.rural.education.model.mapper.UserMapper;
 import com.rural.education.model.entity.AdminProfile;
 import com.rural.education.model.entity.User;
 import com.rural.education.service.UserAccessService;
-import com.rural.education.utils.CurrentUserContext;
+import com.rural.education.security.JwtAuthenticationToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -38,21 +37,9 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
 
     @Override
     public Integer getCurrentRole() {
-        Integer role = CurrentUserContext.getRole();
-        if (role != null) {
-            return role;
-        }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getAuthorities() != null) {
-            for (GrantedAuthority ga : auth.getAuthorities()) {
-                String authority = ga.getAuthority();
-                if (authority != null && authority.startsWith("ROLE_")) {
-                    try {
-                        return Integer.parseInt(authority.substring(5));
-                    } catch (NumberFormatException ignored) {
-                    }
-                }
-            }
+        if (auth instanceof JwtAuthenticationToken jwtAuth) {
+            return jwtAuth.getRole();
         }
         return null;
     }
@@ -117,6 +104,35 @@ public class UserAccessServiceImpl extends ServiceImpl<UserMapper, User> impleme
     @Override
     public void requireL1Admin(Long userId) {
         requireRole(userId, UserRole.L1_ADMIN.getCode());
+    }
+
+    @Override
+    public boolean hasL2Permission(String permission) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!(auth instanceof JwtAuthenticationToken jwtAuth) || !jwtAuth.isAuthenticated()) {
+            return false;
+        }
+        if (jwtAuth.isL1Admin()) {
+            return true;
+        }
+        Long userId = jwtAuth.getUserId();
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return false;
+        }
+        if (user.getRole() != null && user.getRole() == UserRole.L1_ADMIN.getCode()) {
+            return true;
+        }
+        if (user.getRole() == null || user.getRole() != UserRole.L2_ADMIN.getCode()) {
+            return false;
+        }
+        AdminProfile adminProfile = adminProfileMapper.selectOne(
+                new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, userId));
+        if (adminProfile == null) {
+            return false;
+        }
+        String permissions = adminProfile.getPermissions();
+        return permissions != null && hasExactPermission(permissions, permission);
     }
 
     @Override

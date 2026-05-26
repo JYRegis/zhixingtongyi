@@ -1,10 +1,10 @@
 package com.rural.education.controller.auth;
 
+import com.rural.education.security.SecurityUtils;
 import com.rural.education.dto.common.ApiResponse;
 import com.rural.education.dto.request.auth.RoleApplyRequest;
 import com.rural.education.dto.request.auth.UpdateProfileRequest;
 import com.rural.education.service.AuthService;
-import com.rural.education.utils.CurrentUserUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +23,10 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
-    private final CurrentUserUtil currentUserUtil;
 
     @PostMapping("/role-apply")
     public ApiResponse<Void> roleApply(@Valid @RequestBody RoleApplyRequest request) {
-        authService.roleApply(currentUserUtil.getCurrentUserId(), request.getTargetRole());
+        authService.roleApply(SecurityUtils.getCurrentUserId(), request.getTargetRole());
         return ApiResponse.success();
     }
 
@@ -49,7 +48,7 @@ public class AuthController {
 
     @PutMapping("/me")
     public ApiResponse<Void> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
-        authService.updateProfile(currentUserUtil.getCurrentUserId(), request);
+        authService.updateProfile(SecurityUtils.getCurrentUserId(), request);
         return ApiResponse.success();
     }
 }

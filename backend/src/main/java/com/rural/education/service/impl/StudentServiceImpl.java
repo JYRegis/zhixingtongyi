@@ -33,7 +33,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveDraft(Long userId, StudentProfileRequest request) {
-        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
+
         StudentProfile existed = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
         );
@@ -76,7 +76,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateProfile(Long userId, StudentProfileRequest request) {
-        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
+
         StudentProfile existed = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
         );
@@ -104,7 +104,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void submitProfile(Long userId) {
-        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
+
         StudentProfile profile = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
         );
@@ -124,7 +124,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
 
     @Override
     public StudentVO getProfile(Long userId) {
-        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
+
         StudentVO vo = studentProfileMapper.selectByUserId(userId);
         if (vo == null) {
             return null;

@@ -4,14 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rural.education.dto.request.algorithm.UpdateWeightRequest;
-import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BusinessException;
 import com.rural.education.model.entity.AlgorithmWeightConfig;
 import com.rural.education.model.entity.StudentProfile;
 import com.rural.education.model.mapper.AlgorithmWeightConfigMapper;
 import com.rural.education.model.mapper.StudentProfileMapper;
 import com.rural.education.service.AlgorithmService;
-import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +21,6 @@ import java.util.List;
 public class AlgorithmServiceImpl extends ServiceImpl<AlgorithmWeightConfigMapper, AlgorithmWeightConfig> implements AlgorithmService {
     private final AlgorithmWeightConfigMapper algorithmWeightConfigMapper;
     private final StudentProfileMapper studentProfileMapper;
-    private final UserAccessService userAccessService;
 
     @Override
     public List<AlgorithmWeightConfig> getWeights() {
@@ -33,7 +30,7 @@ public class AlgorithmServiceImpl extends ServiceImpl<AlgorithmWeightConfigMappe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateWeight(Long userId, Long configId, UpdateWeightRequest request) {
-        userAccessService.requireAnyRole(userId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+
         AlgorithmWeightConfig config = algorithmWeightConfigMapper.selectById(configId);
         if (config == null) {
             throw new BusinessException("权重配置不存在");
@@ -49,7 +46,7 @@ public class AlgorithmServiceImpl extends ServiceImpl<AlgorithmWeightConfigMappe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void recalculateWeights(Long userId) {
-        userAccessService.requireAnyRole(userId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+
         List<StudentProfile> students = studentProfileMapper.selectList(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getProfileStatus, 1)
         );

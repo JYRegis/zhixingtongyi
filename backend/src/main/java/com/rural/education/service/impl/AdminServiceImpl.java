@@ -16,7 +16,6 @@ import com.rural.education.dto.request.admin.*;
 import com.rural.education.model.entity.*;
 import com.rural.education.vo.*;
 import com.rural.education.service.AdminService;
-import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements AdminService {
-    private final UserAccessService userAccessService;
     private final UserMapper userMapper;
     private final SchoolMapper schoolMapper;
     private final AdminProfileMapper adminProfileMapper;
@@ -41,7 +39,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public PageResponse<User> users(Long operatorId, Integer role, Integer status, Integer page, Integer size, String keyword) {
-        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         if (role != null) {
             wrapper.eq(User::getRole, role);
@@ -59,7 +56,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public User userDetail(Long operatorId, Long userId) {
-        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         User user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException("用户不存在");
@@ -69,13 +65,11 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public void updateUserStatus(Long operatorId, Long userId, UpdateUserStatusRequest request) {
-        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         userMapper.update(null, new LambdaUpdateWrapper<User>().eq(User::getId, userId).set(User::getStatus, request.getStatus()));
     }
 
     @Override
     public void createSchool(Long operatorId, SchoolRequest request) {
-        userAccessService.requireL1Admin(operatorId);
         School school = new School();
         school.setName(request.getName());
         school.setRegionCode(request.getRegionCode());
@@ -89,7 +83,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void assignSecondaryAdmin(Long operatorId, SecondaryAdminRequest request) {
-        userAccessService.requireL1Admin(operatorId);
 
         Long userId = request.getUserId();
         if (userId == null) {
@@ -135,7 +128,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void auditTeacher(Long operatorId, Long teacherId, AuditRequest request) {
-        userAccessService.requireL2WithPermission(operatorId, "teacher_audit");
         teacherProfileMapper.update(
                 null,
                 new LambdaUpdateWrapper<TeacherProfile>()
@@ -149,7 +141,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void auditStudent(Long operatorId, Long studentId, AuditRequest request) {
-        userAccessService.requireL2WithPermission(operatorId, "student_manage");
         StudentProfile studentProfile = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, studentId)
         );
@@ -180,7 +171,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchCreateManagedStudents(Long operatorId, BatchCreateStudentsRequest request) {
-        userAccessService.requireL2WithPermission(operatorId, "student_manage");
         AdminProfile adminProfile = adminProfileMapper.selectOne(
                 new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, operatorId)
         );
@@ -210,13 +200,11 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public List<StudentVO> managedStudents(Long operatorId) {
-        userAccessService.requireL2WithPermission(operatorId, "student_manage");
         return studentProfileMapper.selectManagedStudents(operatorId);
     }
 
     @Override
     public void switchManagedStudent(Long operatorId, Long studentId) {
-        userAccessService.requireL2WithPermission(operatorId, "student_manage");
         Long count = studentProfileMapper.selectCount(
                 new LambdaQueryWrapper<StudentProfile>()
                         .eq(StudentProfile::getUserId, studentId)
@@ -230,7 +218,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public PageResponse<StudentVO> pendingStudents(Long operatorId, Long page, Long size, Long schoolId) {
-        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         long current = page == null || page < 1 ? 1 : page;
         long pageSize = size == null || size < 1 ? 10 : Math.min(size, 100);
         LambdaQueryWrapper<StudentProfile> wrapper = new LambdaQueryWrapper<StudentProfile>()
@@ -256,7 +243,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public StudentVO studentProfileDetail(Long operatorId, Long studentId) {
-        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         StudentProfile row = studentProfileMapper.selectOne(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, studentId)
         );
@@ -268,7 +254,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public PageResponse<TeacherVO> pendingTeachers(Long operatorId, Long page, Long size, Long schoolId) {
-        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         long current = page == null || page < 1 ? 1 : page;
         long pageSize = size == null || size < 1 ? 10 : Math.min(size, 100);
         LambdaQueryWrapper<TeacherProfile> wrapper = new LambdaQueryWrapper<TeacherProfile>()
@@ -297,7 +282,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public TeacherVO teacherProfileDetail(Long operatorId, Long teacherId) {
-        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         TeacherProfile row = teacherProfileMapper.selectOne(
                 new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, teacherId)
         );
@@ -309,7 +293,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public AdminProfileVO myProfile(Long operatorId) {
-        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         AdminProfile admin = adminProfileMapper.selectOne(
                 new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, operatorId)
         );
@@ -342,7 +325,6 @@ public class AdminServiceImpl extends ServiceImpl<UserMapper, User> implements A
 
     @Override
     public void updateMyProfile(Long operatorId, com.rural.education.dto.request.admin.UpdateAdminProfileRequest request) {
-        userAccessService.requireAnyRole(operatorId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
         LambdaUpdateWrapper<AdminProfile> wrapper = new LambdaUpdateWrapper<AdminProfile>()
                 .eq(AdminProfile::getUserId, operatorId);
         boolean hasUpdate = false;

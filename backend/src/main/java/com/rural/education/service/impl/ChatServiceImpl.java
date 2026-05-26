@@ -166,7 +166,6 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addParticipant(Long adminUserId, Long pairId, Long targetUserId) {
-        userAccessService.requireL2WithPermission(adminUserId, "student_manage");
         MatchPair pair = matchPairMapper.selectById(pairId);
         if (pair == null) {
             throw new BusinessException("结对不存在");
@@ -208,7 +207,6 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void removeParticipant(Long adminUserId, Long pairId, Long targetUserId) {
-        userAccessService.requireL2WithPermission(adminUserId, "student_manage");
         ChatParticipant participant = chatParticipantMapper.selectOne(
                 new LambdaQueryWrapper<ChatParticipant>()
                         .eq(ChatParticipant::getMatchPairId, pairId)

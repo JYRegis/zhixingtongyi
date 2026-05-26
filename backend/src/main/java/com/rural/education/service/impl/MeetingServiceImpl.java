@@ -65,7 +65,7 @@ public class MeetingServiceImpl extends ServiceImpl<MeetingMapper, Meeting> impl
 
     @Override
     public List<Meeting> list(Long userId, Long matchPairId, Integer status, String startTimeFrom, String startTimeTo) {
-        userAccessService.requireAnyRole(userId, UserRole.L1_ADMIN.getCode(), UserRole.L2_ADMIN.getCode());
+
         LambdaQueryWrapper<Meeting> wrapper = new LambdaQueryWrapper<>();
         if (matchPairId != null) {
             wrapper.eq(Meeting::getMatchPairId, matchPairId);

@@ -51,7 +51,6 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void submitRecord(Long userId, SubmitRecordRequest request) {
-        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
         MatchPair pair = matchPairMapper.selectById(request.getMatchPairId());
         if (pair == null) {
             throw new BusinessException("结对不存在");
@@ -100,7 +99,6 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void studentConfirm(Long userId, Long recordId, StudentConfirmRequest request) {
-        userAccessService.requireRole(userId, UserRole.STUDENT.getCode());
         VolunteerRecord record = volunteerRecordMapper.selectById(recordId);
         if (record == null) {
             throw new BusinessException("服务记录不存在");
@@ -159,7 +157,6 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
         Long filterSchoolId = schoolId;
 
         if (user.getRole() == UserRole.L2_ADMIN.getCode()) {
-            userAccessService.requireL2WithPermission(userId, "student_manage");
             if (filterSchoolId == null) {
                 AdminProfile adminProfile = adminProfileMapper.selectOne(
                         new LambdaQueryWrapper<AdminProfile>().eq(AdminProfile::getUserId, userId)
@@ -184,7 +181,6 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void auditRecord(Long userId, Long recordId, AdminAuditRecordRequest request) {
-        userAccessService.requireL2WithPermission(userId, "student_manage");
         VolunteerRecord record = volunteerRecordMapper.selectById(recordId);
         if (record == null) {
             throw new BusinessException("服务记录不存在");
@@ -297,7 +293,6 @@ public class VolunteerRecordServiceImpl extends ServiceImpl<VolunteerRecordMappe
             throw new BusinessException("无权限查看该记录");
         }
         if (role == UserRole.L2_ADMIN.getCode()) {
-            userAccessService.requireL2WithPermission(userId, "student_manage");
             StudentProfile sp = studentProfileMapper.selectOne(
                     new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, record.getStudentId())
             );

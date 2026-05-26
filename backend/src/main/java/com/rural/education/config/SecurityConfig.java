@@ -1,10 +1,13 @@
 package com.rural.education.config;
 
 import com.rural.education.filter.JwtAuthenticationFilter;
+import com.rural.education.security.JwtAccessDeniedHandler;
+import com.rural.education.security.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,10 +21,13 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -38,7 +44,12 @@ public class SecurityConfig {
                 // 极其重要：告诉 Spring Security 我们使用 JWT Token，不需要为其创建和维护传统的 Session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 4. 配置接口的访问权限拦截规则
+                // 4. 配置异常处理：统一 401 / 403 响应格式
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler))
+
+                // 5. 配置接口的访问权限拦截规则
                 .authorizeHttpRequests(auth -> auth
                         // === 放行区（不需要 Token 即可访问） ===
 
@@ -60,6 +71,11 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/error"
                         ).permitAll()
+
+                        // === 角色级别的 URL 规则（纵深防御第二层） ===
+                        .requestMatchers("/admin/**").hasAnyRole("0", "1")
+                        .requestMatchers("/student/**").hasRole("3")
+                        .requestMatchers("/teacher/**").hasRole("2")
 
                         // === 拦截区 ===
                         // 其他所有未在上面列出的接口，都必须经过身份认证（携带合法的 Token）才能访问

@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.enums.AuditStatus;
-import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.TeacherProfileMapper;
 import com.rural.education.model.mapper.UserMapper;
@@ -15,7 +14,6 @@ import com.rural.education.model.entity.TeacherProfile;
 import com.rural.education.model.entity.User;
 import com.rural.education.vo.TeacherVO;
 import com.rural.education.service.TeacherService;
-import com.rural.education.service.UserAccessService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -28,7 +26,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, TeacherProfile> implements TeacherService {
-    private final UserAccessService userAccessService;
     private final TeacherProfileMapper teacherProfileMapper;
     private final UserMapper userMapper;
     private final ObjectMapper objectMapper;
@@ -37,7 +34,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createProfile(Long userId, TeacherProfileRequest request) {
-        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
+
         TeacherProfile existed = teacherProfileMapper.selectOne(
                 new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, userId)
         );
@@ -67,7 +64,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateProfile(Long userId, TeacherProfileRequest request) {
-        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
+
         teacherProfileMapper.update(
                 null,
                 new LambdaUpdateWrapper<TeacherProfile>()
@@ -91,7 +88,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
 
     @Override
     public TeacherVO getProfile(Long userId) {
-        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
+
         TeacherProfile row = teacherProfileMapper.selectOne(
                 new LambdaQueryWrapper<TeacherProfile>().eq(TeacherProfile::getUserId, userId)
         );
@@ -119,7 +116,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherProfileMapper, Teache
 
     @Override
     public void updateContinuousMatch(Long userId, Boolean enabled) {
-        userAccessService.requireRole(userId, UserRole.TEACHER.getCode());
+
         teacherProfileMapper.update(
                 null,
                 new LambdaUpdateWrapper<TeacherProfile>()
