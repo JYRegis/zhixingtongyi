@@ -446,6 +446,8 @@ Page({
         weekIds,
         slotIds,
         cells: this.data.cells,
+        subjectsNeeded: role === "student" ? (form.subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
+        skilledSubjects: role === "teacher" ? (form.subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
         personalityDesc: (extra.applyNote || extra.l2Note || "").trim() || undefined
       };
       wx.showLoading({ title: "同步服务器", mask: true });
@@ -475,7 +477,9 @@ Page({
   },
   _syncProfileToBackend(role, payload) {
     if (role === "student") {
-      const body = buildStudentProfileRequest(payload, {});
+      const body = buildStudentProfileRequest(payload, { 
+        subjectsNeeded: payload.subjectsNeeded 
+      });
       return studentApi
         .getProfile()
         .then(
@@ -497,7 +501,9 @@ Page({
         });
     }
     if (role === "teacher") {
-      const body = buildTeacherProfileRequest(payload, {});
+      const body = buildTeacherProfileRequest(payload, {
+        skilledSubjects: payload.skilledSubjects
+      });
       return teacherApi.getProfile().then(
         function (vo) {
           if (vo && (vo.id != null || vo.userId != null)) {

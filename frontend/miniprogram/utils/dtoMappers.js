@@ -69,7 +69,7 @@ function buildStudentProfileRequest(
 ) {
   const opt = options || {};
   const bind = opt.bindAdminId != null ? opt.bindAdminId : DEMO_L2_USER_ID;
-  const subjects = opt.subjectsNeeded && opt.subjectsNeeded.length ? opt.subjectsNeeded : ["综合辅导（演示）"];
+  const subjects = opt.subjectsNeeded && opt.subjectsNeeded.length ? opt.subjectsNeeded : ["综合辅导"];
   
   let freeTimeList;
   if (Array.isArray(cells)) {
@@ -95,7 +95,7 @@ function buildStudentProfileRequest(
 function buildTeacherProfileRequest({ realName, schoolId, grade, weekIds, slotIds, cells, personalityDesc }, options) {
   const opt = options || {};
   const skilled =
-    opt.skilledSubjects && opt.skilledSubjects.length ? opt.skilledSubjects : ["义教", "通识（演示）"];
+    opt.skilledSubjects && opt.skilledSubjects.length ? opt.skilledSubjects : ["义教", "通识"];
   
   let freeTimeList;
   if (Array.isArray(cells)) {

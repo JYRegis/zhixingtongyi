@@ -46,44 +46,7 @@ var matchHeroMap = {
   admin_level_1: { title: "匹配" }
 };
 
-/**
- * 学员：看「支教志愿者」；志愿者：看「结对学生」
- * 每条含 学科，用于筛选
- */
-var rawList = [
-  { id: 1, asVolunteer: "王志愿", asStudent: "陈一", timeRaw: "W:6|S:night", score: 92, style: "温和耐心", subject: "数学" },
-  { id: 2, asVolunteer: "李志愿", asStudent: "和晓", timeRaw: "W:7|S:mor,noon", score: 88, style: "互动积极", subject: "英语" },
-  { id: 3, asVolunteer: "赵志教", asStudent: "周小花", timeRaw: "W:3,5|S:night", score: 81, style: "阅读与写作", subject: "语文" },
-  { id: 4, asVolunteer: "孙一教", asStudent: "高翔", timeRaw: "W:1,2,3|S:night", score: 86, style: "理科较强", subject: "数学" },
-  { id: 5, asVolunteer: "周二教", asStudent: "何敏", timeRaw: "W:4,5|S:noon,night", score: 90, style: "口语流利", subject: "英语" },
-  { id: 6, asVolunteer: "吴可教", asStudent: "江雨", timeRaw: "W:2,6|S:mor", score: 79, style: "耐心细致", subject: "科学" },
-  { id: 7, asVolunteer: "郑晨", asStudent: "方宁", timeRaw: "W:1,3,5|S:night", score: 84, style: "作文与阅读", subject: "语文" },
-  { id: 8, asVolunteer: "冯立", asStudent: "陆诚", timeRaw: "W:5,6,7|S:mor,noon", score: 91, style: "理综辅导", subject: "理综" },
-  { id: 9, asVolunteer: "程悦", asStudent: "苏梅", timeRaw: "W:2,4|S:noon,night", score: 88, style: "互动积极", subject: "英语" },
-  { id: 10, asVolunteer: "何敏", asStudent: "赵凡", timeRaw: "W:1,2,3,4,5|S:mor", score: 82, style: "基础补差", subject: "数学" },
-  { id: 11, asVolunteer: "胡凯", asStudent: "黄琳", timeRaw: "W:6,7|S:night", score: 87, style: "物化生", subject: "物理" },
-  { id: 12, asVolunteer: "朱琳", asStudent: "杨帆", timeRaw: "W:3,4|S:night", score: 80, style: "语法强化", subject: "英语" },
-  { id: 13, asVolunteer: "高翔", asStudent: "董洋", timeRaw: "W:1,2|S:mor,noon", score: 93, style: "竞赛辅导", subject: "数学" },
-  { id: 14, asVolunteer: "谢薇", asStudent: "金悦", timeRaw: "W:2,3,4|S:noon,night", score: 78, style: "陪伴式", subject: "综合" },
-  { id: 15, asVolunteer: "董洋", asStudent: "于航", timeRaw: "W:1,2,3|S:night", score: 90, style: "语文阅读", subject: "语文" }
-];
-
-var subjectOptions = ["全部", "数学", "英语", "语文", "科学", "物理", "理综", "综合"];
-
-function applySubjectFilter(list, subjectIndex) {
-  if (!list || !list.length) {
-    return [];
-  }
-  if (subjectIndex <= 0) {
-    return list;
-  }
-  const want = subjectOptions[subjectIndex];
-  return list.filter(function (row) {
-    if (!row || !row.subject) return false;
-    // 支持多学科（如 "数学、物理"）中包含目标学科
-    return row.subject.indexOf(want) >= 0;
-  });
-}
+// Removed rawList and local subject filters
 
 function pickDisplayName(item, role) {
   if (role === "student") {
@@ -231,11 +194,8 @@ Page({
         }
       }
     }
-    var idx = typeof this.data.subjectIndex === "number" ? this.data.subjectIndex : 0;
-    var renderList = applySubjectFilter(fullList, idx);
+    var renderList = fullList.slice();
     var hero = matchHeroMap[role] || matchHeroMap.student;
-    // 学科筛选只面向学员（志愿者无推荐列表，无需筛选）
-    var showSubjectFilter = role === "student";
 
     var canUnbind =
       role === "student" || role === "teacher" || (role === "admin_level_2" && isVolunteerSideL2());
@@ -244,13 +204,10 @@ Page({
       role: role,
       canUnbind: canUnbind,
       canPairTodo: canPairTodo,
-      showSubjectFilter: showSubjectFilter,
       roleName: ROLE_DISPLAY_NAME[role] || "学员",
       heroTitle: hero.title,
       list: fullList,
-      renderList: renderList,
-      selectedCountText: renderList.length + " 人",
-      subjectLineText: subjectOptions[idx] != null ? subjectOptions[idx] : "全部"
+      renderList: renderList
     });
   } catch (outerErr) {
     if (console && console.error) {
@@ -263,17 +220,6 @@ Page({
     this.onShow();
     wx.stopPullDownRefresh();
   },
-  onSubjectChange: function (e) {
-    var idx = parseInt(e.detail.value, 10) || 0;
-    var list = this.data.list || [];
-    var renderList = applySubjectFilter(list, idx);
-    this.setData({
-      subjectIndex: idx,
-      renderList: renderList,
-      selectedCountText: renderList.length + " 人",
-      subjectLineText: subjectOptions[idx] != null ? subjectOptions[idx] : "全部"
-    });
-  },
   onApply: async function (e) {
     var id = e.currentTarget.dataset.id;
     var one = this.data.renderList.find(function (item) {
@@ -285,12 +231,10 @@ Page({
       }
       // 立即从本地列表移除，无需重新请求后端
       var newList = this.data.list.filter(function (item) { return item.id !== id; });
-      var idx = this.data.subjectIndex || 0;
-      var newRenderList = applySubjectFilter(newList, idx);
+      var newRenderList = newList.slice();
       this.setData({
         list: newList,
-        renderList: newRenderList,
-        selectedCountText: newRenderList.length + " 人"
+        renderList: newRenderList
       });
       wx.showToast({
         title: "已申请" + (one && one.teacher ? " " + one.teacher : ""),

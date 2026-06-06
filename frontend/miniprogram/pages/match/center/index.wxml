@@ -41,21 +41,9 @@
       </view>
     </view>
 
-    <view wx:if="{{showSubjectFilter}}" class="card match-subject-card">
-      <view class="section-title">学科筛选</view>
-      <picker mode="selector" range="{{subjectOptions}}" value="{{subjectIndex}}" bindchange="onSubjectChange">
-        <view class="match-filter-row">
-          <text class="match-filter-label">选择学科</text>
-          <text class="match-filter-value">{{subjectLineText}}</text>
-        </view>
-      </picker>
-    </view>
-
     <view wx:if="{{role !== 'teacher'}}" class="section-header">
       <view class="section-title">推荐</view>
     </view>
-
-    <view class="match-list-count" wx:if="{{showSubjectFilter}}">当前显示 {{selectedCountText}}</view>
 
     <block wx:for="{{renderList}}" wx:key="id">
       <view class="card match-teacher-card {{item.highlight ? 'match-teacher-card--featured' : ''}}">
