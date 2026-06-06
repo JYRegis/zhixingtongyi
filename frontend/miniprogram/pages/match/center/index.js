@@ -89,16 +89,7 @@ function enrichItem(item, role) {
   };
 }
 
-function buildListForRole(role) {
-  var out = [];
-  for (var i = 0; i < rawList.length; i++) {
-    out.push(enrichItem(rawList[i], role));
-  }
-  return out;
-}
-
-// 旧的「支教方 L2」判定依赖本地 Storage Mock 的 l2Scope 字段，后端联调下永远拿不到，
-// 因此目前 L2 在 onShow 已经被无条件踢回工作台，这里固定返回 false 以彻底移除本地兜底。
+// Removed buildListForRole since mock list is removed
 function isVolunteerSideL2() {
   return false;
 }
@@ -107,14 +98,9 @@ Page({
   data: {
     canPairTodo: true,
     canUnbind: true,
-    showSubjectFilter: false,
-    subjectOptions: subjectOptions,
-    subjectIndex: 0,
-    subjectLineText: "全部",
     role: "",
     roleName: "学员",
     heroTitle: "",
-    selectedCountText: "",
     renderList: [],
     list: []
   },
@@ -139,7 +125,7 @@ Page({
     try {
     // 产品规则：仅学员可发起结对申请，志愿者只能在「结对待办」中接受/拒绝。
     // 因此志愿者侧不再展示推荐列表 + 「申请结对」按钮，避免出现走不通的流程。
-    var fullList = role === "student" ? buildListForRole(role) : [];
+    var fullList = [];
     if (role === "student") {
       try {
         const remote = await matchApi.recommendations();
@@ -213,7 +199,7 @@ Page({
     if (console && console.error) {
       console.error("[match-center] onShow unexpected error", outerErr);
     }
-    this.setData({ role: role || "", renderList: [], list: [], selectedCountText: "0 人" });
+    this.setData({ role: role || "", renderList: [], list: [] });
   }
   },
   onPullDownRefresh: function () {
