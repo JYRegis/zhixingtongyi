@@ -76,6 +76,7 @@ Page({
     l2Note: "",
     orgNote: "",
     applyNote: "",
+    subjects: "",
     onboardingStatus: "none",
     showForm: true,
     showSchool: false,
@@ -206,6 +207,9 @@ Page({
       teachTimeStr = tm.composed;
     }
 
+    let subjects = (p.subjects != null && p.subjects !== "" ? String(p.subjects) : "");
+    if (!subjects) subjects = (p.skilledSubjects != null && p.skilledSubjects !== "" ? String(p.skilledSubjects) : "");
+
     const timeBlockTitle =
       role === "admin_level_2" ? "方便联系/办公时间" : role === "teacher" ? "可授课时间" : "";
 
@@ -235,6 +239,7 @@ Page({
       studentAvailableTime: role === "student" ? studentTimeStr : "",
       availableTimeHint: role === "teacher" || role === "admin_level_2" ? teachTimeStr : "",
       timeBlockTitle: timeBlockTitle,
+      subjects: subjects,
       l2Note: p.l2Note || "",
       orgNote: p.organization || p.orgNote || ""
     });
@@ -360,11 +365,11 @@ Page({
   onSubmit() {
     const app = getApp();
     const u = app.globalData.userInfo;
-    if (!u || !u.phone) {
+    const uid = String((u && (u.phone || u.backendUserId || u.userId)) || "");
+    if (!uid) {
       wx.showToast({ title: "请先登录", icon: "none" });
       return;
     }
-    const phone = String(u.phone);
     const {
       role,
       schoolId,
@@ -376,7 +381,8 @@ Page({
       weekIds,
       slotIds,
       l2Note,
-      orgNote
+      orgNote,
+      subjects
     } = this.data;
     const tStudent = role === "student" ? serializeTimeSelection(weekIds, slotIds) : "";
     const tTeacher = role === "teacher" || role === "admin_level_2" ? serializeTimeSelection(weekIds, slotIds) : "";
@@ -446,15 +452,15 @@ Page({
         weekIds,
         slotIds,
         cells: this.data.cells,
-        subjectsNeeded: role === "student" ? (form.subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
-        skilledSubjects: role === "teacher" ? (form.subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
+        subjectsNeeded: role === "student" ? (subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
+        skilledSubjects: role === "teacher" ? (subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
         personalityDesc: (extra.applyNote || extra.l2Note || "").trim() || undefined
       };
       wx.showLoading({ title: "同步服务器", mask: true });
       this._syncProfileToBackend(role, payload)
         .then(function () {
           wx.hideLoading();
-          self._afterOnboardingSubmitRemote(phone, role, schoolId, extra, u, orgNote);
+          self._afterOnboardingSubmitRemote(uid, role, schoolId, extra, u, orgNote);
         })
         .catch(function (err) {
           wx.hideLoading();
@@ -466,14 +472,14 @@ Page({
             cancelText: "取消",
             success: function (res) {
               if (res.confirm) {
-                self._afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote);
+                self._afterOnboardingSubmitLocal(uid, role, schoolId, extra, u, orgNote);
               }
             }
           });
         });
       return;
     }
-    this._afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote);
+    this._afterOnboardingSubmitLocal(uid, role, schoolId, extra, u, orgNote);
   },
   _syncProfileToBackend(role, payload) {
     if (role === "student") {
@@ -521,7 +527,7 @@ Page({
     }
     return Promise.resolve();
   },
-  _afterOnboardingSubmitRemote(phone, role, schoolId, extra, u, orgNote) {
+  _afterOnboardingSubmitRemote(uid, role, schoolId, extra, u, orgNote) {
     const patch = {
       name: extra.name,
       studentNo: extra.studentNo,
@@ -541,20 +547,20 @@ Page({
         delete patch[key];
       }
     });
-    saveProfile(phone, patch);
+    saveProfile(uid, patch);
     wx.showToast({ title: "已提交，等待审核", icon: "success" });
     setTimeout(() => {
       wx.reLaunch({ url: `/pages/common/onboarding-pending/index?role=${encodeURIComponent(role)}&status=pending` });
     }, 500);
   },
-  _afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote) {
-    const r = submitApplication({ applicantId: phone, role, schoolId, extra });
+  _afterOnboardingSubmitLocal(uid, role, schoolId, extra, u, orgNote) {
+    const r = submitApplication({ applicantId: uid, role, schoolId, extra });
     if (!r || !r.ok) {
       wx.showToast({ title: (r && r.message) || "提交失败", icon: "none" });
       return;
     }
     if (role === "admin_level_1") {
-      saveProfile(phone, {
+      saveProfile(uid, {
         organization: orgNote,
         applicationNote: extra.applyNote
       });
@@ -577,7 +583,7 @@ Page({
           delete patch[key];
         }
       });
-      saveProfile(phone, patch);
+      saveProfile(uid, patch);
     }
     wx.showToast({ title: "已提交", icon: "success" });
     setTimeout(() => {
