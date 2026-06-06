@@ -458,6 +458,15 @@ Page({
     };
     const token = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
     const tryRemote = USE_BACKEND_ONBOARDING && token && (role === "student" || role === "teacher");
+    console.log("[onboarding] onSubmit", {
+      role,
+      schoolId,
+      schoolIdType: typeof schoolId,
+      name: extra.name,
+      grade: extra.grade,
+      hasToken: !!token,
+      tryRemote
+    });
     if (tryRemote) {
       const self = this;
       const payload = {
@@ -471,14 +480,22 @@ Page({
         skilledSubjects: role === "teacher" ? (subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
         personalityDesc: (applyNote || l2Note || "").trim() || undefined
       };
+      console.log("[onboarding] remote payload", JSON.stringify(payload));
       wx.showLoading({ title: "同步服务器", mask: true });
       this._syncProfileToBackend(role, payload)
         .then(function () {
           wx.hideLoading();
+          console.log("[onboarding] remote sync success", { role, schoolId });
           self._afterOnboardingSubmitRemote(phone, role, schoolId, extra, u, orgNote);
         })
         .catch(function (err) {
           wx.hideLoading();
+          console.error("[onboarding] remote sync failed", {
+            message: err && err.message,
+            statusCode: err && err.statusCode,
+            code: err && err.code,
+            err
+          });
           const msg = (err && err.message) || "接口失败";
           wx.showModal({
             title: "后端保存失败",
@@ -501,16 +518,19 @@ Page({
       const body = buildStudentProfileRequest(payload, { 
         subjectsNeeded: payload.subjectsNeeded 
       });
+      console.log("[onboarding] student profile body", JSON.stringify(body));
       return studentApi
         .getProfile()
         .then(
           function (vo) {
+            console.log("[onboarding] student getProfile ok", { hasProfile: !!(vo != null && (vo.id != null || vo.userId != null)) });
             if (vo != null && (vo.id != null || vo.userId != null)) {
               return studentApi.updateProfile(body);
             }
             return studentApi.createProfile(body);
           },
           function (err) {
+            console.log("[onboarding] student getProfile failed", { statusCode: err && err.statusCode, message: err && err.message });
             if (err && err.statusCode === 404) {
               return studentApi.createProfile(body);
             }
@@ -525,14 +545,17 @@ Page({
       const body = buildTeacherProfileRequest(payload, {
         skilledSubjects: payload.skilledSubjects
       });
+      console.log("[onboarding] teacher profile body", JSON.stringify(body));
       return teacherApi.getProfile().then(
         function (vo) {
+          console.log("[onboarding] teacher getProfile ok -> updateProfile", { hasProfile: !!(vo != null && (vo.id != null || vo.userId != null)) });
           if (vo != null && (vo.id != null || vo.userId != null)) {
             return teacherApi.updateProfile(body);
           }
           return teacherApi.createProfile(body);
         },
         function (err) {
+          console.log("[onboarding] teacher getProfile failed", { statusCode: err && err.statusCode, message: err && err.message });
           if (err && err.statusCode === 404) {
             return teacherApi.createProfile(body);
           }
