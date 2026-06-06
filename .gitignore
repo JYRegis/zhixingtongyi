@@ -30,3 +30,7 @@ CLAUDE.md
 **/.mysql/
 **/.redis/
 420_1749.md
+
+### Custom Ignored Files
+backend/settings.xml.bak
+design/sdd_class_diagrams.puml

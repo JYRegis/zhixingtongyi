@@ -365,11 +365,12 @@ Page({
   onSubmit() {
     const app = getApp();
     const u = app.globalData.userInfo;
-    const uid = String((u && (u.phone || u.backendUserId || u.userId)) || "");
-    if (!uid) {
+    const authToken = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    if (!u || (!authToken && !u.phone && !u.backendUserId)) {
       wx.showToast({ title: "请先登录", icon: "none" });
       return;
     }
+    const phone = String(u.phone || u.backendUserId || u.userId || "");
     const {
       role,
       schoolId,
@@ -454,7 +455,7 @@ Page({
         cells: this.data.cells,
         subjectsNeeded: role === "student" ? (subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
         skilledSubjects: role === "teacher" ? (subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
-        personalityDesc: (extra.applyNote || extra.l2Note || "").trim() || undefined
+        personalityDesc: (applyNote || l2Note || "").trim() || undefined
       };
       wx.showLoading({ title: "同步服务器", mask: true });
       this._syncProfileToBackend(role, payload)
