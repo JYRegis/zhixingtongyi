@@ -1,6 +1,6 @@
 const { getSchoolName, getSchoolsByKind } = require("../../../utils/schoolsMock");
 const { matchGradeToPicker } = require("../../../utils/gradeOptions");
-const { matchClassTimeToForm, serializeTimeSelection, isValidTimeSelection } = require("../../../utils/classTimeOptions");
+const { matchClassTimeToForm, serializeTimeSelection, serializeTimeGrid, isValidTimeSelection } = require("../../../utils/classTimeOptions");
 const { submitApplication, getApplications } = require("../../../utils/onboardingStore");
 const { getByPhone, saveProfile, mergeFromStorageIntoApp } = require("../../../utils/userProfileStore");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
@@ -173,6 +173,17 @@ Page({
     let slotChips = [];
     let weekIds = [];
     let slotIds = [];
+    let cells = [];
+    let grid = [];
+    let colWeeks = [
+      { id: 1, name: "一" },
+      { id: 2, name: "二" },
+      { id: 3, name: "三" },
+      { id: 4, name: "四" },
+      { id: 5, name: "五" },
+      { id: 6, name: "六" },
+      { id: 7, name: "日" }
+    ];
     let studentTimeStr = p.studentAvailableTime != null && p.studentAvailableTime !== "" ? p.studentAvailableTime : "";
     let teachTimeStr = p.availableTime != null && p.availableTime !== "" ? p.availableTime : "";
     if (role === "student") {
@@ -181,6 +192,8 @@ Page({
       slotChips = tm.slotChips;
       weekIds = tm.weekIds;
       slotIds = tm.slotIds;
+      cells = tm.cells;
+      grid = tm.grid;
       studentTimeStr = tm.composed;
     } else if (role === "teacher" || role === "admin_level_2") {
       const tm = matchClassTimeToForm(teachTimeStr);
@@ -188,6 +201,8 @@ Page({
       slotChips = tm.slotChips;
       weekIds = tm.weekIds;
       slotIds = tm.slotIds;
+      cells = tm.cells;
+      grid = tm.grid;
       teachTimeStr = tm.composed;
     }
 
@@ -214,6 +229,9 @@ Page({
       slotChips,
       weekIds,
       slotIds,
+      cells,
+      grid,
+      colWeeks,
       studentAvailableTime: role === "student" ? studentTimeStr : "",
       availableTimeHint: role === "teacher" || role === "admin_level_2" ? teachTimeStr : "",
       timeBlockTitle: timeBlockTitle,
@@ -249,6 +267,41 @@ Page({
       grade: g.id ? g.name : "",
       gradePickerValue: ix
     });
+  },
+  onToggleGridCell(e) {
+    const { week, slot } = e.currentTarget.dataset;
+    const weekId = Number(week);
+    const slotId = String(slot);
+    const { cells, role } = this.data;
+    
+    let nextCells = Array.isArray(cells) ? cells.slice() : [];
+    const idx = nextCells.findIndex(c => c.week === weekId && c.slot === slotId);
+    if (idx >= 0) {
+      nextCells.splice(idx, 1);
+    } else {
+      nextCells.push({ week: weekId, slot: slotId });
+    }
+    
+    const serialized = serializeTimeGrid(nextCells);
+    const tm = matchClassTimeToForm(serialized);
+    
+    if (role === "student") {
+      this.setData({
+        cells: nextCells,
+        grid: tm.grid,
+        weekIds: tm.weekIds,
+        slotIds: tm.slotIds,
+        studentAvailableTime: serialized
+      });
+    } else if (role === "teacher" || role === "admin_level_2") {
+      this.setData({
+        cells: nextCells,
+        grid: tm.grid,
+        weekIds: tm.weekIds,
+        slotIds: tm.slotIds,
+        availableTimeHint: serialized
+      });
+    }
   },
   onToggleWeek(e) {
     const id = +((e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id) || 0);
@@ -392,6 +445,7 @@ Page({
         grade: extra.grade,
         weekIds,
         slotIds,
+        cells: this.data.cells,
         personalityDesc: (extra.applyNote || extra.l2Note || "").trim() || undefined
       };
       wx.showLoading({ title: "同步服务器", mask: true });

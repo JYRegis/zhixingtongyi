@@ -676,7 +676,9 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
 
     private Set<String> extractTimeSlots(List<Map<String, Object>> slots) {
         Set<String> result = new HashSet<>();
-        for (Map<String, Object> slot : slots) {
+        for (Map<String, Object> rawSlot : slots) {
+            Map<String, Object> slot = normalizeSlot(rawSlot);
+            if (slot == null) continue;
             Integer day = toInt(slot.get("dayOfWeek"));
             String start = toString(slot.get("start"));
             if (day != null && start != null) {
@@ -690,11 +692,39 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         return result;
     }
 
+    private double computeTimeOverlap(List<Map<String, Object>> studentSlots, List<Map<String, Object>> teacherSlots) {
+        Set<String> sSet = extractTimeSlots(studentSlots);
+        Set<String> tSet = extractTimeSlots(teacherSlots);
+        return computeSetOverlap(sSet, tSet);
+    }
+
     private double computeSetOverlap(Set<String> studentSet, Set<String> teacherSet) {
         if (teacherSet.isEmpty()) return 0.0;
         Set<String> intersection = new HashSet<>(studentSet);
         intersection.retainAll(teacherSet);
         return (double) intersection.size() / Math.max(studentSet.size(), 1);
+    }
+
+    private Map<String, Object> normalizeSlot(Map<String, Object> slot) {
+        if (slot == null) return null;
+        Map<String, Object> normalized = new HashMap<>(slot);
+        if (!normalized.containsKey("dayOfWeek") && normalized.containsKey("week")) {
+            normalized.put("dayOfWeek", normalized.get("week"));
+        }
+        if (!normalized.containsKey("start") && normalized.containsKey("slot")) {
+            String slotStr = toString(normalized.get("slot"));
+            if ("mor".equals(slotStr)) {
+                normalized.put("start", "08:00");
+                normalized.put("end", "12:00");
+            } else if ("noon".equals(slotStr)) {
+                normalized.put("start", "14:00");
+                normalized.put("end", "18:00");
+            } else if ("night".equals(slotStr)) {
+                normalized.put("start", "19:00");
+                normalized.put("end", "22:00");
+            }
+        }
+        return normalized;
     }
 
     private Integer toInt(Object obj) {

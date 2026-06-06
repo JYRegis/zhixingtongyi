@@ -35,8 +35,36 @@ function getSlotsPlain() {
 function parseTimeSelection(saved) {
   const s = saved == null || saved === "" ? "" : String(saved).trim();
   if (!s) {
-    return { weekIds: [], slotIds: [] };
+    return { weekIds: [], slotIds: [], cells: [] };
   }
+
+  // 1. GRID format: GRID:1-mor,2-noon
+  if (s.indexOf("GRID:") === 0) {
+    const partsStr = s.slice(5);
+    const parts = partsStr.split(",").filter(Boolean);
+    const cells = [];
+    const weekIdsSet = new Set();
+    const slotIdsSet = new Set();
+    parts.forEach(p => {
+      const sub = p.split("-");
+      if (sub.length === 2) {
+        const w = parseInt(sub[0], 10);
+        const sl = sub[1];
+        if (w >= 1 && w <= 7 && ["mor", "noon", "night"].indexOf(sl) >= 0) {
+          cells.push({ week: w, slot: sl });
+          weekIdsSet.add(w);
+          slotIdsSet.add(sl);
+        }
+      }
+    });
+    return {
+      weekIds: Array.from(weekIdsSet).sort((a, b) => a - b),
+      slotIds: Array.from(slotIdsSet),
+      cells: cells
+    };
+  }
+
+  // 2. Legacy W:1,2|S:mor,noon format
   const wIdx = s.indexOf("W:");
   const sIdx = s.indexOf("|S:");
   if (wIdx === 0 && sIdx > 0) {
@@ -50,27 +78,55 @@ function parseTimeSelection(saved) {
       .split(",")
       .map((t) => t.trim())
       .filter((t) => t && ["mor", "noon", "night"].indexOf(t) >= 0);
-    return { weekIds, slotIds };
+    
+    // Cross-product for legacy
+    const cells = [];
+    weekIds.forEach(w => {
+      slotIds.forEach(sl => {
+        cells.push({ week: w, slot: sl });
+      });
+    });
+    return { weekIds, slotIds, cells };
   }
-  // 尝试 JSON 数组格式：[{"week":1,"slot":"mor"}, ...]
+
+  // 3. JSON Array format: [{"week":1,"slot":"mor"}, ...] or [{"dayOfWeek":1,...}]
   if (s.charAt(0) === "[") {
     try {
       const arr = JSON.parse(s);
       if (Array.isArray(arr) && arr.length) {
         const weekIds = [];
         const slotIds = [];
+        const cells = [];
         arr.forEach(function (m) {
           if (!m) return;
-          if (m.week != null) { const w = Number(m.week); if (w >= 1 && w <= 7 && weekIds.indexOf(w) < 0) weekIds.push(w); }
-          if (m.slot) { const sl = String(m.slot); if (["mor", "noon", "night"].indexOf(sl) >= 0 && slotIds.indexOf(sl) < 0) slotIds.push(sl); }
-          if (m.dayOfWeek != null) { const w = Number(m.dayOfWeek); if (w >= 1 && w <= 7 && weekIds.indexOf(w) < 0) weekIds.push(w); }
+          let w = null;
+          let sl = null;
+          if (m.week != null) { w = Number(m.week); }
+          else if (m.dayOfWeek != null) { w = Number(m.dayOfWeek); }
+          
+          if (m.slot) { sl = String(m.slot); }
+          
+          if (w >= 1 && w <= 7 && sl && ["mor", "noon", "night"].indexOf(sl) >= 0) {
+            cells.push({ week: w, slot: sl });
+            if (weekIds.indexOf(w) < 0) weekIds.push(w);
+            if (slotIds.indexOf(sl) < 0) slotIds.push(sl);
+          }
         });
         weekIds.sort(function (a, b) { return a - b; });
-        return { weekIds, slotIds };
+        return { weekIds, slotIds, cells };
       }
     } catch (e) { /* ignore */ }
   }
-  return parseLegacyTime(s);
+
+  // 4. Fallback legacy parser
+  const legacy = parseLegacyTime(s);
+  const cells = [];
+  legacy.weekIds.forEach(w => {
+    legacy.slotIds.forEach(sl => {
+      cells.push({ week: w, slot: sl });
+    });
+  });
+  return { weekIds: legacy.weekIds, slotIds: legacy.slotIds, cells };
 }
 
 /**
@@ -118,6 +174,23 @@ function serializeTimeSelection(weekIds, slotIds) {
 }
 
 /**
+ * @param {Array<{week: number, slot: string}>} cells
+ * @returns {string}
+ */
+function serializeTimeGrid(cells) {
+  if (!Array.isArray(cells) || cells.length === 0) {
+    return "";
+  }
+  const sorted = cells.slice().sort((a, b) => {
+    if (a.week !== b.week) return a.week - b.week;
+    const order = { "mor": 1, "noon": 2, "night": 3 };
+    return (order[a.slot] || 0) - (order[b.slot] || 0);
+  });
+  const parts = sorted.map(c => `${c.week}-${c.slot}`);
+  return `GRID:${parts.join(",")}`;
+}
+
+/**
  * 有合法星期+时段
  */
 function isValidTimeSelection(weekIds, slotIds) {
@@ -125,7 +198,24 @@ function isValidTimeSelection(weekIds, slotIds) {
 }
 
 /** 人读摘要（如列表展示用） */
-function displayTimeSelection(weekIds, slotIds) {
+function displayTimeSelection(weekIds, slotIds, cells) {
+  if (Array.isArray(cells) && cells.length > 0) {
+    const sorted = cells.slice().sort((a, b) => {
+      if (a.week !== b.week) return a.week - b.week;
+      const order = { "mor": 1, "noon": 2, "night": 3 };
+      return (order[a.slot] || 0) - (order[b.slot] || 0);
+    });
+    const formatted = sorted.map(c => {
+      const wName = (WEEKS.find(w => w.id === c.week) || {}).name || "";
+      const sName = (SLOTS.find(s => s.id === c.slot) || {}).name || "";
+      return wName + sName;
+    });
+    if (formatted.length <= 3) {
+      return formatted.join("、");
+    } else {
+      return formatted.slice(0, 3).join("、") + "等" + formatted.length + "个时段";
+    }
+  }
   if (!isValidTimeSelection(weekIds, slotIds)) {
     return "";
   }
@@ -141,13 +231,13 @@ function displayTimeSelection(weekIds, slotIds) {
 }
 
 /**
- * 将已保存串（`W:...|S:...` 或旧文「周二 晚上」）格式化为与入驻表一致的**星期+早上/下午/晚上**（非具体钟点）
+ * 将已保存串格式化为与入驻表一致的星期+时段
  * @param {string} [saved]
  * @returns {string}
  */
 function formatSavedTimeForDisplay(saved) {
-  const { weekIds, slotIds } = parseTimeSelection(saved);
-  const line = displayTimeSelection(weekIds, slotIds);
+  const { weekIds, slotIds, cells } = parseTimeSelection(saved);
+  const line = displayTimeSelection(weekIds, slotIds, cells);
   if (line) {
     return line;
   }
@@ -168,14 +258,15 @@ function getSlotPickerList() {
  * @param {string} [saved]
  */
 function matchClassTimeToForm(saved) {
-  const { weekIds, slotIds } = parseTimeSelection(saved);
-  const composed = serializeTimeSelection(weekIds, slotIds);
+  const { weekIds, slotIds, cells } = parseTimeSelection(saved);
+  const composed = serializeTimeGrid(cells) || serializeTimeSelection(weekIds, slotIds);
   const weekList = WEEKS.slice();
   const slotList = SLOTS.slice();
   return {
     composed,
     weekIds,
     slotIds,
+    cells,
     weekList,
     slotList,
     weekChips: weekList.map((w) => ({
@@ -187,7 +278,21 @@ function matchClassTimeToForm(saved) {
       id: sl.id,
       name: sl.name,
       on: slotIds.indexOf(sl.id) >= 0
-    }))
+    })),
+    // Grid representing selection state for 3x7 grid
+    grid: slotList.map((sl) => {
+      return {
+        slotId: sl.id,
+        slotName: sl.name,
+        cells: weekList.map((w) => {
+          const isSelected = cells.some(c => c.week === w.id && c.slot === sl.id);
+          return {
+            weekId: w.id,
+            on: isSelected
+          };
+        })
+      };
+    })
   };
 }
 
@@ -203,6 +308,7 @@ module.exports = {
   getSlotPickerList,
   parseTimeSelection,
   serializeTimeSelection,
+  serializeTimeGrid,
   isValidTimeSelection,
   displayTimeSelection,
   formatSavedTimeForDisplay,

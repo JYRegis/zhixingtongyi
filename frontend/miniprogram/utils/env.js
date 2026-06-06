@@ -1,5 +1,5 @@
 const envMap = {
-  dev: "http://localhost:8080/api/v1",
+  dev: "http://47.98.180.190:8080/api/v1",
   test: "https://test-api.example.com",
   prod: "https://api.example.com"
 };

@@ -220,7 +220,7 @@ Page({
               asStudent: "",
               avatar: row.avatar || "",
               timeRaw: parseFreeTimeField(row.freeTime),
-              score: 90,
+              score: row.matchScore != null ? Math.round(row.matchScore * 100) : 90,
               style: row.schoolName || row.school || row.grade || "",
               subject: subjects || "综合"
             }, role);

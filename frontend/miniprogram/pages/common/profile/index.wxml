@@ -79,32 +79,27 @@
               >{{field.hasValue ? (field.lineText || '') : '请选择年级'}}</view>
             </picker>
             <!-- 时间选择 -->
-            <view wx:if="{{field.type === 'time_chips'}}" class="form-row form-row--time-chips">
-              <view class="field-label form-label">{{field.label}}</view>
-              <view class="form-time-chips-wrap">
-                <view class="form-time-chips-title">星期</view>
-                <view class="form-time-chips-row">
-                  <view 
-                    wx:for="{{field.weekChips}}" 
-                    wx:key="id" 
-                    class="form-time-chip {{item.on ? 'form-time-chip--on' : ''}}"
-                    bindtap="onToggleProfileTime"
-                    data-tfield="{{field.tfield}}"
-                    data-tkind="week"
-                    data-id="{{item.id}}"
-                  >{{item.name}}</view>
+            <view wx:if="{{field.type === 'time_chips'}}" class="form-row form-row--time-chips" style="margin-bottom: 24rpx;">
+              <view class="field-label form-label" style="margin-bottom: 16rpx;">{{field.label}}</view>
+              <view class="timetable-grid">
+                <view class="timetable-row timetable-header">
+                  <view class="timetable-cell cell-header">时段</view>
+                  <view wx:for="{{field.colWeeks}}" wx:key="id" class="timetable-cell cell-header-week">{{item.name}}</view>
                 </view>
-                <view class="form-time-chips-title">时段</view>
-                <view class="form-time-chips-row">
+                <view wx:for="{{field.grid}}" wx:key="slotId" class="timetable-row">
+                  <view class="timetable-cell cell-slot">{{item.slotName}}</view>
                   <view 
-                    wx:for="{{field.slotChips}}" 
-                    wx:key="id" 
-                    class="form-time-chip {{item.on ? 'form-time-chip--on' : ''}}"
-                    bindtap="onToggleProfileTime"
+                    wx:for="{{item.cells}}" 
+                    wx:for-item="cell" 
+                    wx:key="weekId" 
+                    class="timetable-cell cell-grid {{cell.on ? 'cell-grid--on' : ''}}"
+                    bindtap="onToggleProfileGridCell"
                     data-tfield="{{field.tfield}}"
-                    data-tkind="slot"
-                    data-id="{{item.id}}"
-                  >{{item.name}}</view>
+                    data-week="{{cell.weekId}}"
+                    data-slot="{{item.slotId}}"
+                  >
+                    <view class="cell-icon" wx:if="{{cell.on}}">✓</view>
+                  </view>
                 </view>
               </view>
             </view>

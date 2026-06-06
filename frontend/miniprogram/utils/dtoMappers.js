@@ -3,7 +3,7 @@
  */
 const { DEMO_L2_USER_ID } = require("../config/demoBackend");
 const { getSchoolName } = require("./schoolsMock");
-const { parseTimeSelection } = require("./classTimeOptions");
+const { parseTimeSelection, serializeTimeGrid } = require("./classTimeOptions");
 
 /** 与 Json 中 Map 可序列化一致：星期 + 时段一条一条 */
 function weekIdsSlotIdsToFreeTimeMaps(weekIds, slotIds) {
@@ -22,6 +22,20 @@ function freeTimeMapsToSerializedString(freeTimeList) {
   if (!Array.isArray(freeTimeList) || !freeTimeList.length) {
     return "";
   }
+  const cells = [];
+  freeTimeList.forEach((m) => {
+    if (!m) return;
+    // 兼容 {week, slot} 单条格式
+    if (m.week != null && m.slot) {
+      cells.push({ week: Number(m.week), slot: String(m.slot) });
+    } else if (m.dayOfWeek != null && m.slot) {
+      cells.push({ week: Number(m.dayOfWeek), slot: String(m.slot) });
+    }
+  });
+  if (cells.length > 0) {
+    return serializeTimeGrid(cells);
+  }
+
   const weeks = new Set();
   const slots = new Set();
   freeTimeList.forEach((m) => {
@@ -50,18 +64,26 @@ function freeTimeMapsToSerializedString(freeTimeList) {
  * 表单暂无「科目多选」时，使用默认科目以满足 @NotEmpty subjectsNeeded
  */
 function buildStudentProfileRequest(
-  { realName, schoolId, grade, weekIds, slotIds, personalityDesc },
+  { realName, schoolId, grade, weekIds, slotIds, cells, personalityDesc },
   options
 ) {
   const opt = options || {};
   const bind = opt.bindAdminId != null ? opt.bindAdminId : DEMO_L2_USER_ID;
   const subjects = opt.subjectsNeeded && opt.subjectsNeeded.length ? opt.subjectsNeeded : ["综合辅导（演示）"];
+  
+  let freeTimeList;
+  if (Array.isArray(cells)) {
+    freeTimeList = cells.map(c => ({ week: Number(c.week), slot: String(c.slot) }));
+  } else {
+    freeTimeList = weekIdsSlotIdsToFreeTimeMaps(weekIds, slotIds);
+  }
+
   return {
     realName: String(realName || "").trim(),
     schoolId: Number(schoolId),
     grade: String(grade || "").trim(),
     subjectsNeeded: subjects,
-    freeTime: weekIdsSlotIdsToFreeTimeMaps(weekIds, slotIds),
+    freeTime: freeTimeList,
     personalityDesc: (personalityDesc && String(personalityDesc).trim()) || undefined,
     bindAdminId: Number(bind) || 1
   };
@@ -70,15 +92,23 @@ function buildStudentProfileRequest(
 /**
  * 教师/志愿者
  */
-function buildTeacherProfileRequest({ realName, schoolId, grade, weekIds, slotIds, personalityDesc }, options) {
+function buildTeacherProfileRequest({ realName, schoolId, grade, weekIds, slotIds, cells, personalityDesc }, options) {
   const opt = options || {};
   const skilled =
     opt.skilledSubjects && opt.skilledSubjects.length ? opt.skilledSubjects : ["义教", "通识（演示）"];
+  
+  let freeTimeList;
+  if (Array.isArray(cells)) {
+    freeTimeList = cells.map(c => ({ week: Number(c.week), slot: String(c.slot) }));
+  } else {
+    freeTimeList = weekIdsSlotIdsToFreeTimeMaps(weekIds, slotIds);
+  }
+
   return {
     realName: String(realName || "").trim(),
     schoolId: schoolId != null ? Number(schoolId) : null,
     grade: (grade && String(grade)) || "本科",
-    freeTime: weekIdsSlotIdsToFreeTimeMaps(weekIds, slotIds),
+    freeTime: freeTimeList,
     skilledSubjects: skilled,
     personalSkills: (opt.personalSkills && String(opt.personalSkills)) || undefined,
     personalityDesc: (personalityDesc && String(personalityDesc).trim()) || undefined

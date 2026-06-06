@@ -460,3 +460,81 @@ button::after {
   font-weight: 700;
   box-sizing: border-box;
 }
+
+/* 课表时间矩阵网格 (3x7) */
+.timetable-grid {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1rpx solid #e2e8f0;
+  border-radius: 12rpx;
+  overflow: hidden;
+  background: #ffffff;
+  box-sizing: border-box;
+  margin-top: 12rpx;
+}
+
+.timetable-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  border-bottom: 1rpx solid #e2e8f0;
+}
+
+.timetable-row:last-child {
+  border-bottom: none;
+}
+
+.timetable-cell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 24rpx;
+  padding: 16rpx 0;
+  border-right: 1rpx solid #e2e8f0;
+  min-height: 80rpx;
+  box-sizing: border-box;
+}
+
+.timetable-cell:last-child {
+  border-right: none;
+}
+
+.cell-header {
+  background: #f8fafc;
+  font-weight: bold;
+  color: #64748b;
+  flex: 1.3;
+}
+
+.cell-header-week {
+  background: #f8fafc;
+  font-weight: bold;
+  color: #475569;
+}
+
+.cell-slot {
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: bold;
+  flex: 1.3;
+}
+
+.cell-grid {
+  background: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cell-grid--on {
+  background: #e6f4ff !important;
+}
+
+.cell-icon {
+  font-size: 28rpx;
+  color: #0958d9;
+  font-weight: bold;
+}

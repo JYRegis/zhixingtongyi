@@ -88,45 +88,49 @@
 
       <view class="field" wx:if="{{role === 'student'}}">
         <text class="field-label">可在线 / 希望上课时间 <text class="field-req">*</text></text>
-        <view class="field-chips field-chips--wrap field-chips--time" >
-          <view
-            class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
-            wx:for="{{weekChips}}"
-            wx:key="id"
-            data-id="{{item.id}}"
-            bindtap="onToggleWeek"
-            >{{item.name}}</view>
-        </view>
-        <view class="field-chips field-chips--wrap field-chips--time">
-          <view
-            class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
-            wx:for="{{slotChips}}"
-            wx:key="id"
-            data-id="{{item.id}}"
-            bindtap="onToggleSlot"
-            >{{item.name}}</view>
+        <view class="timetable-grid">
+          <view class="timetable-row timetable-header">
+            <view class="timetable-cell cell-header">时段</view>
+            <view wx:for="{{colWeeks}}" wx:key="id" class="timetable-cell cell-header-week">{{item.name}}</view>
+          </view>
+          <view wx:for="{{grid}}" wx:key="slotId" class="timetable-row">
+            <view class="timetable-cell cell-slot">{{item.slotName}}</view>
+            <view 
+              wx:for="{{item.cells}}" 
+              wx:for-item="cell" 
+              wx:key="weekId" 
+              class="timetable-cell cell-grid {{cell.on ? 'cell-grid--on' : ''}}"
+              bindtap="onToggleGridCell"
+              data-week="{{cell.weekId}}"
+              data-slot="{{item.slotId}}"
+            >
+              <view class="cell-icon" wx:if="{{cell.on}}">✓</view>
+            </view>
+          </view>
         </view>
       </view>
 
       <view class="field" wx:if="{{role === 'teacher' || role === 'admin_level_2'}}">
         <text class="field-label">{{timeBlockTitle}} <text class="field-req">*</text></text>
-        <view class="field-chips field-chips--wrap field-chips--time" >
-          <view
-            class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
-            wx:for="{{weekChips}}"
-            wx:key="id"
-            data-id="{{item.id}}"
-            bindtap="onToggleWeek"
-            >{{item.name}}</view>
-        </view>
-        <view class="field-chips field-chips--wrap field-chips--time">
-          <view
-            class="field-chip field-chip--sm {{item.on ? 'field-chip--on' : ''}}"
-            wx:for="{{slotChips}}"
-            wx:key="id"
-            data-id="{{item.id}}"
-            bindtap="onToggleSlot"
-            >{{item.name}}</view>
+        <view class="timetable-grid">
+          <view class="timetable-row timetable-header">
+            <view class="timetable-cell cell-header">时段</view>
+            <view wx:for="{{colWeeks}}" wx:key="id" class="timetable-cell cell-header-week">{{item.name}}</view>
+          </view>
+          <view wx:for="{{grid}}" wx:key="slotId" class="timetable-row">
+            <view class="timetable-cell cell-slot">{{item.slotName}}</view>
+            <view 
+              wx:for="{{item.cells}}" 
+              wx:for-item="cell" 
+              wx:key="weekId" 
+              class="timetable-cell cell-grid {{cell.on ? 'cell-grid--on' : ''}}"
+              bindtap="onToggleGridCell"
+              data-week="{{cell.weekId}}"
+              data-slot="{{item.slotId}}"
+            >
+              <view class="cell-icon" wx:if="{{cell.on}}">✓</view>
+            </view>
+          </view>
         </view>
         <view class="surface-note" style="font-size: 24rpx; color: #667085; margin-top: 8rpx;" wx:if="{{role === 'admin_level_2'}}">
           与志愿者不同：此时间表示您希望被平台/学校联系的大致时段（审核通过后，平台将再为您确认支教/受援身份与具体管辖校）。
