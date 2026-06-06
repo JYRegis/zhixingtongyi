@@ -461,7 +461,7 @@ Page({
       this._syncProfileToBackend(role, payload)
         .then(function () {
           wx.hideLoading();
-          self._afterOnboardingSubmitRemote(uid, role, schoolId, extra, u, orgNote);
+          self._afterOnboardingSubmitRemote(phone, role, schoolId, extra, u, orgNote);
         })
         .catch(function (err) {
           wx.hideLoading();
@@ -473,14 +473,14 @@ Page({
             cancelText: "取消",
             success: function (res) {
               if (res.confirm) {
-                self._afterOnboardingSubmitLocal(uid, role, schoolId, extra, u, orgNote);
+                self._afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote);
               }
             }
           });
         });
       return;
     }
-    this._afterOnboardingSubmitLocal(uid, role, schoolId, extra, u, orgNote);
+    this._afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote);
   },
   _syncProfileToBackend(role, payload) {
     if (role === "student") {
@@ -528,7 +528,7 @@ Page({
     }
     return Promise.resolve();
   },
-  _afterOnboardingSubmitRemote(uid, role, schoolId, extra, u, orgNote) {
+  _afterOnboardingSubmitRemote(phone, role, schoolId, extra, u, orgNote) {
     const patch = {
       name: extra.name,
       studentNo: extra.studentNo,
@@ -548,20 +548,20 @@ Page({
         delete patch[key];
       }
     });
-    saveProfile(uid, patch);
+    saveProfile(phone, patch);
     wx.showToast({ title: "已提交，等待审核", icon: "success" });
     setTimeout(() => {
       wx.reLaunch({ url: `/pages/common/onboarding-pending/index?role=${encodeURIComponent(role)}&status=pending` });
     }, 500);
   },
-  _afterOnboardingSubmitLocal(uid, role, schoolId, extra, u, orgNote) {
-    const r = submitApplication({ applicantId: uid, role, schoolId, extra });
+  _afterOnboardingSubmitLocal(phone, role, schoolId, extra, u, orgNote) {
+    const r = submitApplication({ applicantId: phone, role, schoolId, extra });
     if (!r || !r.ok) {
       wx.showToast({ title: (r && r.message) || "提交失败", icon: "none" });
       return;
     }
     if (role === "admin_level_1") {
-      saveProfile(uid, {
+      saveProfile(phone, {
         organization: orgNote,
         applicationNote: extra.applyNote
       });
@@ -584,7 +584,7 @@ Page({
           delete patch[key];
         }
       });
-      saveProfile(uid, patch);
+      saveProfile(phone, patch);
     }
     wx.showToast({ title: "已提交", icon: "success" });
     setTimeout(() => {

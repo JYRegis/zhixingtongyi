@@ -72,6 +72,10 @@ public class SecurityConfig {
                                 "/error"
                         ).permitAll()
 
+                        // === 入驻资料接口：新用户尚未选择角色，放行为仅需认证 ===
+                        .requestMatchers("/student/profile", "/student/profile/**").authenticated()
+                        .requestMatchers("/teacher/profile", "/teacher/profile/**").authenticated()
+
                         // === 角色级别的 URL 规则（纵深防御第二层） ===
                         .requestMatchers("/admin/**").hasAnyRole("0", "1")
                         .requestMatchers("/student/**").hasRole("3")

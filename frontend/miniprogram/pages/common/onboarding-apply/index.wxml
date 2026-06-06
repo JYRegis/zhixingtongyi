@@ -149,18 +149,6 @@
         </view>
       </view>
 
-      <view class="field" wx:if="{{role === 'student' || role === 'teacher'}}">
-        <text class="field-label">{{role === 'student' ? '希望辅导科目' : '擅长科目'}}</text>
-        <input
-          class="field-input"
-          value="{{subjects}}"
-          data-k="subjects"
-          bindinput="onText"
-          placeholder="如：数学、英语（用逗号分隔）"
-          placeholder-class="form-placeholder-std"
-        />
-      </view>
-
       <view class="field" wx:if="{{role === 'admin_level_2'}}">
         <text class="field-label">管辖/身份补充说明</text>
         <textarea
