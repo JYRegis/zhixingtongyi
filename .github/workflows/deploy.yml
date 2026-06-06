@@ -18,4 +18,4 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           command_timeout: 30m
           script: |
-            /root/zhixingtongyi/redeploy.sh
+            bash /root/zhixingtongyi/redeploy.sh
