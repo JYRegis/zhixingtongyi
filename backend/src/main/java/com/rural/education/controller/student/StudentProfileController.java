@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/student")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('3')")
 public class StudentProfileController {
     private final StudentService studentService;
 
