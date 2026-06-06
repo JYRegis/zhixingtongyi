@@ -68,9 +68,8 @@ function buildStudentProfileRequest(
   options
 ) {
   const opt = options || {};
-  const bind = opt.bindAdminId != null ? opt.bindAdminId : DEMO_L2_USER_ID;
   const subjects = opt.subjectsNeeded && opt.subjectsNeeded.length ? opt.subjectsNeeded : ["综合辅导"];
-  
+
   let freeTimeList;
   if (Array.isArray(cells)) {
     freeTimeList = cells.map(c => ({ week: Number(c.week), slot: String(c.slot) }));
@@ -78,15 +77,19 @@ function buildStudentProfileRequest(
     freeTimeList = weekIdsSlotIdsToFreeTimeMaps(weekIds, slotIds);
   }
 
-  return {
+  const body = {
     realName: String(realName || "").trim(),
     schoolId: Number(schoolId),
     grade: String(grade || "").trim(),
     subjectsNeeded: subjects,
     freeTime: freeTimeList,
     personalityDesc: (personalityDesc && String(personalityDesc).trim()) || undefined,
-    bindAdminId: Number(bind) || 1
   };
+  // 入驻时不发 bindAdminId，由管理员审核时分配
+  if (opt.bindAdminId != null) {
+    body.bindAdminId = Number(opt.bindAdminId);
+  }
+  return body;
 }
 
 /**

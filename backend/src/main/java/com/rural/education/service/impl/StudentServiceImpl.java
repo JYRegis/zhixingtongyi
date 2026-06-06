@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rural.education.enums.AuditStatus;
-import com.rural.education.enums.UserRole;
 import com.rural.education.exception.BusinessException;
 import com.rural.education.model.mapper.StudentProfileMapper;
 import com.rural.education.model.mapper.UserMapper;
@@ -15,7 +14,7 @@ import com.rural.education.model.entity.StudentProfile;
 import com.rural.education.model.entity.User;
 import com.rural.education.vo.StudentVO;
 import com.rural.education.service.StudentService;
-import com.rural.education.service.UserAccessService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +24,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, StudentProfile> implements StudentService {
-    private final UserAccessService userAccessService;
     private final StudentProfileMapper studentProfileMapper;
     private final UserMapper userMapper;
     private final ObjectMapper objectMapper;
@@ -50,9 +48,6 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
                             .set(StudentProfile::getProfileStatus, 0)
             );
         } else {
-            if (request.getBindAdminId() != null) {
-                userAccessService.requireRole(request.getBindAdminId(), UserRole.L2_ADMIN.getCode());
-            }
             StudentProfile profile = new StudentProfile();
             profile.setUserId(userId);
             profile.setSchoolId(request.getSchoolId());
@@ -61,7 +56,12 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
             profile.setFreeTime(toJson(request.getFreeTime()));
             profile.setPersonalityDesc(request.getPersonalityDesc());
             profile.setProfileStatus(0);
-            profile.setBindAdminId(request.getBindAdminId());
+            // 入驻时不发 bindAdminId，暂用自身填充；管理员审核时可重新分配
+            profile.setBindAdminId(
+                request.getBindAdminId() != null && request.getBindAdminId() > 0
+                    ? request.getBindAdminId()
+                    : userId
+            );
             profile.setAuditStatus(AuditStatus.PENDING.getCode());
             studentProfileMapper.insert(profile);
         }
