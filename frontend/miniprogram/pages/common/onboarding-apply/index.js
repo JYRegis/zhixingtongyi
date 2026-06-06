@@ -360,11 +360,12 @@ Page({
   onSubmit() {
     const app = getApp();
     const u = app.globalData.userInfo;
-    if (!u || !u.phone) {
+    const authToken = (app.globalData && app.globalData.token) || wx.getStorageSync("token") || "";
+    if (!u || (!authToken && !u.phone && !u.backendUserId)) {
       wx.showToast({ title: "请先登录", icon: "none" });
       return;
     }
-    const phone = String(u.phone);
+    const phone = String(u.phone || u.backendUserId || u.userId || "");
     const {
       role,
       schoolId,
