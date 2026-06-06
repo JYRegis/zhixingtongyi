@@ -17,8 +17,22 @@ const GRADE_LIST = [
   { id: "h3", name: "高三" }
 ];
 
+const TEACHER_GRADE_LIST = [
+  { id: "u1", name: "大一" },
+  { id: "u2", name: "大二" },
+  { id: "u3", name: "大三" },
+  { id: "u4", name: "大四" },
+  { id: "g1", name: "研一" },
+  { id: "g2", name: "研二" },
+  { id: "g3", name: "研三" }
+];
+
 function getGradesPlain() {
   return GRADE_LIST;
+}
+
+function getTeacherGradesPlain() {
+  return TEACHER_GRADE_LIST;
 }
 
 /**
@@ -40,27 +54,26 @@ function buildGradeChips(list, selectedId) {
 /**
  * 年级为单选；无占位项，与芯片 UI 配合
  * @param {string} [saved] 已存为展示名，如「初二」
+ * @param {boolean} [isTeacher] 是否为教师/志愿者年级列表
  * @returns {{ list: {id: string, name: string}[], index: number, label: string, selectedId: string, gradeChips: {id: string, name: string, on: boolean}[] }}
  */
-function matchGradeToPicker(saved) {
+function matchGradeToPicker(saved, isTeacher) {
+  const baseList = isTeacher ? TEACHER_GRADE_LIST : GRADE_LIST;
   const s = saved == null || saved === "" ? "" : String(saved).trim();
   if (!s || s === "请选择年级" || s === "请选择" || s === "年级") {
-    const list = getGradesPlain();
-    return { list, index: -1, label: "", selectedId: "", gradeChips: buildGradeChips(list, "") };
+    return { list: baseList, index: -1, label: "", selectedId: "", gradeChips: buildGradeChips(baseList, "") };
   }
-  const list0 = getGradesPlain();
-  const hit = list0.find((g) => g.name === s);
+  const hit = baseList.find((g) => g.name === s);
   if (hit) {
-    const list = list0;
     return {
-      list,
-      index: list.findIndex((g) => g.id === hit.id),
+      list: baseList,
+      index: baseList.findIndex((g) => g.id === hit.id),
       label: s,
       selectedId: hit.id,
-      gradeChips: buildGradeChips(list, hit.id)
+      gradeChips: buildGradeChips(baseList, hit.id)
     };
   }
-  const withUnknown = list0.slice();
+  const withUnknown = baseList.slice();
   withUnknown.push({ id: "other", name: s });
   return {
     list: withUnknown,
@@ -86,6 +99,7 @@ function getGradeNameById(gradeId) {
 module.exports = {
   getGradesForPicker,
   getGradesPlain,
+  getTeacherGradesPlain,
   matchGradeToPicker,
   getGradeNameById
 };

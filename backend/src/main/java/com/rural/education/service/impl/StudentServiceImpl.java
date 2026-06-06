@@ -32,10 +32,10 @@ public class StudentServiceImpl extends ServiceImpl<StudentProfileMapper, Studen
     @Transactional(rollbackFor = Exception.class)
     public void saveDraft(Long userId, StudentProfileRequest request) {
 
-        StudentProfile existed = studentProfileMapper.selectOne(
+        long count = studentProfileMapper.selectCount(
                 new LambdaQueryWrapper<StudentProfile>().eq(StudentProfile::getUserId, userId)
         );
-        if (existed != null) {
+        if (count > 0) {
             studentProfileMapper.update(
                     null,
                     new LambdaUpdateWrapper<StudentProfile>()

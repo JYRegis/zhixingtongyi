@@ -14,7 +14,6 @@ public class TeacherProfileRequest {
     private String realName;
     @NotNull(message = "schoolId 不能为空")
     private Long schoolId;
-    @NotBlank(message = "grade 不能为空")
     private String grade;
     @NotEmpty(message = "freeTime 不能为空")
     private List<Map<String, Object>> freeTime;

@@ -1,5 +1,5 @@
-const { getSchoolName, getSchoolsByKind } = require("../../../utils/schoolsMock");
-const { matchGradeToPicker } = require("../../../utils/gradeOptions");
+const { getSchoolName, getSchoolsByKind, fetchSchools } = require("../../../utils/schoolsMock");
+const { matchGradeToPicker, getTeacherGradesPlain } = require("../../../utils/gradeOptions");
 const { matchClassTimeToForm, serializeTimeSelection, serializeTimeGrid, isValidTimeSelection } = require("../../../utils/classTimeOptions");
 const { submitApplication, getApplications } = require("../../../utils/onboardingStore");
 const { getByPhone, saveProfile, mergeFromStorageIntoApp } = require("../../../utils/userProfileStore");
@@ -138,13 +138,14 @@ Page({
 
     let schoolList = [];
     let showSchool = role === "student" || role === "teacher" || role === "admin_level_2";
-    if (role === "student") {
-      schoolList = getSchoolsByKind("recipient");
-    } else if (role === "teacher") {
-      // 支教方学校：从后端/本地获取所有 type=1 的学校
-      schoolList = getSchoolsByKind("support");
-    } else if (role === "admin_level_2") {
-      schoolList = getSchoolsByKind();
+    const schoolKind = role === "student" ? "recipient" : role === "teacher" ? "support" : null;
+    if (showSchool) {
+      const self = this;
+      fetchSchools(schoolKind ? { kind: schoolKind } : {}).then(function (list) {
+        self.setData({ schoolList: list });
+      });
+      // 先用本地缓存快速渲染，fetchSchools 回调后会更新
+      schoolList = getSchoolsByKind(schoolKind);
     }
     let schoolId = p.schoolId || u.schoolId || "";
     if (role === "teacher") {
@@ -162,7 +163,12 @@ Page({
     let gradeList = [];
     let gradePickerValue = 0;
     if (role === "student") {
-      const mg = matchGradeToPicker(p.grade);
+      const mg = matchGradeToPicker(p.grade, false);
+      grade = mg.label;
+      gradeList = mg.list;
+      gradePickerValue = indexInGradeList(mg);
+    } else if (role === "teacher") {
+      const mg = matchGradeToPicker(p.grade, true);
       grade = mg.label;
       gradeList = mg.list;
       gradePickerValue = indexInGradeList(mg);
@@ -419,6 +425,14 @@ Page({
       wx.showToast({ title: "请选择年级", icon: "none" });
       return;
     }
+    if (role === "teacher" && !String(grade).trim()) {
+      wx.showToast({ title: "请选择年级", icon: "none" });
+      return;
+    }
+    if (role === "student" && (!subjects || !subjects.trim())) {
+      wx.showToast({ title: "请填写需要辅导的科目", icon: "none" });
+      return;
+    }
     if (role === "student" && !isValidTimeSelection(weekIds, slotIds)) {
       wx.showToast({ title: "请至少选择一天与一个时段", icon: "none" });
       return;
@@ -491,7 +505,7 @@ Page({
         .getProfile()
         .then(
           function (vo) {
-            if (vo && (vo.id != null || vo.userId != null)) {
+            if (vo != null && (vo.id != null || vo.userId != null)) {
               return studentApi.updateProfile(body);
             }
             return studentApi.createProfile(body);
@@ -513,7 +527,7 @@ Page({
       });
       return teacherApi.getProfile().then(
         function (vo) {
-          if (vo && (vo.id != null || vo.userId != null)) {
+          if (vo != null && (vo.id != null || vo.userId != null)) {
             return teacherApi.updateProfile(body);
           }
           return teacherApi.createProfile(body);
@@ -549,6 +563,16 @@ Page({
       }
     });
     saveProfile(phone, patch);
+    // 同步 realName 到 globalData，避免后续页面仍显示旧昵称
+    if (extra.name) {
+      try {
+        const app = getApp();
+        if (app && app.globalData && app.globalData.userInfo) {
+          app.globalData.userInfo.realName = extra.name;
+          wx.setStorageSync("userInfo", app.globalData.userInfo);
+        }
+      } catch (_) {}
+    }
     wx.showToast({ title: "已提交，等待审核", icon: "success" });
     setTimeout(() => {
       wx.reLaunch({ url: `/pages/common/onboarding-pending/index?role=${encodeURIComponent(role)}&status=pending` });
@@ -585,6 +609,16 @@ Page({
         }
       });
       saveProfile(phone, patch);
+    }
+    // 同步 realName 到 globalData
+    if (extra.name) {
+      try {
+        const app2 = getApp();
+        if (app2 && app2.globalData && app2.globalData.userInfo) {
+          app2.globalData.userInfo.realName = extra.name;
+          wx.setStorageSync("userInfo", app2.globalData.userInfo);
+        }
+      } catch (_) {}
     }
     wx.showToast({ title: "已提交", icon: "success" });
     setTimeout(() => {

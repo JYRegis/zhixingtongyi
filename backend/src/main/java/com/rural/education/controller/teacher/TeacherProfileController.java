@@ -3,6 +3,7 @@ package com.rural.education.controller.teacher;
 import com.rural.education.security.SecurityUtils;
 import com.rural.education.dto.common.ApiResponse;
 import com.rural.education.dto.request.teacher.TeacherProfileRequest;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.vo.TeacherVO;
 import com.rural.education.service.TeacherService;
 import jakarta.validation.Valid;
@@ -38,7 +39,11 @@ public class TeacherProfileController {
     @GetMapping("/profile")
     public ApiResponse<TeacherVO> getProfile() {
         Long userId = SecurityUtils.getCurrentUserId();
-        return ApiResponse.success(teacherService.getProfile(userId));
+        TeacherVO vo = teacherService.getProfile(userId);
+        if (vo == null) {
+            throw new BusinessException("未找到教师资料");
+        }
+        return ApiResponse.success(vo);
     }
 }
 

@@ -3,6 +3,7 @@ package com.rural.education.controller.student;
 import com.rural.education.security.SecurityUtils;
 import com.rural.education.dto.common.ApiResponse;
 import com.rural.education.dto.request.student.StudentProfileRequest;
+import com.rural.education.exception.BusinessException;
 import com.rural.education.vo.StudentVO;
 import com.rural.education.service.StudentService;
 import jakarta.validation.Valid;
@@ -45,7 +46,11 @@ public class StudentProfileController {
     @GetMapping("/profile")
     public ApiResponse<StudentVO> getProfile() {
         Long userId = SecurityUtils.getCurrentUserId();
-        return ApiResponse.success(studentService.getProfile(userId));
+        StudentVO vo = studentService.getProfile(userId);
+        if (vo == null) {
+            throw new BusinessException("未找到学生资料");
+        }
+        return ApiResponse.success(vo);
     }
 }
 

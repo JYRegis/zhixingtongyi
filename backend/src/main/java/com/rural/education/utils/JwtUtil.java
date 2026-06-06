@@ -2,6 +2,7 @@ package com.rural.education.utils;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.rural.education.exception.AuthException;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +44,10 @@ public class JwtUtil {
     }
 
     public Integer getRoleFromToken(String token) {
-        return verifyToken(token).getClaim("role").asInt();
+        Claim roleClaim = verifyToken(token).getClaim("role");
+        if (roleClaim.isNull()) {
+            return null;
+        }
+        return roleClaim.asInt();
     }
 }

@@ -71,7 +71,7 @@
         </picker>
       </view>
 
-      <view class="field field--control" wx:if="{{role === 'student'}}">
+      <view class="field field--control" wx:if="{{role === 'student' || role === 'teacher'}}">
         <text class="field-label">年级 <text class="field-req">*</text></text>
         <picker
           mode="selector"
@@ -87,7 +87,7 @@
       </view>
 
       <view class="field" wx:if="{{role === 'student'}}">
-        <text class="field-label">需要辅导的科目</text>
+        <text class="field-label">需要辅导的科目 <text class="field-req">*</text></text>
         <input
           class="field-input"
           value="{{subjects}}"

@@ -76,6 +76,9 @@ public class SecurityConfig {
                         .requestMatchers("/student/profile", "/student/profile/**").authenticated()
                         .requestMatchers("/teacher/profile", "/teacher/profile/**").authenticated()
 
+                        // === 角色申请 & 个人信息：仅需登录，不校验角色（新用户 role=null 也能调用） ===
+                        .requestMatchers("/auth/role-apply", "/auth/me").authenticated()
+
                         // === 角色级别的 URL 规则（纵深防御第二层） ===
                         // 注意：这里必须先放行 /student/profile 和 /teacher/profile 给任意登录用户（否则刚注册的用户没有 Role 2/3 会报403）
                         .requestMatchers(
