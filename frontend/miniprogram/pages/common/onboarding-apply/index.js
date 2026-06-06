@@ -377,7 +377,8 @@ Page({
       weekIds,
       slotIds,
       l2Note,
-      orgNote
+      orgNote,
+      subjects
     } = this.data;
     const tStudent = role === "student" ? serializeTimeSelection(weekIds, slotIds) : "";
     const tTeacher = role === "teacher" || role === "admin_level_2" ? serializeTimeSelection(weekIds, slotIds) : "";
@@ -447,9 +448,9 @@ Page({
         weekIds,
         slotIds,
         cells: this.data.cells,
-        subjectsNeeded: role === "student" ? (form.subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
-        skilledSubjects: role === "teacher" ? (form.subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
-        personalityDesc: (extra.applyNote || extra.l2Note || "").trim() || undefined
+        subjectsNeeded: role === "student" ? (subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
+        skilledSubjects: role === "teacher" ? (subjects || "").split(/[,，、]+/).map(s => s.trim()).filter(Boolean) : undefined,
+        personalityDesc: (applyNote || l2Note || "").trim() || undefined
       };
       wx.showLoading({ title: "同步服务器", mask: true });
       this._syncProfileToBackend(role, payload)
