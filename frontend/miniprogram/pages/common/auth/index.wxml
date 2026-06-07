@@ -21,7 +21,6 @@
           bindinput="onManualPhoneInput"
         />
       </view>
-      <view class="auth-dev-tip">手机号登录仅用于开发测试</view>
       <button class="auth-submit-btn" bindtap="onManualSubmit">手机号登录</button>
     </view>
   </view>
