@@ -1,3 +1,5 @@
+﻿const { SUBJECT_OPTIONS } = require('../../../utils/subjectOptions');
+const { SUBJECT_OPTIONS } = require('../../../utils/subjectOptions');
 const { getSchoolName, getSchoolsByKind, fetchSchools } = require("../../../utils/schoolsMock");
 const { matchGradeToPicker, getTeacherGradesPlain } = require("../../../utils/gradeOptions");
 const { matchClassTimeToForm, serializeTimeSelection, serializeTimeGrid, isValidTimeSelection } = require("../../../utils/classTimeOptions");
@@ -246,6 +248,7 @@ Page({
       availableTimeHint: role === "teacher" || role === "admin_level_2" ? teachTimeStr : "",
       timeBlockTitle: timeBlockTitle,
       subjects: subjects,
+      SUBJECT_OPTIONS: subjectOpts,
       l2Note: p.l2Note || "",
       orgNote: p.organization || p.orgNote || ""
     });
@@ -277,6 +280,27 @@ Page({
     this.setData({
       grade: g.id ? g.name : "",
       gradePickerValue: ix
+    });
+  },
+  onToggleSubject(e) {
+    const { subject } = e.currentTarget.dataset;
+    if (!subject) return;
+    const { subjects, SUBJECT_OPTIONS } = this.data;
+    let selected = (subjects || "").split(/[,，、\s]+/).filter(Boolean);
+    const idx = selected.indexOf(subject);
+    if (idx >= 0) {
+      selected.splice(idx, 1);
+    } else {
+      selected.push(subject);
+    }
+    const newSubjectsStr = selected.join("、");
+    const nextOpts = SUBJECT_OPTIONS.map(opt => ({
+      ...opt,
+      selected: selected.indexOf(opt.name) >= 0
+    }));
+    this.setData({
+      subjects: newSubjectsStr,
+      SUBJECT_OPTIONS: nextOpts
     });
   },
   onToggleGridCell(e) {
@@ -453,6 +477,7 @@ Page({
       grade: String(grade || "").trim(),
       studentAvailableTime: String(tStudent || "").trim(),
       availableTime: String(tTeacher || "").trim(),
+      subjects: String(subjects || "").trim(),
       l2Note: String(l2Note || "").trim(),
       orgNote: String(orgNote || "").trim()
     };
@@ -634,6 +659,7 @@ Page({
         grade: extra.grade,
         studentAvailableTime: extra.studentAvailableTime,
         availableTime: extra.availableTime,
+        subjects: extra.subjects,
         l2Note: extra.l2Note,
         organization: extra.orgNote,
         applicationNote: extra.applyNote

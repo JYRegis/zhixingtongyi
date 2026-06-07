@@ -103,6 +103,13 @@
                 </view>
               </view>
             </view>
+            <view wx:elif="{{field.type === 'subjects_chips'}}" class="subject-chips">
+              <view wx:for="{{field.options}}" wx:key="name" wx:for-item="opt"
+                    class="subject-chip {{opt.selected ? 'on' : ''}}"
+                    bindtap="onToggleSubject" data-subject="{{opt.name}}">
+                {{opt.name}}
+              </view>
+            </view>
             <view
               wx:elif="{{field.type === 'readonly_text'}}"
               class="field-input profile-field-input"

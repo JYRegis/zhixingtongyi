@@ -86,16 +86,15 @@
         </picker>
       </view>
 
-      <view class="field" wx:if="{{role === 'student'}}">
-        <text class="field-label">需要辅导的科目 <text class="field-req">*</text></text>
-        <input
-          class="field-input"
-          value="{{subjects}}"
-          data-k="subjects"
-          bindinput="onText"
-          placeholder="如：数学、英语（多个用顿号或逗号分隔）"
-          placeholder-class="form-placeholder-std"
-        />
+      <view class="field" wx:if="{{role === 'student' || role === 'teacher'}}">
+        <text class="field-label">{{role === 'student' ? '需要辅导的科目' : '擅长的科目'}} <text class="field-req">*</text></text>
+        <view class="subject-chips">
+          <view wx:for="{{SUBJECT_OPTIONS}}" wx:key="name"
+                class="subject-chip {{item.selected ? 'on' : ''}}"
+                bindtap="onToggleSubject" data-subject="{{item.name}}">
+            {{item.name}}
+          </view>
+        </view>
       </view>
 
       <view class="field" wx:if="{{role === 'student'}}">
