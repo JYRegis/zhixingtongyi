@@ -102,7 +102,10 @@ Page({
     roleName: "学员",
     heroTitle: "",
     renderList: [],
-    list: []
+    list: [],
+    page: 1,
+    pageSize: 10,
+    hasMore: true
   },
   onShow: async function () {
     const role0 = (getApp().globalData && getApp().globalData.role) || "";
@@ -113,7 +116,7 @@ Page({
     }
     if (role0 === "admin_level_2") {
       // 二级管理员的工作场景在工作台 + 学生/教师审核 + 解绑确认等管理子页，
-      // 不应停留在「匹配」Tab。原先依赖本地 l2Scope 区分支教/受援方的拦截
+      // 不应停留在那「匹配」Tab。原先依赖本地 l2Scope 区分支教/受援方的拦截
       // 在后端联调下永远拿不到值，导致二级管理员能进此页并点「申请结对」。
       // 这里一律踢回工作台。
       wx.switchTab({ url: "/pages/common/workbench/index" });
@@ -180,7 +183,8 @@ Page({
         }
       }
     }
-    var renderList = fullList.slice();
+    const pageSize = 10;
+    var renderList = fullList.slice(0, pageSize);
     var hero = matchHeroMap[role] || matchHeroMap.student;
 
     var canUnbind =
@@ -193,14 +197,33 @@ Page({
       roleName: ROLE_DISPLAY_NAME[role] || "学员",
       heroTitle: hero.title,
       list: fullList,
-      renderList: renderList
+      renderList: renderList,
+      page: 1,
+      pageSize: pageSize,
+      hasMore: fullList.length > pageSize
     });
   } catch (outerErr) {
     if (console && console.error) {
       console.error("[match-center] onShow unexpected error", outerErr);
     }
-    this.setData({ role: role || "", renderList: [], list: [] });
+    this.setData({ role: role || "", renderList: [], list: [], page: 1, hasMore: false });
   }
+  },
+  onReachBottom: function () {
+    if (this.data.renderList.length < this.data.list.length) {
+      wx.showLoading({ title: "加载中...", mask: true });
+      const self = this;
+      setTimeout(() => {
+        wx.hideLoading();
+        const nextPage = self.data.page + 1;
+        const nextRenderList = self.data.list.slice(0, nextPage * self.data.pageSize);
+        self.setData({
+          page: nextPage,
+          renderList: nextRenderList,
+          hasMore: self.data.list.length > nextRenderList.length
+        });
+      }, 250);
+    }
   },
   onPullDownRefresh: function () {
     this.onShow();
@@ -217,10 +240,11 @@ Page({
       }
       // 立即从本地列表移除，无需重新请求后端
       var newList = this.data.list.filter(function (item) { return item.id !== id; });
-      var newRenderList = newList.slice();
+      var newRenderList = newList.slice(0, this.data.page * this.data.pageSize);
       this.setData({
         list: newList,
-        renderList: newRenderList
+        renderList: newRenderList,
+        hasMore: newList.length > newRenderList.length
       });
       wx.showToast({
         title: "已申请" + (one && one.teacher ? " " + one.teacher : ""),

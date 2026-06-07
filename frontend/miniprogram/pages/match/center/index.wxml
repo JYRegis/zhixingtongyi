@@ -71,5 +71,11 @@
         </view>
       </view>
     </block>
+
+    <!-- 分页加载提示 -->
+    <view class="load-more-status" wx:if="{{role === 'student' && list.length > 0}}">
+      <text wx:if="{{hasMore}}">上拉加载更多...</text>
+      <text wx:else class="no-more-text">— 没有更多推荐了 —</text>
+    </view>
   </view>
 </view>
