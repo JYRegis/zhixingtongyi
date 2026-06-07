@@ -1,5 +1,4 @@
 ﻿const { SUBJECT_OPTIONS } = require('../../../utils/subjectOptions');
-const { SUBJECT_OPTIONS } = require('../../../utils/subjectOptions');
 const { getSchoolName, getSchoolsByKind, fetchSchools } = require("../../../utils/schoolsMock");
 const { matchGradeToPicker, getTeacherGradesPlain } = require("../../../utils/gradeOptions");
 const { matchClassTimeToForm, serializeTimeSelection, serializeTimeGrid, isValidTimeSelection } = require("../../../utils/classTimeOptions");
