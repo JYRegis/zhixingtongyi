@@ -372,28 +372,25 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
 
         matchPairMapper.update(null, wrapper);
 
-        NotificationEvent unbindEvent = new NotificationEvent();
-        unbindEvent.setType(NotificationType.UNBIND_APPLY.getCode());
-        unbindEvent.setTitle("解绑申请");
-        unbindEvent.setContent("结对关系有新的解绑申请，请确认");
         Map<String, Object> unbindParams = new HashMap<>();
         unbindParams.put("pairId", pairId);
+        String paramsJson;
         try {
-            unbindEvent.setParamsJson(objectMapper.writeValueAsString(unbindParams));
+            paramsJson = objectMapper.writeValueAsString(unbindParams);
         } catch (Exception e) {
             throw new BusinessException("参数序列化失败");
         }
+        Integer type = NotificationType.UNBIND_APPLY.getCode();
+        String title = "解绑申请";
+        String content = "结对关系有新的解绑申请，请确认";
         if (!userId.equals(studentId)) {
-            unbindEvent.setUserId(studentId);
-            notificationAsyncPublisher.publishAfterCommit(unbindEvent);
+            publishNotification(studentId, type, title, content, paramsJson);
         }
         if (!userId.equals(teacherId)) {
-            unbindEvent.setUserId(teacherId);
-            notificationAsyncPublisher.publishAfterCommit(unbindEvent);
+            publishNotification(teacherId, type, title, content, paramsJson);
         }
         if (adminId != null && !userId.equals(adminId)) {
-            unbindEvent.setUserId(adminId);
-            notificationAsyncPublisher.publishAfterCommit(unbindEvent);
+            publishNotification(adminId, type, title, content, paramsJson);
         }
     }
 
@@ -426,26 +423,24 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                             .set(MatchPair::getUnbindRejectTime, LocalDateTime.now())
             );
 
-            NotificationEvent rejectEvent = new NotificationEvent();
-            rejectEvent.setType(NotificationType.UNBIND_APPLY.getCode());
-            rejectEvent.setTitle("解绑申请被拒绝");
-            rejectEvent.setContent("解绑申请已被拒绝，原因: " + request.getRejectReason());
             Map<String, Object> rejectUnbindParams = new HashMap<>();
             rejectUnbindParams.put("pairId", pairId);
+            String paramsJson;
             try {
-                rejectEvent.setParamsJson(objectMapper.writeValueAsString(rejectUnbindParams));
+                paramsJson = objectMapper.writeValueAsString(rejectUnbindParams);
             } catch (Exception e) {
                 throw new BusinessException("参数序列化失败");
             }
+            Integer type = NotificationType.UNBIND_APPLY.getCode();
+            String title = "解绑申请被拒绝";
+            String content = "解绑申请已被拒绝，原因: " + request.getRejectReason();
             Long unbindRequester = pair.getUnbindRequestBy();
             if (unbindRequester != null && !unbindRequester.equals(userId)) {
-                rejectEvent.setUserId(unbindRequester);
-                notificationAsyncPublisher.publishAfterCommit(rejectEvent);
+                publishNotification(unbindRequester, type, title, content, paramsJson);
             }
             for (Long uid : new Long[]{studentId, teacherId, adminId}) {
                 if (uid != null && !uid.equals(userId) && !uid.equals(unbindRequester)) {
-                    rejectEvent.setUserId(uid);
-                    notificationAsyncPublisher.publishAfterCommit(rejectEvent);
+                    publishNotification(uid, type, title, content, paramsJson);
                 }
             }
             return;
@@ -468,21 +463,20 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             matchPairMapper.update(null, new LambdaUpdateWrapper<MatchPair>().eq(MatchPair::getId, pairId)
                     .set(MatchPair::getMatchStatus, MatchStatus.UNBOUND.getCode()).set(MatchPair::getUnbindAcceptTime, LocalDateTime.now()));
 
-            NotificationEvent doneEvent = new NotificationEvent();
-            doneEvent.setType(NotificationType.UNBIND_ACCEPT.getCode());
-            doneEvent.setTitle("解绑完成");
-            doneEvent.setContent("结对关系已解除");
             Map<String, Object> doneParams = new HashMap<>();
             doneParams.put("pairId", pairId);
+            String paramsJson;
             try {
-                doneEvent.setParamsJson(objectMapper.writeValueAsString(doneParams));
+                paramsJson = objectMapper.writeValueAsString(doneParams);
             } catch (Exception e) {
                 throw new BusinessException("参数序列化失败");
             }
+            Integer type = NotificationType.UNBIND_ACCEPT.getCode();
+            String title = "解绑完成";
+            String content = "结对关系已解除";
             for (Long uid : new Long[]{studentId, teacherId, adminId}) {
                 if (uid != null) {
-                    doneEvent.setUserId(uid);
-                    notificationAsyncPublisher.publishAfterCommit(doneEvent);
+                    publishNotification(uid, type, title, content, paramsJson);
                 }
             }
         }
@@ -861,6 +855,16 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                 }
             }
         }
+    }
+
+    private void publishNotification(Long userId, Integer type, String title, String content, String paramsJson) {
+        NotificationEvent event = new NotificationEvent();
+        event.setUserId(userId);
+        event.setType(type);
+        event.setTitle(title);
+        event.setContent(content);
+        event.setParamsJson(paramsJson);
+        notificationAsyncPublisher.publishAfterCommit(event);
     }
 
     @Override
