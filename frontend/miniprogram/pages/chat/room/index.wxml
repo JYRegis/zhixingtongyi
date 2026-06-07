@@ -68,8 +68,10 @@
                 class="msg-image"
                 src="{{item.text}}"
                 mode="widthFix"
+                binderror="onImageError"
                 bindtap="onPreviewImage"
                 data-url="{{item.text}}"
+                data-id="{{item.id}}"
               />
               <view wx:elif="{{item.isFile}}" class="msg-file-card" bindtap="onOpenFile" data-url="{{item.text}}">
                 <image class="msg-file-icon" src="/images/icons/file.svg" mode="aspectFit" />
