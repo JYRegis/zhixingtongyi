@@ -83,7 +83,7 @@ function enrichItem(item, role) {
     scoreTag: scoreTag,
     summary:
       role === "student"
-        ? "与「希望上课时间」对碰时，以学科与可授课时间为准（演示）。"
+        ? ""
         : "可对照学员的学科需求与可上课时间发起结对（演示）。",
     highlight: item.score >= 90
   };
