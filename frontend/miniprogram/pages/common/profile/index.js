@@ -50,7 +50,7 @@ const roleFieldMap = {
     "learningGoal",
   ],
   admin_level_2: ["name", "schoolId"],
-  admin_level_1: ["name", "permissionNote"],
+  admin_level_1: ["name"],
 };
 const roleMetaMap = {
   teacher: { title: "资料与账号" },
@@ -176,7 +176,7 @@ const roleSectionOrderMap = {
   teacher: ["basic", "ability"],
   student: ["basic", "learning"],
   admin_level_2: ["basic", "region"],
-  admin_level_1: ["basic", "platform"],
+  admin_level_1: ["basic"],
 };
 var _cachedRemoteSchools = null;
 function buildSections(role, form) {
