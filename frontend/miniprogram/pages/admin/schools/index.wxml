@@ -27,16 +27,6 @@
         <input class="field-input" placeholder="请输入学校详细地址" data-k="address" value="{{address}}" bindinput="onInput" />
       </view>
 
-      <view class="field">
-        <text class="field-label">学校联系人 <text class="field-req">*</text></text>
-        <input class="field-input" placeholder="请输入联系人姓名" data-k="contactPerson" value="{{contactPerson}}" bindinput="onInput" />
-      </view>
-
-      <view class="field">
-        <text class="field-label">联系电话 <text class="field-req">*</text></text>
-        <input class="field-input" placeholder="请输入联系电话" data-k="contactPhone" value="{{contactPhone}}" bindinput="onInput" />
-      </view>
-
       <button class="primary-btn" bindtap="onSubmit">创建学校</button>
     </view>
   </view>

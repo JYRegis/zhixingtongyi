@@ -6,8 +6,6 @@ Page({
     name: "",
     regionCode: "",
     address: "",
-    contactPerson: "",
-    contactPhone: "",
     schoolTypes: [
       { value: 0, name: "乡村学校 (受援方)" },
       { value: 1, name: "高校 (支教方)" }
@@ -18,7 +16,7 @@ Page({
   onInput(e) { this.setData({ [e.currentTarget.dataset.k]: e.detail.value }); },
   onPickType(e) { this.setData({ typeIndex: Number(e.detail.value) }); },
   onSubmit() {
-    const { name, regionCode, address, contactPerson, contactPhone, schoolTypes, typeIndex } = this.data;
+    const { name, regionCode, address, schoolTypes, typeIndex } = this.data;
     if (!name || !name.trim()) {
       wx.showToast({ title: "请输入学校名称", icon: "none" });
       return;
@@ -31,21 +29,11 @@ Page({
       wx.showToast({ title: "请输入地址", icon: "none" });
       return;
     }
-    if (!contactPerson || !contactPerson.trim()) {
-      wx.showToast({ title: "请输入联系人", icon: "none" });
-      return;
-    }
-    if (!contactPhone || !contactPhone.trim()) {
-      wx.showToast({ title: "请输入联系电话", icon: "none" });
-      return;
-    }
     const type = schoolTypes[typeIndex].value;
     const payload = {
       name: name.trim(),
       regionCode: regionCode.trim(),
       address: address.trim(),
-      contactPerson: contactPerson.trim(),
-      contactPhone: contactPhone.trim(),
       type: type
     };
     wx.showLoading({ title: "提交中", mask: true });
