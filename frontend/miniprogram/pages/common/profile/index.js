@@ -50,7 +50,7 @@ const roleFieldMap = {
     "learningGoal",
   ],
   admin_level_2: ["name", "schoolId"],
-  admin_level_1: ["name", "organization", "permissionNote"],
+  admin_level_1: ["name", "permissionNote"],
 };
 const roleMetaMap = {
   teacher: { title: "资料与账号" },

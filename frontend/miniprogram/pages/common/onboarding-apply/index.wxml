@@ -159,10 +159,6 @@
           placeholder-class="form-placeholder-std"
         />
       </view>
-      <view class="field" wx:if="{{role === 'admin_level_1'}}">
-        <text class="field-label">所属机构 / 说明</text>
-        <input class="field-input" value="{{orgNote}}" data-k="orgNote" bindinput="onText" />
-      </view>
       <view class="field">
         <text class="field-label">补充说明</text>
         <textarea class="field-textarea" value="{{applyNote}}" data-k="applyNote" bindinput="onText" />
