@@ -619,11 +619,18 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     @SuppressWarnings("unchecked")
     private List<String> parseJsonList(String json) {
         if (json == null || json.isBlank()) return List.of();
-        try {
-            return objectMapper.readValue(json, List.class);
-        } catch (Exception e) {
-            return List.of();
+        String s = json.trim();
+        if (s.startsWith("[")) {
+            try {
+                return objectMapper.readValue(s, List.class);
+            } catch (Exception e) {
+                // fall through
+            }
         }
+        return java.util.Arrays.stream(s.split("[,，、#|\\s]+"))
+                .map(String::trim)
+                .filter(item -> !item.isEmpty())
+                .toList();
     }
 
     private List<String> parseJsonListFromObj(Object obj) {
@@ -642,11 +649,62 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> parseFreeTime(String json) {
         if (json == null || json.isBlank()) return List.of();
-        try {
-            return objectMapper.readValue(json, List.class);
-        } catch (Exception e) {
-            return List.of();
+        String s = json.trim();
+        if (s.startsWith("[")) {
+            try {
+                return objectMapper.readValue(s, List.class);
+            } catch (Exception e) {
+                // fall through
+            }
         }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        // 1. GRID format: GRID:1-mor,2-noon
+        if (s.startsWith("GRID:")) {
+            String partsStr = s.substring(5);
+            String[] parts = partsStr.split(",");
+            for (String p : parts) {
+                if (p.isBlank()) continue;
+                String[] sub = p.split("-");
+                if (sub.length == 2) {
+                    try {
+                        int w = Integer.parseInt(sub[0].trim());
+                        String sl = sub[1].trim();
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("week", w);
+                        map.put("slot", sl);
+                        result.add(map);
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+            return result;
+        }
+
+        // 2. Legacy W:1,2|S:mor,noon format
+        int wIdx = s.indexOf("W:");
+        int sIdx = s.indexOf("|S:");
+        if (wIdx == 0 && sIdx > 0) {
+            String wStr = s.substring(2, sIdx);
+            String sStr = s.substring(sIdx + 3);
+            String[] weeks = wStr.split(",");
+            String[] slots = sStr.split(",");
+            for (String w : weeks) {
+                if (w.isBlank()) continue;
+                try {
+                    int weekNum = Integer.parseInt(w.trim());
+                    for (String slot : slots) {
+                        if (slot.isBlank()) continue;
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("week", weekNum);
+                        map.put("slot", slot.trim());
+                        result.add(map);
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+            return result;
+        }
+
+        return result;
     }
 
     @SuppressWarnings("unchecked")
