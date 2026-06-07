@@ -72,6 +72,7 @@ Component({
     unreadCount: 0,
     chatUnreadCount: 0,
     bannerVisible: false,
+    bannerId: null,
     bannerTitle: "",
     bannerContent: ""
   },
@@ -208,10 +209,15 @@ Component({
      * 顶部横幅：检测到新通知时弹出，持续显示直到用户点击或关闭。
      */
     _showBanner(notification) {
+      if (!notification || !notification.id) return;
+      if (notificationCenter.isDismissed(notification.id)) {
+        return; // 用户已点过x关闭，不再展示
+      }
       const title = (notification && notification.title) || "新消息";
       const content = (notification && notification.content) || "";
       this.setData({
         bannerVisible: true,
+        bannerId: notification.id,
         bannerTitle: String(title),
         bannerContent: String(content)
       });
@@ -223,6 +229,9 @@ Component({
     onBannerClose(e) {
       // 阻止冒泡到 onBannerTap
       this.setData({ bannerVisible: false });
+      if (this.data.bannerId) {
+        notificationCenter.dismissBanner(this.data.bannerId);
+      }
     }
   }
 });

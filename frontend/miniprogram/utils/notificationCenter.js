@@ -23,6 +23,27 @@ let _chatUnread = 0;
 const _listeners = new Set();
 let _suppressFirstBanner = true;            // 启动后第一次拉取不视为「新消息」
 
+let _dismissedIds = new Set();
+try {
+  const saved = wx.getStorageSync("dismissed_notification_ids");
+  if (Array.isArray(saved)) {
+    _dismissedIds = new Set(saved);
+  }
+} catch (_) {}
+
+function dismissBanner(id) {
+  if (id == null) return;
+  _dismissedIds.add(Number(id));
+  try {
+    wx.setStorageSync("dismissed_notification_ids", Array.from(_dismissedIds));
+  } catch (_) {}
+}
+
+function isDismissed(id) {
+  if (id == null) return false;
+  return _dismissedIds.has(Number(id));
+}
+
 function _now() { return Date.now(); }
 
 function _emit(eventName, payload) {
@@ -260,6 +281,8 @@ module.exports = {
   decrement: decrement,
   reset: reset,
   peekAndNotify: peekAndNotify,
+  dismissBanner: dismissBanner,
+  isDismissed: isDismissed,
   refreshChatUnread: function () { _tickChat(); },
   /** 直接设置聊天未读数（页面已计算过时调用，避免重复请求） */
   setChatUnread: function (n) {
