@@ -43,19 +43,26 @@ function checkOnboardingOrRedirect(pageRoute) {
   if (!u || !uid) {
     return;
   }
-  // 用户已登录但没有选择角色：路由到 role-select
+  // 用户已登录但没有选择角色：尝试从本地缓存恢复 role，再决定路由
   if (!r) {
-    const path0 = (pageRoute || "").replace(/^\//, "");
-    if (path0 === "pages/common/home/index" ||
-        path0 === "pages/common/auth/index" ||
-        path0 === "pages/common/auth-setup/index" ||
-        path0 === "pages/common/role-select/index" ||
-        path0 === "pages/common/onboarding-apply/index" ||
-        path0 === "pages/common/invite-code/index") {
+    const savedRole = wx.getStorageSync("role") || "";
+    if (savedRole && (u.hasProfile || u.onboardingStatus)) {
+      // 有本地 role 缓存且有 profile：恢复 role 并继续正常 guard 逻辑
+      app.globalData.role = savedRole;
+      r = savedRole;
+    } else {
+      const path0 = (pageRoute || "").replace(/^\//, "");
+      if (path0 === "pages/common/home/index" ||
+          path0 === "pages/common/auth/index" ||
+          path0 === "pages/common/auth-setup/index" ||
+          path0 === "pages/common/role-select/index" ||
+          path0 === "pages/common/onboarding-apply/index" ||
+          path0 === "pages/common/invite-code/index") {
+        return;
+      }
+      wx.reLaunch({ url: "/pages/common/role-select/index" });
       return;
     }
-    wx.reLaunch({ url: "/pages/common/role-select/index" });
-    return;
   }
   if ((r === "admin_level_1" || r === "admin_level_2") && ((app.globalData && app.globalData.token) || wx.getStorageSync("token"))) {
     // 二级管理员如果还没被分配权限（pending_assignment），不允许进入业务页

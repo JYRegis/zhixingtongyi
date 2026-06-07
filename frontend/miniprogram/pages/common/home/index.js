@@ -103,6 +103,28 @@ Page({
       const isAdmin = isAdminRole(finalRole);
       // 没有角色：新用户首次登录，先进 auth-setup 设头像/昵称，再进 role-select
       if (!finalRole) {
+        // 老用户但有 profile（已入驻过）：根据审核状态跳转
+        if (!isNewUser && (remoteUser && remoteUser.hasProfile)) {
+          if (onboardingStatus === "pending" || auditStatusCode === 0) {
+            // 无法确定 role，用空字符串；onboardingGuard 会根据 userInfo 补充
+            wx.reLaunch({ url: "/pages/common/onboarding-pending/index?status=pending" });
+            return;
+          }
+          if (onboardingStatus === "rejected" || auditStatusCode === 2) {
+            wx.reLaunch({ url: "/pages/common/onboarding-pending/index?status=rejected" });
+            return;
+          }
+          if (onboardingStatus === "approved" || auditStatusCode === 1) {
+            // 已通过审核，需要从本地档案恢复 role
+            const savedRole = wx.getStorageSync("role") || "";
+            if (savedRole) {
+              wx.reLaunch({ url: "/pages/common/workbench/index" });
+            } else {
+              wx.navigateTo({ url: "/pages/common/role-select/index" });
+            }
+            return;
+          }
+        }
         if (isNewUser) {
           wx.navigateTo({ url: "/pages/common/auth-setup/index" });
         } else {

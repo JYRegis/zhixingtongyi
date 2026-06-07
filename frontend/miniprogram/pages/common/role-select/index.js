@@ -34,12 +34,28 @@ Page({
       return;
     }
     if (isLearnerRole(role)) {
-      // 学员/志愿者：不立即改变角色，只跳转到申请页填资料
-      // roleApply 和角色变更在审核通过后由后端处理
-      this.setData({ submitting: false });
-      wx.navigateTo({
-        url: `/pages/common/onboarding-apply/index?role=${encodeURIComponent(role)}`
-      });
+      // 学员/志愿者：先通知后端设置角色，再跳转到申请页填资料
+      const target = appRoleToRoleApplyTarget(role);
+      const self = this;
+      if (target) {
+        authApi.roleApply(target).then(function () {
+          self.setData({ submitting: false });
+          wx.navigateTo({
+            url: `/pages/common/onboarding-apply/index?role=${encodeURIComponent(role)}`
+          });
+        }).catch(function () {
+          // roleApply 失败（如已选过该角色），仍跳转入驻页，由后端 saveDraft 处理
+          self.setData({ submitting: false });
+          wx.navigateTo({
+            url: `/pages/common/onboarding-apply/index?role=${encodeURIComponent(role)}`
+          });
+        });
+      } else {
+        self.setData({ submitting: false });
+        wx.navigateTo({
+          url: `/pages/common/onboarding-apply/index?role=${encodeURIComponent(role)}`
+        });
+      }
       return;
     }
     if (role === "admin_level_2") {
