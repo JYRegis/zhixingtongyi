@@ -41,7 +41,6 @@
           bindinput="onManualPhoneInput"
         />
       </view>
-      <view class="home-dev-tip">手机号登录仅用于开发测试</view>
       <button class="home-btn home-btn-secondary" bindtap="onManualSubmit" disabled="{{submitting}}">
         手机号登录
       </button>
