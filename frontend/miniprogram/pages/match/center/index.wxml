@@ -72,10 +72,9 @@
       </view>
     </block>
 
-    <!-- 分页加载提示 -->
+    <!-- Top 10 推荐提示 -->
     <view class="load-more-status" wx:if="{{role === 'student' && list.length > 0}}">
-      <text wx:if="{{hasMore}}">上拉加载更多...</text>
-      <text wx:else class="no-more-text">— 没有更多推荐了 —</text>
+      <text class="no-more-text">— 以上为匹配度前 10 位志愿者推荐 —</text>
     </view>
   </view>
 </view>

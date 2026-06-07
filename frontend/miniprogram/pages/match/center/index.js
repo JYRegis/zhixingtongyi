@@ -183,8 +183,7 @@ Page({
         }
       }
     }
-    const pageSize = 10;
-    var renderList = fullList.slice(0, pageSize);
+    var renderList = fullList.slice(0, 10);
     var hero = matchHeroMap[role] || matchHeroMap.student;
 
     var canUnbind =
@@ -196,34 +195,15 @@ Page({
       canPairTodo: canPairTodo,
       roleName: ROLE_DISPLAY_NAME[role] || "学员",
       heroTitle: hero.title,
-      list: fullList,
-      renderList: renderList,
-      page: 1,
-      pageSize: pageSize,
-      hasMore: fullList.length > pageSize
+      list: renderList,
+      renderList: renderList
     });
   } catch (outerErr) {
     if (console && console.error) {
       console.error("[match-center] onShow unexpected error", outerErr);
     }
-    this.setData({ role: role || "", renderList: [], list: [], page: 1, hasMore: false });
+    this.setData({ role: role || "", renderList: [], list: [] });
   }
-  },
-  onReachBottom: function () {
-    if (this.data.renderList.length < this.data.list.length) {
-      wx.showLoading({ title: "加载中...", mask: true });
-      const self = this;
-      setTimeout(() => {
-        wx.hideLoading();
-        const nextPage = self.data.page + 1;
-        const nextRenderList = self.data.list.slice(0, nextPage * self.data.pageSize);
-        self.setData({
-          page: nextPage,
-          renderList: nextRenderList,
-          hasMore: self.data.list.length > nextRenderList.length
-        });
-      }, 250);
-    }
   },
   onPullDownRefresh: function () {
     this.onShow();
@@ -240,11 +220,10 @@ Page({
       }
       // 立即从本地列表移除，无需重新请求后端
       var newList = this.data.list.filter(function (item) { return item.id !== id; });
-      var newRenderList = newList.slice(0, this.data.page * this.data.pageSize);
+      var newRenderList = newList.slice();
       this.setData({
         list: newList,
-        renderList: newRenderList,
-        hasMore: newList.length > newRenderList.length
+        renderList: newRenderList
       });
       wx.showToast({
         title: "已申请" + (one && one.teacher ? " " + one.teacher : ""),
