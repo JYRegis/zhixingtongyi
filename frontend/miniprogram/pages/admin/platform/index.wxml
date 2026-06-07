@@ -83,6 +83,17 @@
       </view>
     </view>
 
+    <view class="card platform-entry-card" bindtap="goSchools">
+      <view class="platform-entry-row">
+        <image class="platform-entry-icon" src="/images/icons/school.svg" mode="aspectFit" />
+        <view class="platform-entry-main">
+          <view class="platform-entry-title">学校管理 (新增学校)</view>
+          <view class="platform-entry-desc">添加或创建受援乡村学校及高校支教团</view>
+        </view>
+        <view class="platform-entry-arrow">›</view>
+      </view>
+    </view>
+
   </view>
   <custom-tab-bar id="custom-tab-bar" />
 </view>

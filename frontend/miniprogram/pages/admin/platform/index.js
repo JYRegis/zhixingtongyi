@@ -68,5 +68,6 @@ Page({
   goReviewL2() { to("/pages/admin/platform/review/index", { role: "admin_level_2" }); },
   goReviewL1() { to("/pages/admin/platform/review/index", { role: "admin_level_1" }); },
   goHours() { to("/pages/admin/platform/hours/index"); },
-  goSecondaryAdmins() { to("/pages/admin/secondary-admins/index"); }
+  goSecondaryAdmins() { to("/pages/admin/secondary-admins/index"); },
+  goSchools() { to("/pages/admin/schools/index"); }
 });

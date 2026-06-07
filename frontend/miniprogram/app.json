@@ -30,6 +30,7 @@
     "pages/admin/users/index",
     "pages/admin/users/detail/index",
     "pages/admin/secondary-admins/index",
+    "pages/admin/schools/index",
     "pages/admin/platform/index",
     "pages/admin/platform/review/index",
     "pages/admin/platform/hours/index"
