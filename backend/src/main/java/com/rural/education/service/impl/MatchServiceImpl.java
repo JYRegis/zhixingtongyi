@@ -113,7 +113,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
             double timeScore = studentTimeSlots.isEmpty() ? 0.0
                     : computeSetOverlap(studentTimeSlots, teacherTimeSlots);
 
-            t.setMatchScore((subjectWeight * subjectScore + timeWeight * timeScore) * 100);
+            t.setMatchScore(60.0 + 40.0 * (subjectWeight * subjectScore + timeWeight * timeScore));
         }
 
         list.sort((a, b) -> Double.compare(b.getMatchScore(), a.getMatchScore()));
@@ -730,7 +730,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         Set<String> intersection = new HashSet<>(studentSet);
         intersection.retainAll(teacherSet);
         if (intersection.isEmpty()) return 0.0;
-        return 0.8 + 0.2 * ((double) intersection.size() / Math.max(1, Math.min(studentSet.size(), teacherSet.size())));
+        return (double) intersection.size() / Math.max(1, Math.min(studentSet.size(), teacherSet.size()));
     }
 
     private Set<String> extractTimeSlots(List<Map<String, Object>> slots) {
@@ -762,7 +762,7 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         Set<String> intersection = new HashSet<>(studentSet);
         intersection.retainAll(teacherSet);
         if (intersection.isEmpty()) return 0.0;
-        return 0.8 + 0.2 * ((double) intersection.size() / Math.max(1, Math.min(studentSet.size(), teacherSet.size())));
+        return (double) intersection.size() / Math.max(1, Math.min(studentSet.size(), teacherSet.size()));
     }
 
     private Map<String, Object> normalizeSlot(Map<String, Object> slot) {
