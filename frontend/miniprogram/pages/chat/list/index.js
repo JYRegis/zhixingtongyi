@@ -128,7 +128,7 @@ Page({
       if (token) {
         Promise.all([
           adminApi.chatConversations(),
-          fetchSchools()
+          fetchSchools({ kind: "recipient" })
         ]).then(([res, schoolsList]) => {
           const raw = Array.isArray(res) ? res : (res && res.records) || (res && res.list) || [];
           const all = enrichPairs(mapAdminConversations(raw));
