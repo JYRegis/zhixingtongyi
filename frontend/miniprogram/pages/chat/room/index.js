@@ -83,7 +83,7 @@ Page({
             const u1 = (app1.globalData && app1.globalData.userInfo) || {};
             const selfUserId = String(u1.backendUserId || u1.id || u1.userId || "");
             const mapped = mapRemoteMessage(msg, selfUserId, self._participants || {}, self._participantRoles || {}, self._participantAvatars || {});
-            // 鍘婚噸锛氬鏋滄槸鑷繁鍙戠殑娑堟伅涓斿瓨鍦?tmp_ 涔愯娑堟伅锛屾浛鎹㈠畠鑰屼笉鏄拷鍔?            const isSelfMsg = String(msg.senderId || "") === selfUserId;
+            const isSelfMsg = String(msg.senderId || "") === selfUserId;
             const current = self.data.messages || [];
             let next;
             if (isSelfMsg) {
@@ -198,7 +198,8 @@ Page({
     const self = String(selfUserId || "");
     const unreadByOthers = rows.filter(function (r) {
       if (!r || !r.id) return false;
-      if (String(r.senderId || "") === self) return false; // 鑷繁鍙戠殑涓嶉渶瑕佹爣璁?      const readTime = r.readTime != null ? r.readTime : r.read_time;
+      if (String(r.senderId || "") === self) return false;
+      const readTime = r.readTime != null ? r.readTime : r.read_time;
       return readTime == null || readTime === "";
     });
     if (!unreadByOthers.length) return;
@@ -206,7 +207,7 @@ Page({
     const done = function () {
       pending--;
       if (pending === 0) {
-        // 鍚庣鏍囪瀹屾垚鍚庡啀鍒蜂竴娆★紝纭繚鏁版嵁鍥炲啓鍚?Tab 涔熷悓姝?        try { notificationCenter.refreshChatUnread(); } catch (_) {}
+        try { notificationCenter.refreshChatUnread(); } catch (_) {}
       }
     };
     unreadByOthers.forEach(function (r) {
@@ -260,11 +261,10 @@ Page({
             wx.showToast({ title: (err && err.message) || "\u4e0a\u4f20\u5931\u8d25", icon: "none" });
           });
         } else if (res.tapIndex === 1) {
-          // 鐩稿唽
           const { chooseAndUploadImages } = require("../../../utils/ossUpload");
           chooseAndUploadImages({ businessType: "CHAT_IMAGE", count: 9, sourceType: ["album"] }).then(function (urls) {
             if (!urls || !urls.length) return;
-            // 閫愬紶鍙戦€?            urls.forEach(function (url) { self._sendFileMessage(url, "IMAGE"); });
+          urls.forEach(function (url) { self._sendFileMessage(url, "IMAGE"); });
           }).catch(function (err) {
             if (err && err.message === "\u7528\u6237\u53d6\u6d88") return;
             wx.showToast({ title: (err && err.message) || "\u4e0a\u4f20\u5931\u8d25", icon: "none" });
