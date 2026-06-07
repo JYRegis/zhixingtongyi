@@ -373,6 +373,31 @@ function buildSections(role, form) {
       });
       return;
     }
+    if (key === "subjects") {
+      const sectionKey = role === "student" ? "learning" : "ability";
+      if (!grouped[sectionKey])
+        grouped[sectionKey] = {
+          key: sectionKey,
+          title: sectionMetaMap[sectionKey].title,
+          desc: sectionMetaMap[sectionKey].desc,
+          fields: [],
+        };
+      const subjects = form.subjects || "";
+      const selectedSubjects = subjects.split(/[,，、\s]+/).filter(Boolean);
+      const subjectOpts = SUBJECT_OPTIONS.map(opt => ({
+        ...opt,
+        selected: selectedSubjects.indexOf(opt.name) >= 0
+      }));
+      grouped[sectionKey].fields.push({
+        key: "subjects",
+        label: "科目",
+        type: "subjects_chips",
+        options: subjectOpts,
+        value: subjects,
+        hint: "",
+      });
+      return;
+    }
     const meta = fieldMetaMap[key];
     if (!meta) return;
     const sectionKey = meta.section;
@@ -908,6 +933,21 @@ Page({
       else sk.push(s);
     }
     f[tfield] = serializeTimeSelection(wk, sk);
+    this.syncPage(f);
+  },
+  onToggleSubject(e) {
+    const { subject } = e.currentTarget.dataset;
+    if (!subject) return;
+    const { form, sections } = this.data;
+    const f = { ...form };
+    let selected = (f.subjects || "").split(/[,，、\s]+/).filter(Boolean);
+    const idx = selected.indexOf(subject);
+    if (idx >= 0) {
+      selected.splice(idx, 1);
+    } else {
+      selected.push(subject);
+    }
+    f.subjects = selected.join("、");
     this.syncPage(f);
   },
   onInput(e) {

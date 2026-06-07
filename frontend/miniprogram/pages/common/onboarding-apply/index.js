@@ -216,6 +216,12 @@ Page({
 
     let subjects = (p.subjects != null && p.subjects !== "" ? String(p.subjects) : "");
     if (!subjects) subjects = (p.skilledSubjects != null && p.skilledSubjects !== "" ? String(p.skilledSubjects) : "");
+    
+    const selectedSubjects = subjects.split(/[,，、\s]+/).filter(Boolean);
+    const subjectOpts = SUBJECT_OPTIONS.map(opt => ({
+      ...opt,
+      selected: selectedSubjects.indexOf(opt.name) >= 0
+    }));
 
     const timeBlockTitle =
       role === "admin_level_2" ? "方便联系/办公时间" : role === "teacher" ? "可授课时间" : "";
