@@ -128,7 +128,15 @@ Component({
         list = [TAB[0], TAB_PLATFORM, TAB[2], TAB[4]];
       } else if (role === "admin_level_2") {
         const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
-        const isSupportSide = isVolunteerSchool(schoolId);
+        const permissions = u.permissions || p.permissions || [];
+        let isSupportSide = null;
+        if (permissions.indexOf("teacher_audit") >= 0) {
+          isSupportSide = true;
+        } else if (permissions.indexOf("student_manage") >= 0 || permissions.indexOf("volunteer_record_audit") >= 0) {
+          isSupportSide = false;
+        } else {
+          isSupportSide = isVolunteerSchool(schoolId);
+        }
         if (isSupportSide === true) {
           // 支教方 L2：只有工作台、区域管理、设置，无解绑无聊天
           list = [TAB[0], TAB_REGION, TAB[4]];

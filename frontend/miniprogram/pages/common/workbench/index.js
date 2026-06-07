@@ -43,9 +43,17 @@ function getMenuListForCurrentRole(role) {
   // 支教方 L2 不需要聊天功能
   if (role === "admin_level_2") {
     const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
-    const schoolTypeResult = isVolunteerSchool(schoolId);
+    const permissions = u.permissions || p.permissions || [];
+    let isSupportSide = null;
+    if (permissions.indexOf("teacher_audit") >= 0) {
+      isSupportSide = true;
+    } else if (permissions.indexOf("student_manage") >= 0 || permissions.indexOf("volunteer_record_audit") >= 0) {
+      isSupportSide = false;
+    } else {
+      isSupportSide = isVolunteerSchool(schoolId);
+    }
     // 缓存未命中时默认按受援方显示（显示聊天），等异步确认后刷新
-    if (schoolTypeResult !== true) {
+    if (isSupportSide !== true) {
       list.push({ title: "聊天", action: "toChat", badge: "沟通" });
     }
   } else {
@@ -62,9 +70,16 @@ function getMenuListForCurrentRole(role) {
     list.push({ title: "平台管理", action: "toPlatformAdmin", badge: "管理" });
   } else if (role === "admin_level_2") {
     const schoolId = u.schoolId || u.school_id || p.schoolId || p.school_id || "";
-    const schoolTypeResult = isVolunteerSchool(schoolId);
-    const isSupportSide = schoolTypeResult; // true/false/null 三态
-    const isRecipientSide = schoolTypeResult !== true; // 缓存未命中时默认按受援方
+    const permissions = u.permissions || p.permissions || [];
+    let isSupportSide = null;
+    if (permissions.indexOf("teacher_audit") >= 0) {
+      isSupportSide = true;
+    } else if (permissions.indexOf("student_manage") >= 0 || permissions.indexOf("volunteer_record_audit") >= 0) {
+      isSupportSide = false;
+    } else {
+      isSupportSide = isVolunteerSchool(schoolId);
+    }
+    const isRecipientSide = isSupportSide !== true; // 缓存未命中时默认按受援方
     list.push({ title: "区域管理", action: "toRegionAdmin", badge: "管理", _supportSide: isSupportSide });
     // 缓存未命中时默认显示解绑（受援方布局），确认是支教方后异步刷新移除
     if (isRecipientSide) {
@@ -150,12 +165,20 @@ Page({
     let hero = roleHeroMap[role] || roleHeroMap.guest;
     if (role === "admin_level_2") {
       const schoolId = userInfo.schoolId || userInfo.school_id || "";
-      const schoolTypeResult = isVolunteerSchool(schoolId);
-      if (schoolTypeResult === true) {
+      const permissions = userInfo.permissions || [];
+      let isSupportSide = null;
+      if (permissions.indexOf("teacher_audit") >= 0) {
+        isSupportSide = true;
+      } else if (permissions.indexOf("student_manage") >= 0 || permissions.indexOf("volunteer_record_audit") >= 0) {
+        isSupportSide = false;
+      } else {
+        isSupportSide = isVolunteerSchool(schoolId);
+      }
+      if (isSupportSide === true) {
         hero = { title: "审核管理" };
       }
       // 缓存未命中时异步拉学校详情后刷新（一次性）
-      if (schoolTypeResult === null && !this._workbenchSchoolFetched) {
+      if (isSupportSide === null && !this._workbenchSchoolFetched) {
         this._workbenchSchoolFetched = true;
         var self0 = this;
         if (schoolId) {
