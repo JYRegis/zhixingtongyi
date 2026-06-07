@@ -41,13 +41,13 @@
         <input class="field-input" type="number" value="{{durationMin}}" data-k="durationMin" bindinput="onText" placeholder="默认60分钟" />
       </view>
       <view class="field">
-        <text class="field-label">会议链接 / 会议码</text>
+        <text class="field-label">会议链接 / 会议码 <text class="field-req">*</text></text>
         <textarea
           class="field-textarea"
           value="{{roomLink}}"
           data-k="roomLink"
           bindinput="onText"
-          placeholder="选填，粘贴会议链接或会议码"
+          placeholder="必填，粘贴会议链接或会议码"
         />
       </view>
       <view class="field">
