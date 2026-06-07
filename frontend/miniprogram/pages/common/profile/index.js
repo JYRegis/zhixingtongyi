@@ -47,7 +47,6 @@ const roleFieldMap = {
     "studentAvailableTime",
     "subjects",
     "guardianContact",
-    "learningGoal",
   ],
   admin_level_2: ["name", "schoolId"],
   admin_level_1: ["name"],
