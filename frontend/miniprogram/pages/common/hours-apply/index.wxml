@@ -24,7 +24,7 @@
       <view class="list-row">
         <text>日期</text>
         <picker mode="date" value="{{dateInput}}" start="2020-01-01" end="2040-12-31" bindchange="onDateChange">
-          <view class="hours-date-picker">{{dateInput || '选择日期'}}</view>
+          <view class="hours-date-picker {{!dateInput ? 'placeholder-color' : ''}}">{{dateInput || '选择日期'}}</view>
         </picker>
       </view>
       <view class="list-row">
