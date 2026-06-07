@@ -77,7 +77,7 @@ Page({
   _resolveHours(id, ok) {
     if (this.data._remote) {
       adminApi
-        .auditVolunteerRecord(id, { action: ok ? "accept" : "reject", rejectReason: ok ? "" : "管理员驳回" })
+        .auditVolunteerRecord(id, { action: ok ? "approve" : "reject", rejectReason: ok ? "" : "管理员驳回" })
         .then(() => {
           wx.showToast({ title: ok ? "已通过" : "已驳回", icon: "success" });
           this.onShow();

@@ -531,7 +531,13 @@ Page({
           },
           function (err) {
             console.log("[onboarding] student getProfile failed", { statusCode: err && err.statusCode, code: err && err.code, message: err && err.message });
-            if (err && (err.statusCode === 404 || err.code === 404 || (err.message && err.message.includes("未找到")))) {
+            const notFound =
+              err &&
+              (err.statusCode === 404 ||
+                err.code === 400 ||
+                err.code === 404 ||
+                (err.message && err.message.indexOf("未找到") >= 0));
+            if (notFound) {
               return studentApi.createProfile(body);
             }
             return Promise.reject(err);
@@ -556,7 +562,13 @@ Page({
         },
         function (err) {
           console.log("[onboarding] teacher getProfile failed", { statusCode: err && err.statusCode, code: err && err.code, message: err && err.message });
-          if (err && (err.statusCode === 404 || err.code === 404 || (err.message && err.message.includes("未找到")))) {
+          const notFound =
+            err &&
+            (err.statusCode === 404 ||
+              err.code === 400 ||
+              err.code === 404 ||
+              (err.message && err.message.indexOf("未找到") >= 0));
+          if (notFound) {
             return teacherApi.createProfile(body);
           }
           return Promise.reject(err);
