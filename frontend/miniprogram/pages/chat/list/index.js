@@ -1,4 +1,5 @@
 const { getPairedListForUser, getPairedListForL1, getL1SchoolFilterOptions, getPairedListForRecipientL2, getPairedListForVolunteerL2 } = require("../../../utils/chatPartners");
+const { fetchSchools } = require("../../../utils/schoolsMock");
 const { ROLE_DISPLAY_NAME } = require("../../../utils/roleLabels");
 const { checkOnboardingOrRedirect } = require("../../../utils/onboardingGuard");
 const { syncCustomTabBar } = require("../../../utils/customTabBar");
@@ -125,10 +126,15 @@ Page({
     const u = (getApp().globalData && getApp().globalData.userInfo) || {}; const profile = getByPhone(u.phone) || u; const role = getApp().globalData.role || ""; const token = (getApp().globalData && getApp().globalData.token) || wx.getStorageSync("token") || "";
     if (role === "admin_level_1") {
       if (token) {
-        adminApi.chatConversations().then((res) => {
+        Promise.all([
+          adminApi.chatConversations(),
+          fetchSchools()
+        ]).then(([res, schoolsList]) => {
           const raw = Array.isArray(res) ? res : (res && res.records) || (res && res.list) || [];
           const all = enrichPairs(mapAdminConversations(raw));
-          const schools = buildSchoolFilter(all);
+          const schools = [{ id: "", name: "全部学校" }].concat(
+            (schoolsList || []).map((s) => ({ id: s.id, name: s.name }))
+          );
           this._allPairs = all;
           this.setData({ role, roleName: ROLE_DISPLAY_NAME[role] || "未登录", pairs: all, l1FilterSchools: schools, l1FilterIndex: 0, emptyHint: all.length ? "" : "暂无会话" });
         }).catch(() => {
