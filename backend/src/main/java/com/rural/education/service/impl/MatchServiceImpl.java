@@ -101,8 +101,12 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                 t.setFreeTime(parseFreeTime(t.getFreeTimeRaw()));
             }
 
-            List<String> teacherSubjects = parseJsonListFromObj(t.getSkilledSubjects());
-            Set<String> teacherTimeSlots = extractTimeSlots(parseFreeTimeFromObj(t.getFreeTime()));
+            List<String> teacherSubjects = t.getSkilledSubjects() != null 
+                    ? parseJsonListFromObj(t.getSkilledSubjects()) 
+                    : parseJsonList(t.getSkilledSubjectsRaw());
+            Set<String> teacherTimeSlots = extractTimeSlots(t.getFreeTime() != null 
+                    ? parseFreeTimeFromObj(t.getFreeTime()) 
+                    : parseFreeTime(t.getFreeTimeRaw()));
 
             double subjectScore = studentSubjects.isEmpty() ? 0.0
                     : computeOverlapRatio(studentSubjects, teacherSubjects);
