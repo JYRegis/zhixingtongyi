@@ -208,16 +208,13 @@ function buildSections(role, form) {
         : byIndex >= 0
           ? (range[byIndex] && range[byIndex].name) || ""
           : getSchoolName(sid) || "";
-      const pickerValue = byIndex >= 0 ? byIndex : 0;
       grouped[sectionKey].fields.push({
         key: "schoolId",
         label: "学校",
-        type: "picker_school",
-        range,
-        lineText,
+        type: "readonly_text",
+        lineText: lineText || "未分配",
         hasValue: !!sid,
-        pickerValue,
-        hint: "",
+        hint: "如需修改请联系管理员",
       });
       return;
     }
@@ -275,16 +272,13 @@ function buildSections(role, form) {
         : byIndex >= 0
           ? (range[byIndex] && range[byIndex].name) || ""
           : getSchoolName(sid) || "";
-      const pickerValue = byIndex >= 0 ? byIndex : 0;
       grouped[sectionKey].fields.push({
         key: "schoolId",
         label: "学校",
-        type: "picker_school",
-        range,
-        lineText,
+        type: "readonly_text",
+        lineText: lineText || "未分配",
         hasValue: !!sid,
-        pickerValue,
-        hint: "",
+        hint: "如需修改请联系管理员",
       });
       return;
     }
