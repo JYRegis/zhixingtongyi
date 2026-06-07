@@ -725,7 +725,8 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         Set<String> teacherSet = new HashSet<>(teacherSubjects);
         Set<String> intersection = new HashSet<>(studentSet);
         intersection.retainAll(teacherSet);
-        return (double) intersection.size() / Math.max(studentSet.size(), 1);
+        if (intersection.isEmpty()) return 0.0;
+        return 0.8 + 0.2 * ((double) intersection.size() / Math.max(1, Math.min(studentSet.size(), teacherSet.size())));
     }
 
     private Set<String> extractTimeSlots(List<Map<String, Object>> slots) {
@@ -756,7 +757,8 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
         if (teacherSet.isEmpty()) return 0.0;
         Set<String> intersection = new HashSet<>(studentSet);
         intersection.retainAll(teacherSet);
-        return (double) intersection.size() / Math.max(studentSet.size(), 1);
+        if (intersection.isEmpty()) return 0.0;
+        return 0.8 + 0.2 * ((double) intersection.size() / Math.max(1, Math.min(studentSet.size(), teacherSet.size())));
     }
 
     private Map<String, Object> normalizeSlot(Map<String, Object> slot) {
