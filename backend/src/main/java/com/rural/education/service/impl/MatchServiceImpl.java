@@ -593,7 +593,9 @@ public class MatchServiceImpl extends ServiceImpl<MatchPairMapper, MatchPair> im
                 new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.rural.education.model.entity.StudentProfile>()
                         .eq(com.rural.education.model.entity.StudentProfile::getUserId, studentId)
         );
-        if (studentProfile != null && studentProfile.getBindAdminId() != null) {
+        if (studentProfile != null && studentProfile.getBindAdminId() != null
+                && !studentProfile.getBindAdminId().equals(studentId)
+                && !studentProfile.getBindAdminId().equals(teacherId)) {
             com.rural.education.model.entity.ChatParticipant admin = new com.rural.education.model.entity.ChatParticipant();
             admin.setMatchPairId(pairId);
             admin.setUserId(studentProfile.getBindAdminId());

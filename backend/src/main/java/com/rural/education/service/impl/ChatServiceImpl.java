@@ -65,6 +65,19 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                             .isNull(ChatParticipant::getLeftTime)
             );
             if (participant == null) {
+                if (Integer.valueOf(MatchStatus.ACCEPTED.getCode()).equals(pair.getMatchStatus())) {
+                    if (userId.equals(pair.getStudentId()) || userId.equals(pair.getTeacherId())) {
+                        initChatParticipantsLazy(pair.getId(), pair.getStudentId(), pair.getTeacherId());
+                        participant = chatParticipantMapper.selectOne(
+                                new LambdaQueryWrapper<ChatParticipant>()
+                                        .eq(ChatParticipant::getMatchPairId, request.getMatchPairId())
+                                        .eq(ChatParticipant::getUserId, userId)
+                                        .isNull(ChatParticipant::getLeftTime)
+                        );
+                    }
+                }
+            }
+            if (participant == null) {
                 throw new BusinessException("您不是该会话的参与者或已退出会话");
             }
         }
@@ -102,6 +115,20 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                             .eq(ChatParticipant::getUserId, userId)
                             .isNull(ChatParticipant::getLeftTime)
             );
+            if (participant == null) {
+                MatchPair pair = matchPairMapper.selectById(matchPairId);
+                if (pair != null && Integer.valueOf(MatchStatus.ACCEPTED.getCode()).equals(pair.getMatchStatus())) {
+                    if (userId.equals(pair.getStudentId()) || userId.equals(pair.getTeacherId())) {
+                        initChatParticipantsLazy(pair.getId(), pair.getStudentId(), pair.getTeacherId());
+                        participant = chatParticipantMapper.selectOne(
+                                new LambdaQueryWrapper<ChatParticipant>()
+                                        .eq(ChatParticipant::getMatchPairId, matchPairId)
+                                        .eq(ChatParticipant::getUserId, userId)
+                                        .isNull(ChatParticipant::getLeftTime)
+                        );
+                    }
+                }
+            }
             if (participant == null) {
                 throw new BusinessException("您不是该会话的参与者或已退出会话");
             }
@@ -154,6 +181,20 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
                         .eq(ChatParticipant::getUserId, userId)
                         .isNull(ChatParticipant::getLeftTime)
         );
+        if (participant == null) {
+            MatchPair pair = matchPairMapper.selectById(message.getMatchPairId());
+            if (pair != null && Integer.valueOf(MatchStatus.ACCEPTED.getCode()).equals(pair.getMatchStatus())) {
+                if (userId.equals(pair.getStudentId()) || userId.equals(pair.getTeacherId())) {
+                    initChatParticipantsLazy(pair.getId(), pair.getStudentId(), pair.getTeacherId());
+                    participant = chatParticipantMapper.selectOne(
+                            new LambdaQueryWrapper<ChatParticipant>()
+                                    .eq(ChatParticipant::getMatchPairId, message.getMatchPairId())
+                                    .eq(ChatParticipant::getUserId, userId)
+                                    .isNull(ChatParticipant::getLeftTime)
+                    );
+                }
+            }
+        }
         if (participant == null || !participant.getMatchPairId().equals(message.getMatchPairId())) {
             throw new BusinessException("您不是该会话的参与者");
         }
@@ -357,5 +398,63 @@ public class ChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessage>
     private String resolveName(Long userId) {
         User u = userMapper.selectById(userId);
         return u != null ? u.getRealName() : null;
+    }
+
+    private void initChatParticipantsLazy(Long pairId, Long studentId, Long teacherId) {
+        Long studentCount = chatParticipantMapper.selectCount(
+                new LambdaQueryWrapper<ChatParticipant>()
+                        .eq(ChatParticipant::getMatchPairId, pairId)
+                        .eq(ChatParticipant::getUserId, studentId)
+                        .isNull(ChatParticipant::getLeftTime)
+        );
+        if (studentCount == 0) {
+            ChatParticipant student = new ChatParticipant();
+            student.setMatchPairId(pairId);
+            student.setUserId(studentId);
+            student.setParticipantRole(UserRole.STUDENT.getCode());
+            student.setIsDefaultMember(ChatParticipant.DEFAULT_MEMBER);
+            student.setJoinedTime(LocalDateTime.now());
+            chatParticipantMapper.insert(student);
+        }
+
+        Long teacherCount = chatParticipantMapper.selectCount(
+                new LambdaQueryWrapper<ChatParticipant>()
+                        .eq(ChatParticipant::getMatchPairId, pairId)
+                        .eq(ChatParticipant::getUserId, teacherId)
+                        .isNull(ChatParticipant::getLeftTime)
+        );
+        if (teacherCount == 0) {
+            ChatParticipant teacher = new ChatParticipant();
+            teacher.setMatchPairId(pairId);
+            teacher.setUserId(teacherId);
+            teacher.setParticipantRole(UserRole.TEACHER.getCode());
+            teacher.setIsDefaultMember(ChatParticipant.DEFAULT_MEMBER);
+            teacher.setJoinedTime(LocalDateTime.now());
+            chatParticipantMapper.insert(teacher);
+        }
+
+        StudentProfile studentProfile = studentProfileMapper.selectOne(
+                new LambdaQueryWrapper<StudentProfile>()
+                        .eq(StudentProfile::getUserId, studentId)
+        );
+        if (studentProfile != null && studentProfile.getBindAdminId() != null
+                && !studentProfile.getBindAdminId().equals(studentId)
+                && !studentProfile.getBindAdminId().equals(teacherId)) {
+            Long adminCount = chatParticipantMapper.selectCount(
+                    new LambdaQueryWrapper<ChatParticipant>()
+                            .eq(ChatParticipant::getMatchPairId, pairId)
+                            .eq(ChatParticipant::getUserId, studentProfile.getBindAdminId())
+                            .isNull(ChatParticipant::getLeftTime)
+            );
+            if (adminCount == 0) {
+                ChatParticipant admin = new ChatParticipant();
+                admin.setMatchPairId(pairId);
+                admin.setUserId(studentProfile.getBindAdminId());
+                admin.setParticipantRole(UserRole.L2_ADMIN.getCode());
+                admin.setIsDefaultMember(ChatParticipant.DEFAULT_MEMBER);
+                admin.setJoinedTime(LocalDateTime.now());
+                chatParticipantMapper.insert(admin);
+            }
+        }
     }
 }
